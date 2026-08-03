@@ -4,6 +4,23 @@
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
+* The module's name and version were changed to include "Custom AI".
+* The module's author was updated to include "Community".
+* The update JSON URL was changed to a different repository.
+* A new feature was added to fully sync all build-related properties across all partitions.
+* A new setting was added in the web interface to enable build props spoofing.
+* A new feature was added to spoof build fingerprint fields across all partitions.
+* A new setting was added in the web interface to enable uname spoofing.
+* The update script was modified to add new features and settings.
+* The module's description was updated to reflect new features.
+* The module's version code was reset to 1.
+
+## v0.0.57-custom.1 - 2026-08-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
 * The module name was changed from ".BRENE - SUSFS" to ".BRENE - Custom AI".
 * The version number was changed from "v0.0.57" to "v0.0.57-custom.2" and the version code was changed from "57" to "2".
 * The author was updated to include "Community" in addition to the original authors.
