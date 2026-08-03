@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write
   issues: write
+  models: read
 
 jobs:
   sync-and-build:
@@ -178,6 +179,37 @@ jobs:
             echo "updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json" >> module/module.prop
           fi
 
+      - name: Capture diff
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        run: |
+          git diff -- module | head -c 10000 > /tmp/custom.diff
+
+      - name: Summarize with GitHub Models (free)
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -s /tmp/custom.diff ]; then
+            echo "- No local changes this build." > /tmp/ai_summary.md
+          else
+            DIFF_JSON=$(jq -Rs . < /tmp/custom.diff)
+
+            RESPONSE=$(curl -s https://models.github.ai/inference/chat/completions \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"model\": \"openai/gpt-4o-mini\",
+                \"messages\": [{
+                  \"role\": \"user\",
+                  \"content\": \"This is a git diff of local customizations on a KernelSU/SuSFS module fork. Summarize what changed in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:\n\n${DIFF_JSON}\"
+                }],
+                \"max_tokens\": 300
+              }")
+
+            echo "$RESPONSE" | jq -r '.choices[0].message.content // "- (summary unavailable this run)"' > /tmp/ai_summary.md
+          fi
+          cat /tmp/ai_summary.md
+
       - name: Build changelog and release
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         id: build
@@ -203,15 +235,7 @@ jobs:
             echo "$UPSTREAM_LOG"
             echo ""
             echo "### Local customizations"
-            if grep -q "config_sync_build_props" module/post-fs-data.sh; then
-              echo '- Toggle "Build Props Spoofing" (Spoofing tab) — syncs build fingerprint fields across all partitions'
-            fi
-            if grep -q '^name=\.BRENE - Custom AI' module/module.prop; then
-              echo '- Rebranded to ".BRENE - Custom AI"'
-            fi
-            if grep -q "^updateJson=.*Tomkun-desu" module/module.prop; then
-              echo '- Self-hosted update feed (updateJson points to this repo)'
-            fi
+            cat /tmp/ai_summary.md
             echo ""
           } > /tmp/new_entry.md
 
