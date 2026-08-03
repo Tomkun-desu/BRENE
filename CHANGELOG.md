@@ -1,3 +1,21 @@
+## v0.0.57-custom.2 - 2026-08-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new configuration option `config_sync_build_props` to enable syncing of build props across partitions.
+* Added a new feature to fully sync all build-related props (fingerprint + sub-fields) across all partitions when `config_sync_build_props` is enabled.
+* Modified the `post-fs-data.sh` script to include the new build prop syncing feature.
+* Added a new UI element to the `index.html` file to display the build prop syncing feature.
+* Added a new UI element to the `index.html` file to display a card for build prop syncing.
+* Added a new UI element to the `script.js` file to handle the build prop syncing feature.
+* Changed the `module.prop` file to include a new author and updated version information.
+* Changed the `module.prop` file to include a new name and updated version code.
+* Removed the `MODULE_HOT_INSTALL_REQUEST` export from the `customize.sh` file.
+* Changed the `customize.sh` file to remove the hot install support check.
+* Changed the `module.prop` file to update the update JSON URL.
+
 ## v0.0.57-custom.1 - 2026-08-03
 
 ### Synced from upstream BRENE
