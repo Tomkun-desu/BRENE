@@ -20,7 +20,7 @@ is preserved as-is unless a change is explicitly noted in the changelog.
 
 ## Requirements
 
-- A SuSFS-patched kernel (KernelSU-Next / KernelSU / APatch)
+- A SuSFS-patched kernel (KernelSU-Next / KernelSU)
 - A SuSFS version compatible with the current module release
 
 ## Installation
