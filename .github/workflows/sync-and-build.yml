@@ -195,17 +195,16 @@ jobs:
           if [ ! -s /tmp/custom.diff ]; then
             echo "- No local changes this build." > /tmp/ai_summary.md
           else
-            DIFF_JSON=$(jq -Rs . < /tmp/custom.diff)
-
-            RESPONSE=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct" \
-              -H "Authorization: Bearer ${CF_API_TOKEN}" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"messages\": [
-                  {\"role\": \"system\", \"content\": \"You summarize code diffs in plain, simple bullet points for non-technical readers. One line per change. No code snippets. No headers.\"},
-                  {\"role\": \"user\", \"content\": \"This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed:\n\n${DIFF_JSON}\"}
+            RESPONSE=$(jq -n --rawfile diff /tmp/custom.diff '
+              {
+                messages: [
+                  {role: "system", content: "You summarize code diffs in plain, simple bullet points for non-technical readers. One line per change. No code snippets. No headers."},
+                  {role: "user", content: ("This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed:\n\n" + $diff)}
                 ]
-              }")
+              }' | curl -s "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct" \
+                -H "Authorization: Bearer ${CF_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data-binary @-)
 
             echo "$RESPONSE" > /tmp/cf_raw_response.json
             echo "$RESPONSE" | jq -r '.result.response // empty' > /tmp/ai_summary.md
