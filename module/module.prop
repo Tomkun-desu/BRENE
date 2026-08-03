@@ -1,7 +1,7 @@
 id=brene
-name=.BRENE - SUSFS
-version=v0.0.57
-versionCode=57
-author=rrr333nnn333, simonpunk & KOWX712
+name=.BRENE - Custom AI
+version=v0.0.57-custom.1
+versionCode=1
+author=rrr333nnn333, simonpunk & KOWX712 + Community
 description=[Module Status: ⏱️ | SuSFS Patches: ⏱️] A SuSFS/KernelSU module for SuSFS patched kernels
-updateJson=https://raw.githubusercontent.com/rrr333nnn333/BRENE/refs/heads/main/update.json
+updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json

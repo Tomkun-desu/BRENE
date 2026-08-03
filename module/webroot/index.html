@@ -537,6 +537,16 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
+							<span class="card-row__title">Build Props Spoofing</span>
+							<span class="card-row__sub">Spoof build fingerprint fields across all partitions to match the main ro.build.fingerprint</span>
+							<span class="card-row__tag--code">Example of detections: Build Field Coherence</span>
+						</div>
+						<md-switch icons id="sync_build_props"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
 							<span class="card-row__title">Custom Uname Spoofing</span>
 							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
 						</div>
