@@ -209,6 +209,9 @@ jobs:
                 \"max_tokens\": 300
               }")
 
+            echo "::group::Raw API Response (debug)"
+            echo "$RESPONSE"
+            echo "::endgroup::"
             echo "$RESPONSE" | jq -r '.choices[0].message.content // "- (summary unavailable this run)"' > /tmp/ai_summary.md
           fi
           cat /tmp/ai_summary.md
