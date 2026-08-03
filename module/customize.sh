@@ -9,9 +9,6 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 # Load utils
 [[ -e "${MODPATH}/utils.sh" ]] && source "${MODPATH}/utils.sh"
 
-# Hot Install Support
-export MODULE_HOT_INSTALL_REQUEST="true"
-
 # Check Compatibility
 if [[ -z "${KSU}" ]]; then
 	abort '[❌] SuSFS is only for KernelSU or forks!'
