@@ -11,7 +11,6 @@ on:
 permissions:
   contents: write
   issues: write
-  models: read
 
 jobs:
   sync-and-build:
@@ -187,32 +186,35 @@ jobs:
           git archive upstream/main -- module | tar -x -C /tmp/upstream_pure
           diff -ruN /tmp/upstream_pure/module module | head -c 10000 > /tmp/custom.diff || true
 
-      - name: Summarize with GitHub Models (free)
+      - name: Summarize with Cloudflare Workers AI (free)
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
           if [ ! -s /tmp/custom.diff ]; then
             echo "- No local changes this build." > /tmp/ai_summary.md
           else
             DIFF_JSON=$(jq -Rs . < /tmp/custom.diff)
 
-            RESPONSE=$(curl -s https://models.github.ai/inference/chat/completions \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
+            RESPONSE=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct" \
+              -H "Authorization: Bearer ${CF_API_TOKEN}" \
               -H "Content-Type: application/json" \
               -d "{
-                \"model\": \"openai/gpt-4o-mini\",
-                \"messages\": [{
-                  \"role\": \"user\",
-                  \"content\": \"This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed, in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:\n\n${DIFF_JSON}\"
-                }],
-                \"max_tokens\": 300
+                \"messages\": [
+                  {\"role\": \"system\", \"content\": \"You summarize code diffs in plain, simple bullet points for non-technical readers. One line per change. No code snippets. No headers.\"},
+                  {\"role\": \"user\", \"content\": \"This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed:\n\n${DIFF_JSON}\"}
+                ]
               }")
 
-            echo "::group::Raw API Response (debug)"
-            echo "$RESPONSE"
-            echo "::endgroup::"
-            echo "$RESPONSE" | jq -r '.choices[0].message.content // "- (summary unavailable this run)"' > /tmp/ai_summary.md
+            echo "$RESPONSE" > /tmp/cf_raw_response.json
+            echo "$RESPONSE" | jq -r '.result.response // empty' > /tmp/ai_summary.md
+
+            if [ ! -s /tmp/ai_summary.md ]; then
+              echo "- (summary unavailable this run)" > /tmp/ai_summary.md
+              echo "---- raw Cloudflare response (debug) ----"
+              cat /tmp/cf_raw_response.json
+            fi
           fi
           cat /tmp/ai_summary.md
 
