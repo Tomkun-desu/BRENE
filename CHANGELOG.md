@@ -4,6 +4,14 @@
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
+- No local changes this build.
+
+## v0.0.57-custom.1 - 2026-08-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
 - Toggle "Build Props Spoofing" (Spoofing tab) — syncs build fingerprint fields across all partitions
 - Rebranded to ".BRENE - Custom AI"
 - Self-hosted update feed (updateJson points to this repo)
