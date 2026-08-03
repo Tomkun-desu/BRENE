@@ -187,30 +187,32 @@ jobs:
           git archive upstream/main -- module | tar -x -C /tmp/upstream_pure
           diff -ruN /tmp/upstream_pure/module module | head -c 10000 > /tmp/custom.diff || true
 
-      - name: Summarize with Gemini (free)
+      - name: Summarize with GitHub Models (free)
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ ! -s /tmp/custom.diff ]; then
             echo "- No local changes this build." > /tmp/ai_summary.md
           else
-            DIFF_TEXT=$(cat /tmp/custom.diff)
-            PROMPT_JSON=$(jq -n --arg intro "This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed, in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:" --arg diff "$DIFF_TEXT" '$intro + "\n\n" + $diff')
+            DIFF_JSON=$(jq -Rs . < /tmp/custom.diff)
 
-            RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
+            RESPONSE=$(curl -s https://models.github.ai/inference/chat/completions \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -d "{
-                \"contents\": [{
-                  \"parts\": [{\"text\": ${PROMPT_JSON}}]
+                \"model\": \"openai/gpt-4o-mini\",
+                \"messages\": [{
+                  \"role\": \"user\",
+                  \"content\": \"This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed, in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:\n\n${DIFF_JSON}\"
                 }],
-                \"generationConfig\": {\"maxOutputTokens\": 300}
+                \"max_tokens\": 300
               }")
 
-            echo "::group::Gemini raw response (debug)"
+            echo "::group::Raw API Response (debug)"
             echo "$RESPONSE"
             echo "::endgroup::"
-            echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "- (summary unavailable this run)"' > /tmp/ai_summary.md
+            echo "$RESPONSE" | jq -r '.choices[0].message.content // "- (summary unavailable this run)"' > /tmp/ai_summary.md
           fi
           cat /tmp/ai_summary.md
 
