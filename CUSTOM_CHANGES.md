@@ -1,0 +1,3 @@
+- Added toggle "Build Props Spoofing" (Spoofing tab) — syncs build fingerprint fields across all partitions
+- Fixed module stuck on "UPDATED" state after manual patch
+- Rebranded to ".BRENE - Custom AI"
