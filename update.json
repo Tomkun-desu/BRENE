@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.57",
-	"versionCode": 57,
-	"zipUrl": "https://github.com/rrr333nnn333/BRENE/releases/latest/download/BRENE-v0.0.57.zip",
-	"changelog": "https://raw.githubusercontent.com/rrr333nnn333/BRENE/refs/heads/main/CHANGELOG.md"
+  "version": "v0.0.57-custom.3",
+  "versionCode": 3,
+  "zipUrl": "https://github.com/Tomkun-desu/BRENE/releases/download/v0.0.57-custom.3/BRENE-Custom-AI-v0.0.57-custom.3.zip",
+  "changelog": "https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/CHANGELOG.md"
 }
