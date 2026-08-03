@@ -207,6 +207,9 @@ jobs:
                 \"generationConfig\": {\"maxOutputTokens\": 300}
               }")
 
+            echo "::group::Gemini raw response (debug)"
+            echo "$RESPONSE"
+            echo "::endgroup::"
             echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "- (summary unavailable this run)"' > /tmp/ai_summary.md
           fi
           cat /tmp/ai_summary.md
