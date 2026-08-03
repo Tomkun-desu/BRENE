@@ -196,10 +196,7 @@ jobs:
             echo "- No local changes this build." > /tmp/ai_summary.md
           else
             DIFF_TEXT=$(cat /tmp/custom.diff)
-            PROMPT="This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed, in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:
-
-${DIFF_TEXT}"
-            PROMPT_JSON=$(jq -Rs . <<< "$PROMPT")
+            PROMPT_JSON=$(jq -n --arg intro "This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed, in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:" --arg diff "$DIFF_TEXT" '$intro + "\n\n" + $diff')
 
             RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
               -H "Content-Type: application/json" \
