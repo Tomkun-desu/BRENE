@@ -1,3 +1,19 @@
+## v0.0.57-custom.1 - 2026-08-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The module name was changed from ".BRENE - SUSFS" to ".BRENE - Custom AI".
+* The version number was changed from "v0.0.57" to "v0.0.57-custom.2" and the version code was changed from "57" to "2".
+* The author was updated to include "Community" in addition to the original authors.
+* The update JSON URL was updated from "https://raw.githubusercontent.com/rrr333nnn333/BRENE/refs/heads/main/update.json" to "https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json".
+* A new feature was added to sync build-related props (fingerprint and sub-fields) across all partitions.
+* A new feature was added to spoof build fingerprint fields across all partitions to match the main ro.build.fingerprint.
+* A new feature was added to spoof uname for all processes.
+* A new toggle was added in the web interface to control the build props spoofing feature.
+* The logs were updated to include information about the build props spoofing feature.
+
 ## v0.0.57-custom.2 - 2026-08-03
 
 ### Synced from upstream BRENE
