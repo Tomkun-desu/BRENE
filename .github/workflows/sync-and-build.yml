@@ -38,7 +38,7 @@ jobs:
       - name: Try merging upstream
         id: merge
         run: |
-          if git merge upstream/main --no-edit -X ours -- ':!module.prop' ':!README.md' ':!CHANGELOG.md' ':!CUSTOM_CHANGES.md' ':!.github' ':!update.json' 2>/dev/null; then
+          if git merge upstream/main --no-edit -X ours -- ':!module.prop' ':!README.md' ':!CHANGELOG.md' ':!CUSTOM_CHANGES.md' ':!.github' ':!update.json' ':!BUILD_NUMBER' 2>/dev/null; then
             echo "conflict=false" >> "$GITHUB_OUTPUT"
           else
             git merge --abort || true
@@ -75,13 +75,20 @@ jobs:
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         id: build
         run: |
-          RUN_NUM="${{ github.run_number }}"
           DATE=$(date -u +%Y-%m-%d)
+
+          # Our own build counter, starts at 0 and increments by 1 each real release
+          PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
+          RUN_NUM=$((PREV_NUM + 1))
+          echo "$RUN_NUM" > BUILD_NUMBER
 
           UPSTREAM_LOG=$(git log --pretty=format:"- %s" ${{ steps.pre.outputs.sha }}..${{ steps.diff.outputs.new_sha }} -- . ':!CHANGELOG.md' 2>/dev/null || echo "")
           [ -z "$UPSTREAM_LOG" ] && UPSTREAM_LOG="- (manual rebuild, no new upstream commits)"
 
-          UPSTREAM_VER=$(grep '^version=' module.prop | grep -oE 'v[0-9.]+' | head -1)
+          # Read the real upstream version directly from rrr333nnn333/BRENE, not our own module.prop
+          UPSTREAM_VER=$(curl -sL https://raw.githubusercontent.com/rrr333nnn333/BRENE/main/module.prop | grep '^version=' | grep -oE 'v[0-9.]+' | head -1)
+          [ -z "$UPSTREAM_VER" ] && UPSTREAM_VER="v0.0.0"
+
           BUILD_VERSION="${UPSTREAM_VER}-custom.${RUN_NUM}"
 
           {
@@ -119,7 +126,7 @@ jobs:
       - name: Commit and push
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         run: |
-          git add module.prop update.json CHANGELOG.md
+          git add module.prop update.json CHANGELOG.md BUILD_NUMBER
           git commit -m "release: ${{ steps.build.outputs.build_version }}"
           git push origin main
 
