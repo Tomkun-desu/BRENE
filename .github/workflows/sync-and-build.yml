@@ -179,10 +179,13 @@ jobs:
             echo "updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json" >> module/module.prop
           fi
 
-      - name: Capture diff
+      - name: Capture diff against pure upstream
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         run: |
-          git diff -- module | head -c 10000 > /tmp/custom.diff
+          rm -rf /tmp/upstream_pure
+          mkdir -p /tmp/upstream_pure
+          git archive upstream/main -- module | tar -x -C /tmp/upstream_pure
+          diff -ruN /tmp/upstream_pure/module module | head -c 10000 > /tmp/custom.diff || true
 
       - name: Summarize with GitHub Models (free)
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
@@ -201,7 +204,7 @@ jobs:
                 \"model\": \"openai/gpt-4o-mini\",
                 \"messages\": [{
                   \"role\": \"user\",
-                  \"content\": \"This is a git diff of local customizations on a KernelSU/SuSFS module fork. Summarize what changed in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:\n\n${DIFF_JSON}\"
+                  \"content\": \"This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed, in plain, simple bullet points (non-technical, one line per change, no code, no headers). Diff:\n\n${DIFF_JSON}\"
                 }],
                 \"max_tokens\": 300
               }")
