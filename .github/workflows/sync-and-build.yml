@@ -1,0 +1,139 @@
+name: Sync upstream and build release
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force a release even with no upstream changes'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Record current HEAD
+        id: pre
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Add upstream and fetch
+        run: |
+          git remote add upstream https://github.com/rrr333nnn333/BRENE.git
+          git fetch upstream main
+
+      - name: Try merging upstream
+        id: merge
+        run: |
+          if git merge upstream/main --no-edit -X ours -- ':!module.prop' ':!README.md' ':!CHANGELOG.md' ':!CUSTOM_CHANGES.md' ':!.github' ':!update.json' 2>/dev/null; then
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          else
+            git merge --abort || true
+            if git merge upstream/main --no-edit; then
+              echo "conflict=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "conflict=true" >> "$GITHUB_OUTPUT"
+              git merge --abort
+            fi
+          fi
+
+      - name: Open issue on conflict
+        if: steps.merge.outputs.conflict == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Upstream sync conflict - ${new Date().toISOString().slice(0,10)}`,
+              body: "Automatic merge from upstream BRENE failed. Resolve manually:\n```\ngit fetch upstream main\ngit merge upstream/main\n# resolve conflicts\ngit add .\ngit commit\ngit push\n```"
+            })
+
+      - name: Check for new upstream commits
+        if: steps.merge.outputs.conflict == 'false'
+        id: diff
+        run: |
+          NEW_SHA=$(git rev-parse HEAD)
+          COUNT=$(git rev-list --count ${{ steps.pre.outputs.sha }}..$NEW_SHA -- . ':!CHANGELOG.md')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "new_sha=$NEW_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Build changelog and release
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        id: build
+        run: |
+          RUN_NUM="${{ github.run_number }}"
+          DATE=$(date -u +%Y-%m-%d)
+
+          UPSTREAM_LOG=$(git log --pretty=format:"- %s" ${{ steps.pre.outputs.sha }}..${{ steps.diff.outputs.new_sha }} -- . ':!CHANGELOG.md' 2>/dev/null || echo "")
+          [ -z "$UPSTREAM_LOG" ] && UPSTREAM_LOG="- (manual rebuild, no new upstream commits)"
+
+          UPSTREAM_VER=$(grep '^version=' module.prop | grep -oE 'v[0-9.]+' | head -1)
+          BUILD_VERSION="${UPSTREAM_VER}-custom.${RUN_NUM}"
+
+          {
+            echo "## ${BUILD_VERSION} - ${DATE}"
+            echo ""
+            echo "### Synced from upstream BRENE"
+            echo "$UPSTREAM_LOG"
+            echo ""
+            echo "### Local customizations"
+            cat CUSTOM_CHANGES.md
+            echo ""
+          } > /tmp/new_entry.md
+
+          cat /tmp/new_entry.md CHANGELOG.md > /tmp/full_changelog.md
+          mv /tmp/full_changelog.md CHANGELOG.md
+
+          sed -i "s/^version=.*/version=${BUILD_VERSION}/" module.prop
+          sed -i "s/^versionCode=.*/versionCode=${RUN_NUM}/" module.prop
+
+          echo "build_version=${BUILD_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "run_num=${RUN_NUM}" >> "$GITHUB_OUTPUT"
+
+      - name: Update update.json
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        run: |
+          cat > update.json << EOF
+          {
+            "version": "${{ steps.build.outputs.build_version }}",
+            "versionCode": ${{ steps.build.outputs.run_num }},
+            "zipUrl": "https://github.com/${{ github.repository }}/releases/download/${{ steps.build.outputs.build_version }}/BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip",
+            "changelog": "https://raw.githubusercontent.com/${{ github.repository }}/main/CHANGELOG.md"
+          }
+          EOF
+
+      - name: Commit and push
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        run: |
+          git add module.prop update.json CHANGELOG.md
+          git commit -m "release: ${{ steps.build.outputs.build_version }}"
+          git push origin main
+
+      - name: Zip module
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        run: |
+          zip -r9 "BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip" . \
+            -x ".git*" -x ".github/*"
+
+      - name: Create Release
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ steps.build.outputs.build_version }}"
+          name: "BRENE Custom AI ${{ steps.build.outputs.build_version }}"
+          body_path: /tmp/new_entry.md
+          files: "BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip"
