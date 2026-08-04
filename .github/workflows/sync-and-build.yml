@@ -252,15 +252,21 @@ jobs:
         run: |
           DATE=$(date -u +%Y-%m-%d)
 
-          PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
-          RUN_NUM=$((PREV_NUM + 1))
+          UPSTREAM_VER=$(grep '^version=' module/module.prop | grep -oE 'v[0-9.]+' | head -1)
+          [ -z "$UPSTREAM_VER" ] && UPSTREAM_VER="v0.0.0"
+
+          LAST_VER=$(cat LAST_UPSTREAM_VERSION 2>/dev/null || echo "")
+          if [[ "$UPSTREAM_VER" != "$LAST_VER" ]]; then
+            RUN_NUM=1
+          else
+            PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
+            RUN_NUM=$((PREV_NUM + 1))
+          fi
           echo "$RUN_NUM" > BUILD_NUMBER
+          echo "$UPSTREAM_VER" > LAST_UPSTREAM_VERSION
 
           UPSTREAM_LOG=$(git log --pretty=format:"- %s" ${{ steps.pre.outputs.sha }}..${{ steps.diff.outputs.new_sha }} -- module ':!CHANGELOG.md' 2>/dev/null || echo "")
           [ -z "$UPSTREAM_LOG" ] && UPSTREAM_LOG="- (manual rebuild, no new upstream commits)"
-
-          UPSTREAM_VER=$(grep '^version=' module/module.prop | grep -oE 'v[0-9.]+' | head -1)
-          [ -z "$UPSTREAM_VER" ] && UPSTREAM_VER="v0.0.0"
 
           BUILD_VERSION="${UPSTREAM_VER}-custom.${RUN_NUM}"
 
@@ -299,7 +305,7 @@ jobs:
       - name: Commit and push
         if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
         run: |
-          git add module update.json CHANGELOG.md BUILD_NUMBER
+          git add module update.json CHANGELOG.md BUILD_NUMBER LAST_UPSTREAM_VERSION
           git commit -m "release: ${{ steps.build.outputs.build_version }}"
           git push origin main
 
