@@ -38,15 +38,36 @@ jobs:
       - name: Try merging upstream
         id: merge
         run: |
-          if git merge upstream/main --no-edit -X ours -- ':!README.md' ':!CHANGELOG.md' ':!.github' ':!update.json' ':!BUILD_NUMBER' ':!module/module.prop' ':!module/webroot/index.html' ':!module/webroot/script.js' 2>/dev/null; then
+          PROTECTED_FILES=("README.md" "CHANGELOG.md" ".github" "update.json" "BUILD_NUMBER" "module/module.prop" "module/webroot/index.html" "module/webroot/script.js")
+
+          if git merge upstream/main --no-edit; then
             echo "conflict=false" >> "$GITHUB_OUTPUT"
           else
-            git merge --abort || true
-            if git merge upstream/main --no-edit; then
-              echo "conflict=false" >> "$GITHUB_OUTPUT"
-            else
+            CONFLICTED=$(git diff --name-only --diff-filter=U)
+            REAL_CONFLICT=false
+            for f in $CONFLICTED; do
+              FOUND=false
+              for p in "${PROTECTED_FILES[@]}"; do
+                if [[ "$f" == "$p" || "$f" == "$p"/* ]]; then
+                  FOUND=true
+                  break
+                fi
+              done
+              if [ "$FOUND" = false ]; then
+                REAL_CONFLICT=true
+              fi
+            done
+
+            if [ "$REAL_CONFLICT" = true ]; then
               echo "conflict=true" >> "$GITHUB_OUTPUT"
               git merge --abort
+            else
+              for f in $CONFLICTED; do
+                git checkout --ours -- "$f"
+                git add "$f"
+              done
+              git commit --no-edit
+              echo "conflict=false" >> "$GITHUB_OUTPUT"
             fi
           fi
 
