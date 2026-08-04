@@ -1,3 +1,19 @@
+## v0.0.57-custom.3 - 2026-08-04
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a feature to manually hide user-installed CA certificates from detection.
+* Added an option to sync build props (fingerprint and sub-fields) across all partitions to match the main ro.build.fingerprint.
+* Added a new setting to the web interface for user CA certificates.
+* Added a new setting to the web interface for build props spoofing.
+* Updated the module's name, version, and author information in the module.prop file.
+* Updated the update JSON URL in the module.prop file.
+* Updated the module's description in the module.prop file.
+* Added a new script to the post-fs-data.sh file to sync build props.
+* Updated the script.js file to include new settings for user CA certificates and build props spoofing.
+
 ## v0.0.57-custom.2 - 2026-08-03
 
 ### Synced from upstream BRENE
