@@ -181,7 +181,11 @@ fi
 
 #### Fully sync all build-related props (fingerprint + sub-fields) across all partitions ####
 ## Fully device-agnostic + fail-safe: never blocks boot even if resetprop errors ##
-if [[ "${config_sync_build_props}" == "1" ]]; then
+## Skipped during hot install (live session) — live resetprop of build fingerprint fields
+## is unsafe while zygote/system_server are already running; it will apply normally on
+## the next real reboot instead. ##
+BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
+if [[ "${config_sync_build_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
     RESETPROP=""
     for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
         [[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
