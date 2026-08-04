@@ -182,6 +182,22 @@ if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	done
 fi
 
+# Manually-installed User CA Certificates
+if [[ "${config_paths_hiding__user_ca_certs}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "###############################"
+			echo "User CA Certificates"
+			echo "###############################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	for i in /data/misc/user/*/cacerts-added/*; do
+		brene_sus_path_loop "${i}"
+	done
+fi
+
 # /sdcard/Android/[data | media | obb]
 if [[ "${config_paths_hiding__sdcard_android_data_media_obb}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then

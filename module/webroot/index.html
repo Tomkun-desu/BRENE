@@ -291,6 +291,16 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
+							<span class="card-row__title">User CA Certificates</span>
+							<span class="card-row__tag--code">Hides manually-installed (user) CA certificates from detection</span>
+							<span class="card-row__tag--code">/data/misc/user/*/cacerts-added/</span>
+						</div>
+						<md-switch icons id="paths_hiding__user_ca_certs"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
 							<span class="card-row__title">/sdcard/Android/[data | media | obb] Paths</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">/sdcard/Android/data/ io.github.muntashirakon.AppManager</span>
