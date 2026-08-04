@@ -7,6 +7,10 @@ on:
         description: 'Force a release even with no upstream changes'
         type: boolean
         default: false
+      publish:
+        description: 'Publish a release (uncheck to only sync upstream without releasing)'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -208,7 +212,7 @@ jobs:
           fi
 
       - name: Capture diff against pure upstream
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false' 
         run: |
           rm -rf /tmp/upstream_pure
           mkdir -p /tmp/upstream_pure
@@ -216,7 +220,7 @@ jobs:
           diff -ruN /tmp/upstream_pure/module module | head -c 10000 > /tmp/custom.diff || true
 
       - name: Summarize with Cloudflare Workers AI (free)
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false' 
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -247,7 +251,7 @@ jobs:
           cat /tmp/ai_summary.md
 
       - name: Build changelog and release
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false' 
         id: build
         run: |
           DATE=$(date -u +%Y-%m-%d)
@@ -291,7 +295,7 @@ jobs:
           echo "run_num=${RUN_NUM}" >> "$GITHUB_OUTPUT"
 
       - name: Update update.json
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false' 
         run: |
           cat > update.json << EOF
           {
@@ -303,21 +307,32 @@ jobs:
           EOF
 
       - name: Commit and push
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false'
         run: |
           git add module update.json CHANGELOG.md BUILD_NUMBER LAST_UPSTREAM_VERSION
           git commit -m "release: ${{ steps.build.outputs.build_version }}"
           git push origin main
 
+      - name: Commit and push (sync only, no release)
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish == 'false'
+        run: |
+          git add module
+          if git diff --cached --quiet; then
+            echo "No local customization changes to commit."
+          else
+            git commit -m "chore: sync upstream changes (no release published)"
+          fi
+          git push origin main
+
       - name: Zip module (only module/ contents at zip root)
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false' 
         run: |
           cd module
           zip -r9 "../BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip" . -x ".git*"
           cd ..
 
       - name: Create Release
-        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true')
+        if: steps.merge.outputs.conflict == 'false' && (steps.diff.outputs.count != '0' || github.event.inputs.force == 'true') && github.event.inputs.publish != 'false' 
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "${{ steps.build.outputs.build_version }}"
