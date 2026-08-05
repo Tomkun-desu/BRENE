@@ -1,3 +1,27 @@
+## v0.0.57-custom.4 - 2026-08-05
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in simple bullet points:
+
+* A new feature was added to hide manually-installed User CA Certificates from detection.
+* A new config option was added to hide User CA Certificates.
+* A new config option was added to sync build props across all partitions.
+* A new feature was added to load custom kstat entries from a file.
+* A new config option was added to enable loading custom kstat entries.
+* A new tab was added to the web interface to manage custom kstat entries.
+* A new button was added to the web interface to add new custom kstat entries.
+* A new section was added to the web interface to manage build prop spoofing.
+* The module name, version, and author were updated in the module.prop file.
+* The update JSON URL was updated in the module.prop file.
+* A new feature was added to fully sync all build-related props across all partitions.
+* A new feature was added to resetprop build fingerprint fields across all partitions.
+* A new section was added to the post-fs-data.sh script to sync build props.
+* A new feature was added to log sync prop operations in the logs.txt file.
+* A new section was added to the webroot/index.html file to display
+
 ## v0.0.57-custom.3 - 2026-08-04
 
 ### Synced from upstream BRENE
