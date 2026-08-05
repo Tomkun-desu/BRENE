@@ -367,7 +367,10 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			const field = document.createElement('md-outlined-text-field')
 			field.setAttribute('label', name)
 			field.className = `kstat-${name}`
-			field.value = values[name] !== undefined ? values[name] : 'default'
+			field.setAttribute('placeholder', 'default')
+			if (values[name] !== undefined && values[name] !== 'default') {
+				field.value = values[name]
+			}
 			grid.appendChild(field)
 		})
 		entry.appendChild(grid)
