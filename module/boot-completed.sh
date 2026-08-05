@@ -291,6 +291,26 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_mount.txt" ]]; then
 	done < "${PERSISTENT_DIR}/custom_sus_mount.txt"
 fi
 
+# Load custom_sus_kstat.txt
+# Format per line: <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+# Use the literal word 'default' for any field to leave it as the real current value.
+if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
+	while IFS= read -r i; do
+		# Skip empty lines or comments
+		[[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
+
+		read -ra kstat_args <<< "${i}"
+		if [[ "${#kstat_args[@]}" -eq 13 ]]; then
+			${SUSFS_BIN} add_sus_kstat_statically "${kstat_args[@]}"
+			if [[ "${config_brene_logs}" == "1" ]]; then
+				echo "[custom_sus_kstat]: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+			fi
+		elif [[ "${config_brene_logs}" == "1" ]]; then
+			echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got ${#kstat_args[@]}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+		fi
+	done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
+fi
+
 #### Hide the mmapped real file from various maps in /proc/self/, effective only for processes that are marked umounted with uid >= 10000 ####
 ## - *Please note that it is better to do it in boot-completed starge
 ##   Since some target path may be mounted by ksu, and make sure the

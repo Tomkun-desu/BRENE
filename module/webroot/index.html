@@ -457,6 +457,7 @@
 							<md-primary-tab id="tab_sus_mount" aria-controls="panel_sus_mount">MOUNT</md-primary-tab>
 							<md-primary-tab id="tab_sus_path" aria-controls="panel_sus_path">PATH</md-primary-tab>
 							<md-primary-tab id="tab_sus_path_loop" aria-controls="panel_sus_path_loop">PATH LOOP</md-primary-tab>
+							<md-primary-tab id="tab_sus_kstat" aria-controls="panel_sus_kstat">KSTAT</md-primary-tab>
 						</md-tabs>
 
 						<div class="snap-container" id="horizontal_scroll_container">
@@ -474,6 +475,11 @@
 
 							<div class="snap-item">
 								<md-filled-text-field class="content" id="custom_sus_path_loop_text_field" type="textarea" rows="12" label="SUS PATH LOOP"></md-filled-text-field>
+							</div>
+
+							<div class="snap-item">
+								<div id="kstat_entries_container" style="display:flex;flex-direction:column;gap:12px;"></div>
+								<md-filled-button id="add_kstat_entry_button" style="margin-top:12px;">+ ADD ENTRY</md-filled-button>
 							</div>
 						</div>
 
