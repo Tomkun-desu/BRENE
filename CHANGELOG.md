@@ -1,3 +1,23 @@
+## v0.0.57-custom.5 - 2026-08-05
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added code to hide manually-installed user CA certificates from detection in boot-completed.sh.
+* Added new configuration option `config_paths_hiding__user_ca_certs` to enable hiding user CA certificates in config.sh.
+* Added new file `custom_sus_kstat.txt` to store custom kernel statistics in customize.sh.
+* Added new tab "KSTAT" to the settings page in webroot/index.html to manage custom kernel statistics.
+* Added new option to sync build props across all partitions in post-fs-data.sh.
+* Updated module metadata in module.prop to reflect changes.
+* Added new feature to hide manually-installed user CA certificates in the settings page in webroot/index.html.
+* Added new option to sync build props in the settings page in webroot/index.html.
+* Updated the settings page in webroot/index.html to include new options and features.
+* Added new code to handle custom kernel statistics in boot-completed.sh.
+* Updated the code to handle custom kernel statistics in post-fs-data.sh.
+
 ## v0.0.57-custom.4 - 2026-08-05
 
 ### Synced from upstream BRENE
