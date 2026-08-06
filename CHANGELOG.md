@@ -4,6 +4,28 @@
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
+Here are the changes in plain, simple bullet points:
+
+* Added a new feature to hide manually-installed User CA Certificates.
+* Added a new feature to load custom kstat values from a file named `custom_sus_kstat.txt`.
+* Added a new config option to hide User CA Certificates.
+* Added a new config option to sync build props across all partitions.
+* Added a new option to the web interface to sync build props.
+* Added a new option to the web interface to spoof uname for all processes.
+* Updated the `boot-completed.sh` script to wait for the `/sdcard/Android` directory to be accessible before proceeding.
+* Updated the `post-fs-data.sh` script to sync build props across all partitions.
+* Updated the `module.prop` file to reflect the new features and changes.
+* Updated the `webroot/index.html` file to include a new card row for build prop spoofing.
+* Updated the `webroot/script.js` file to include a new option for build prop spoofing.
+* Removed the `updateJson` field from the `module.prop` file, as it is no longer used.
+* Updated the `module/customize.sh` script to include a new file named `custom_sus_kstat
+
+## v0.0.57-custom.6 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
 Here is a summary of the changes in plain, simple bullet points:
 
 * Added a new feature to hide manually-installed User CA Certificates from detection.
