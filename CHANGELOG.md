@@ -1,3 +1,23 @@
+## v0.0.57-custom.7 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new feature to hide manually-installed user CA certificates from detection.
+* Added a new feature to sync build fingerprint fields across all partitions to match the main ro.build.fingerprint.
+* Added a new feature to load custom kstat entries statically from a file.
+* Modified the wait loop in boot-completed.sh to limit the number of attempts.
+* Modified the path hiding in boot-completed.sh to handle the '..5.u.S' leftover file.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle empty lines and comments.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle fields with default values.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle fields with non-default values.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle fields with default values.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle fields with non-default values.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle fields with default values.
+* Modified the custom kstat entries handling in post-fs-data.sh to handle fields with non-default values.
+* Modified the custom kstat entries handling in post-fs-data.sh
+
 ## v0.0.57-custom.6 - 2026-08-06
 
 ### Synced from upstream BRENE
