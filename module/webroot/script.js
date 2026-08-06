@@ -61,6 +61,7 @@ const configs = [
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
 	{ id: 'paths_hiding__data_local_tmp' },
+	{ id: 'paths_hiding__user_ca_certs' },
 	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
 ]
 
@@ -345,6 +346,75 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	const mountField = document.getElementById('custom_sus_mount_text_field')
 	const pathField = document.getElementById('custom_sus_path_text_field')
 	const loopField = document.getElementById('custom_sus_path_loop_text_field')
+	const kstatContainer = document.getElementById('kstat_entries_container')
+	const addKstatButton = document.getElementById('add_kstat_entry_button')
+	const kstatFieldNames = ['ino', 'dev', 'nlink', 'size', 'atime', 'atime_nsec', 'mtime', 'mtime_nsec', 'ctime', 'ctime_nsec', 'blocks', 'blksize']
+
+	function createKstatEntry(values) {
+		values = values || {}
+		const entry = document.createElement('div')
+		entry.className = 'kstat-entry'
+		entry.style.cssText = 'border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;'
+
+		const pathField = document.createElement('md-outlined-text-field')
+		pathField.setAttribute('label', 'Path')
+		pathField.className = 'kstat-path'
+		pathField.value = values.path || ''
+		entry.appendChild(pathField)
+
+		const grid = document.createElement('div')
+		grid.style.cssText = 'display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;'
+		kstatFieldNames.forEach((name) => {
+			const field = document.createElement('md-outlined-text-field')
+			field.setAttribute('label', name)
+			field.className = `kstat-${name}`
+			field.setAttribute('placeholder', 'default')
+			if (values[name] !== undefined && values[name] !== 'default') {
+				field.value = values[name]
+			}
+			grid.appendChild(field)
+		})
+		entry.appendChild(grid)
+
+		const removeBtn = document.createElement('md-filled-tonal-button')
+		removeBtn.textContent = 'REMOVE ENTRY'
+		removeBtn.onclick = () => entry.remove()
+		entry.appendChild(removeBtn)
+
+		kstatContainer.appendChild(entry)
+	}
+
+	function serializeKstatEntries() {
+		const entries = kstatContainer.querySelectorAll('.kstat-entry')
+		const outLines = []
+		entries.forEach((entry) => {
+			const path = entry.querySelector('.kstat-path').value.trim()
+			if (!path) return
+			const values = [path]
+			kstatFieldNames.forEach((name) => {
+				const v = entry.querySelector(`.kstat-${name}`).value.trim()
+				values.push(v === '' ? 'default' : v)
+			})
+			outLines.push(values.join(' '))
+		})
+		return outLines.join('\n')
+	}
+
+	function loadKstatEntries(text) {
+		kstatContainer.innerHTML = ''
+		const rawLines = (text || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
+		rawLines.forEach((line) => {
+			const parts = line.split(/\s+/)
+			if (parts.length !== 13) return
+			const values = { path: parts[0] }
+			kstatFieldNames.forEach((name, i) => {
+				values[name] = parts[i + 1]
+			})
+			createKstatEntry(values)
+		})
+	}
+
+	addKstatButton.onclick = () => createKstatEntry()
 	const applyButton = document.getElementById('unified_apply_button')
 	const tabs = document.getElementById('sus_tabs')
 	const scrollContainer = document.getElementById('horizontal_scroll_container')
@@ -361,6 +431,9 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_loop.txt`).then((result) => {
 		loopField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+	})
+	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
+		loadKstatEntries(result.errno === 0 ? result.stdout : '')
 	})
 
 	// Tabs and Scroll Sync
@@ -406,6 +479,10 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			case 3:
 				file = 'custom_sus_path_loop.txt'
 				content = loopField.value
+				break
+			case 4:
+				file = 'custom_sus_kstat.txt'
+				content = serializeKstatEntries()
 				break
 		}
 
