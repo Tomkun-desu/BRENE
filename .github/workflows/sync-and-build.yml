@@ -95,7 +95,7 @@ jobs:
       - name: Re-apply customizations onto module/
         if: steps.merge.outputs.conflict == 'false' && steps.diff.outputs.count != '0'
         run: |
-          if ! grep -q "config_sync_build_props" module/post-fs-data.sh; then
+          if ! grep -q "config_sync_device_props" module/post-fs-data.sh; then
           cat >> module/post-fs-data.sh << 'BLOCK'
 
           #### Fully sync all build-related props (fingerprint + sub-fields) across all partitions ####
@@ -104,7 +104,7 @@ jobs:
           ## is unsafe while zygote/system_server are already running; it will apply normally on
           ## the next real reboot instead. ##
           BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
-          if [[ "${config_sync_build_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
+          if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
               RESETPROP=""
               for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
                   [[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
@@ -118,14 +118,20 @@ jobs:
                   MAIN_SDK_FULL=$(getprop ro.build.version.sdk_full)
                   MAIN_INCREMENTAL=$(getprop ro.build.version.incremental)
                   MAIN_RELEASE_CODENAME=$(getprop ro.build.version.release_or_codename)
+                  MAIN_BRAND=$(getprop ro.product.brand)
+                  MAIN_DEVICE=$(getprop ro.product.device)
+                  MAIN_MANUFACTURER=$(getprop ro.product.manufacturer)
+                  MAIN_MODEL=$(getprop ro.product.model)
+                  MAIN_NAME=$(getprop ro.product.name)
 
                   FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full"
+                  PRODUCT_FIELDS="brand device manufacturer model name"
 
                   if [[ "${config_brene_logs}" == "1" ]]; then
                       {
                           echo ""
                           echo "########################"
-                          echo "Build Props Spoofing"
+                          echo "Device Identity Sync"
                           echo "########################"
                       } >> "${PERSISTENT_DIR}/logs.txt"
                   fi
@@ -160,6 +166,28 @@ jobs:
                                   fi
                               fi
                           done
+
+                          for pfield in ${PRODUCT_FIELDS}; do
+                              prop_name="ro.product.${part}.${pfield}"
+                              current_value=$(getprop "${prop_name}")
+
+                              if [[ -n "${current_value}" ]]; then
+                                  case "${pfield}" in
+                                      brand) new_value="${MAIN_BRAND}" ;;
+                                      device) new_value="${MAIN_DEVICE}" ;;
+                                      manufacturer) new_value="${MAIN_MANUFACTURER}" ;;
+                                      model) new_value="${MAIN_MODEL}" ;;
+                                      name) new_value="${MAIN_NAME}" ;;
+                                  esac
+
+                                  if [[ "${current_value}" != "${new_value}" ]]; then
+                                      timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
+                                      if [[ "${config_brene_logs}" == "1" ]]; then
+                                          echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                                      fi
+                                  fi
+                              fi
+                          done
                       done
                   fi
               fi
@@ -167,22 +195,22 @@ jobs:
           BLOCK
           fi
 
-          if ! grep -q "config_sync_build_props" module/config.sh; then
-            echo "config_sync_build_props=0" >> module/config.sh
+          if ! grep -q "config_sync_device_props" module/config.sh; then
+            echo "config_sync_device_props=0" >> module/config.sh
           fi
 
-          if ! grep -q 'id="sync_build_props"' module/webroot/index.html; then
+          if ! grep -q 'id="sync_device_props"' module/webroot/index.html; then
             LN=$(grep -n 'card-row__title">Custom Uname Spoofing<' module/webroot/index.html | head -1 | cut -d: -f1)
             if [ -n "$LN" ]; then
               INS=$((LN - 2))
               cat > /tmp/insert_card.txt << 'CARD'
           					<div class="card-row">
           						<div class="card-row__body">
-          							<span class="card-row__title">Build Props Spoofing</span>
+          							<span class="card-row__title">Device Identity Sync</span>
           							<span class="card-row__sub">Spoof build fingerprint fields across all partitions to match the main ro.build.fingerprint</span>
           							<span class="card-row__tag--code">Example of detections: Build Field Coherence</span>
           						</div>
-          						<md-switch icons id="sync_build_props"></md-switch>
+          						<md-switch icons id="sync_device_props"></md-switch>
           						<md-ripple></md-ripple>
           					</div>
 
@@ -195,8 +223,8 @@ jobs:
             fi
           fi
 
-          if ! grep -q "'sync_build_props'" module/webroot/script.js; then
-            sed -i "s/{ id: 'enable_log' },/{ id: 'enable_log' },\n\t{ id: 'sync_build_props' },/" module/webroot/script.js
+          if ! grep -q "'sync_device_props'" module/webroot/script.js; then
+            sed -i "s/{ id: 'enable_log' },/{ id: 'enable_log' },\n\t{ id: 'sync_device_props' },/" module/webroot/script.js
           fi
 
           sed -i "s/^name=.*/name=.BRENE - Custom AI/" module/module.prop

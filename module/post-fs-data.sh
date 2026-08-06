@@ -185,7 +185,7 @@ fi
 ## is unsafe while zygote/system_server are already running; it will apply normally on
 ## the next real reboot instead. ##
 BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
-if [[ "${config_sync_build_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
+if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
     RESETPROP=""
     for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
         [[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
@@ -199,8 +199,14 @@ if [[ "${config_sync_build_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; t
         MAIN_SDK_FULL=$(getprop ro.build.version.sdk_full)
         MAIN_INCREMENTAL=$(getprop ro.build.version.incremental)
         MAIN_RELEASE_CODENAME=$(getprop ro.build.version.release_or_codename)
+        MAIN_BRAND=$(getprop ro.product.brand)
+        MAIN_DEVICE=$(getprop ro.product.device)
+        MAIN_MANUFACTURER=$(getprop ro.product.manufacturer)
+        MAIN_MODEL=$(getprop ro.product.model)
+        MAIN_NAME=$(getprop ro.product.name)
 
         FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full"
+        PRODUCT_FIELDS="brand device manufacturer model name"
 
         if [[ "${config_brene_logs}" == "1" ]]; then
             {
@@ -231,6 +237,28 @@ if [[ "${config_sync_build_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; t
                             version.incremental) new_value="${MAIN_INCREMENTAL}" ;;
                             version.release_or_codename) new_value="${MAIN_RELEASE_CODENAME}" ;;
                             version.sdk_full) new_value="${MAIN_SDK_FULL}" ;;
+                        esac
+
+                        if [[ "${current_value}" != "${new_value}" ]]; then
+                            timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
+                            if [[ "${config_brene_logs}" == "1" ]]; then
+                                echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                            fi
+                        fi
+                    fi
+                done
+
+                for pfield in ${PRODUCT_FIELDS}; do
+                    prop_name="ro.product.${part}.${pfield}"
+                    current_value=$(getprop "${prop_name}")
+
+                    if [[ -n "${current_value}" ]]; then
+                        case "${pfield}" in
+                            brand) new_value="${MAIN_BRAND}" ;;
+                            device) new_value="${MAIN_DEVICE}" ;;
+                            manufacturer) new_value="${MAIN_MANUFACTURER}" ;;
+                            model) new_value="${MAIN_MODEL}" ;;
+                            name) new_value="${MAIN_NAME}" ;;
                         esac
 
                         if [[ "${current_value}" != "${new_value}" ]]; then
