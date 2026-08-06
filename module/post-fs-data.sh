@@ -181,67 +181,63 @@ fi
 
 #### Fully sync all build-related props (fingerprint + sub-fields) across all partitions ####
 ## Fully device-agnostic + fail-safe: never blocks boot even if resetprop errors ##
-## Skipped during hot install (live session) — live resetprop of build fingerprint fields
-## is unsafe while zygote/system_server are already running; it will apply normally on
-## the next real reboot instead. ##
-BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
-if [[ "${config_sync_build_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
-    RESETPROP=""
-    for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
-        [[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
-    done
+if [[ "${config_sync_build_props}" == "1" ]]; then
+	RESETPROP=""
+	for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
+		[[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
+	done
 
-    if [[ -n "${RESETPROP}" ]]; then
-        MAIN_FP=$(getprop ro.build.fingerprint)
-        MAIN_ID=$(getprop ro.build.id)
-        MAIN_RELEASE=$(getprop ro.build.version.release)
-        MAIN_SDK=$(getprop ro.build.version.sdk)
-        MAIN_SDK_FULL=$(getprop ro.build.version.sdk_full)
-        MAIN_INCREMENTAL=$(getprop ro.build.version.incremental)
-        MAIN_RELEASE_CODENAME=$(getprop ro.build.version.release_or_codename)
+	if [[ -n "${RESETPROP}" ]]; then
+		MAIN_FP=$(getprop ro.build.fingerprint)
+		MAIN_ID=$(getprop ro.build.id)
+		MAIN_RELEASE=$(getprop ro.build.version.release)
+		MAIN_SDK=$(getprop ro.build.version.sdk)
+		MAIN_SDK_FULL=$(getprop ro.build.version.sdk_full)
+		MAIN_INCREMENTAL=$(getprop ro.build.version.incremental)
+		MAIN_RELEASE_CODENAME=$(getprop ro.build.version.release_or_codename)
 
-        FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full"
+		FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full"
 
-        if [[ "${config_brene_logs}" == "1" ]]; then
-            {
-                echo ""
-                echo "########################"
-                echo "Build Props Spoofing"
-                echo "########################"
-            } >> "${PERSISTENT_DIR}/logs.txt"
-        fi
+		if [[ "${config_brene_logs}" == "1" ]]; then
+			{
+				echo ""
+				echo "########################"
+				echo "Build Props Spoofing"
+				echo "########################"
+			} >> "${PERSISTENT_DIR}/logs.txt"
+		fi
 
-        if [[ -n "${MAIN_FP}" ]]; then
-            DISCOVERED_PARTS=$(getprop | grep -oE '^\[ro\.[a-z0-9_]+\.build\.fingerprint\]' | sed -E 's/^\[ro\.([a-z0-9_]+)\.build\.fingerprint\]$/\1/')
+		if [[ -n "${MAIN_FP}" ]]; then
+			DISCOVERED_PARTS=$(getprop | grep -oE '^\[ro\.[a-z0-9_]+\.build\.fingerprint\]' | sed -E 's/^\[ro\.([a-z0-9_]+)\.build\.fingerprint\]$/\1/')
 
-            for part in ${DISCOVERED_PARTS}; do
-                [[ "${part}" == "build" ]] && continue
-                [[ "${part}" == "bootimage" ]] && continue
+			for part in ${DISCOVERED_PARTS}; do
+				[[ "${part}" == "build" ]] && continue
+				[[ "${part}" == "bootimage" ]] && continue
 
-                for field in ${FIELDS}; do
-                    prop_name="ro.${part}.build.${field}"
-                    current_value=$(getprop "${prop_name}")
+				for field in ${FIELDS}; do
+					prop_name="ro.${part}.build.${field}"
+					current_value=$(getprop "${prop_name}")
 
-                    if [[ -n "${current_value}" ]]; then
-                        case "${field}" in
-                            fingerprint) new_value="${MAIN_FP}" ;;
-                            id) new_value="${MAIN_ID}" ;;
-                            version.release) new_value="${MAIN_RELEASE}" ;;
-                            version.sdk) new_value="${MAIN_SDK}" ;;
-                            version.incremental) new_value="${MAIN_INCREMENTAL}" ;;
-                            version.release_or_codename) new_value="${MAIN_RELEASE_CODENAME}" ;;
-                            version.sdk_full) new_value="${MAIN_SDK_FULL}" ;;
-                        esac
+					if [[ -n "${current_value}" ]]; then
+						case "${field}" in
+							fingerprint) new_value="${MAIN_FP}" ;;
+							id) new_value="${MAIN_ID}" ;;
+							version.release) new_value="${MAIN_RELEASE}" ;;
+							version.sdk) new_value="${MAIN_SDK}" ;;
+							version.incremental) new_value="${MAIN_INCREMENTAL}" ;;
+							version.release_or_codename) new_value="${MAIN_RELEASE_CODENAME}" ;;
+							version.sdk_full) new_value="${MAIN_SDK_FULL}" ;;
+						esac
 
-                        if [[ "${current_value}" != "${new_value}" ]]; then
-                            timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
-                            if [[ "${config_brene_logs}" == "1" ]]; then
-                                echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
-                            fi
-                        fi
-                    fi
-                done
-            done
-        fi
-    fi
+						if [[ "${current_value}" != "${new_value}" ]]; then
+							timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
+							if [[ "${config_brene_logs}" == "1" ]]; then
+								echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+							fi
+						fi
+					fi
+				done
+			done
+		fi
+	fi
 fi
