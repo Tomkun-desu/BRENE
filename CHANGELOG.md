@@ -1,3 +1,25 @@
+## v0.0.57-custom.6 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in plain, simple bullet points:
+
+* Added a new feature to hide manually-installed User CA Certificates from detection.
+* Added a new feature to sync build-related props (fingerprint and sub-fields) across all partitions.
+* Added a new tab to the web interface for managing custom inodes (KSTAT).
+* Added a new field to the configuration file to enable syncing build props.
+* Added a new field to the configuration file to enable hiding User CA Certificates.
+* Modified the boot-completed script to wait for a maximum of 10 seconds for /sdcard/Android to be accessible.
+* Modified the post-fs-data script to sync build props only during the first 2 minutes after boot.
+* Added a new entry to the web interface for managing custom inodes (KSTAT).
+* Modified the web interface to display the custom inodes (KSTAT) feature.
+* Modified the script.js file to handle the custom inodes (KSTAT) feature.
+* Added a new feature to load custom inodes (KSTAT) from a file.
+* Added a new feature to save custom inodes (KSTAT) to a file.
+* Modified the configuration file to include a new option for enabling custom inodes (K
+
 ## v0.0.57-custom.5 - 2026-08-05
 
 ### Synced from upstream BRENE
