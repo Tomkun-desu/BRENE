@@ -199,13 +199,18 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
         MAIN_SDK_FULL=$(getprop ro.build.version.sdk_full)
         MAIN_INCREMENTAL=$(getprop ro.build.version.incremental)
         MAIN_RELEASE_CODENAME=$(getprop ro.build.version.release_or_codename)
+        MAIN_DATE=$(getprop ro.build.date)
+        MAIN_DATE_UTC=$(getprop ro.build.date.utc)
+        MAIN_SECURITY_PATCH=$(getprop ro.build.version.security_patch)
+        MAIN_TAGS=$(getprop ro.build.tags)
+        MAIN_TYPE=$(getprop ro.build.type)
         MAIN_BRAND=$(getprop ro.product.brand)
         MAIN_DEVICE=$(getprop ro.product.device)
         MAIN_MANUFACTURER=$(getprop ro.product.manufacturer)
         MAIN_MODEL=$(getprop ro.product.model)
         MAIN_NAME=$(getprop ro.product.name)
 
-        FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full"
+        FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type"
         PRODUCT_FIELDS="brand device manufacturer model name"
 
         if [[ "${config_brene_logs}" == "1" ]]; then
@@ -237,6 +242,11 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                             version.incremental) new_value="${MAIN_INCREMENTAL}" ;;
                             version.release_or_codename) new_value="${MAIN_RELEASE_CODENAME}" ;;
                             version.sdk_full) new_value="${MAIN_SDK_FULL}" ;;
+                            date) new_value="${MAIN_DATE}" ;;
+                            date.utc) new_value="${MAIN_DATE_UTC}" ;;
+                            version.security_patch) new_value="${MAIN_SECURITY_PATCH}" ;;
+                            tags) new_value="${MAIN_TAGS}" ;;
+                            type) new_value="${MAIN_TYPE}" ;;
                         esac
 
                         if [[ "${current_value}" != "${new_value}" ]]; then
