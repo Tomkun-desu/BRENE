@@ -387,16 +387,25 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	function serializeKstatEntries() {
 		const entries = kstatContainer.querySelectorAll('.kstat-entry')
 		const outLines = []
+		const seenPaths = new Set()
+		let hasDuplicate = false
 		entries.forEach((entry) => {
 			const path = entry.querySelector('.kstat-path').value.trim()
 			if (!path) return
+			if (seenPaths.has(path)) hasDuplicate = true
+			seenPaths.add(path)
 			const values = [path]
 			kstatFieldNames.forEach((name) => {
-				const v = entry.querySelector(`.kstat-${name}`).value.trim()
-				values.push(v === '' ? 'default' : v)
+				let v = entry.querySelector(`.kstat-${name}`).value.trim()
+				if (v === '') v = 'default'
+				if (v !== 'default' && !/^\d+$/.test(v)) v = 'default'
+				values.push(v)
 			})
-			outLines.push(values.join(' '))
+			outLines.push(values.join('\t'))
 		})
+		if (hasDuplicate) {
+			toast('Warning: duplicate paths detected, later entry overrides earlier one')
+		}
 		return outLines.join('\n')
 	}
 
@@ -404,7 +413,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		kstatContainer.innerHTML = ''
 		const rawLines = (text || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
 		rawLines.forEach((line) => {
-			const parts = line.split(/\s+/)
+			const parts = line.includes('\t') ? line.split('\t') : line.split(/\s+/)
 			if (parts.length !== 13) return
 			const values = { path: parts[0] }
 			kstatFieldNames.forEach((name, i) => {
@@ -412,6 +421,9 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			})
 			createKstatEntry(values)
 		})
+	}
+
+	addKstatButton.onclick = () => createKstatEntry()
 	}
 
 	addKstatButton.onclick = () => createKstatEntry()

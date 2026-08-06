@@ -193,7 +193,8 @@ if [[ "${config_paths_hiding__user_ca_certs}" == "1" ]]; then
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
-	for i in /data/misc/user/*/cacerts-added/*; do
+        for i in /data/misc/user/*/cacerts-added/*; do
+                [[ -e "${i}" ]] || continue
 		brene_sus_path_loop "${i}"
 	done
 fi
@@ -299,7 +300,7 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
 		# Skip empty lines or comments
 		[[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
-		read -ra kstat_args <<< "${i}"
+            IFS=$'\t' read -ra kstat_args <<< "${i}"
 		if [[ "${#kstat_args[@]}" -eq 13 ]]; then
 			${SUSFS_BIN} add_sus_kstat_statically "${kstat_args[@]}"
 			if [[ "${config_brene_logs}" == "1" ]]; then

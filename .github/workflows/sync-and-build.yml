@@ -168,7 +168,7 @@ jobs:
           fi
 
           if ! grep -q "config_sync_build_props" module/config.sh; then
-            sed -i "/^config_hide_addon_d=0/a config_sync_build_props=0" module/config.sh
+            echo "config_sync_build_props=0" >> module/config.sh
           fi
 
           if ! grep -q 'id="sync_build_props"' module/webroot/index.html; then
@@ -213,7 +213,7 @@ jobs:
           rm -rf /tmp/upstream_pure
           mkdir -p /tmp/upstream_pure
           git archive upstream/main -- module | tar -x -C /tmp/upstream_pure
-          diff -ruN /tmp/upstream_pure/module module | head -c 10000 > /tmp/custom.diff || true
+          diff -ruN /tmp/upstream_pure/module module | head -c 40000 > /tmp/custom.diff || true
 
       - name: Summarize with Cloudflare Workers AI (free)
         if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
@@ -252,7 +252,7 @@ jobs:
         run: |
           DATE=$(date -u +%Y-%m-%d)
 
-          UPSTREAM_VER=$(grep '^version=' module/module.prop | grep -oE 'v[0-9.]+' | head -1)
+          UPSTREAM_VER=$(git show upstream/main:module/module.prop | grep '^version=' | grep -oE 'v[0-9.]+' | head -1)
           [ -z "$UPSTREAM_VER" ] && UPSTREAM_VER="v0.0.0"
 
           LAST_VER=$(cat LAST_UPSTREAM_VERSION 2>/dev/null || echo "")
