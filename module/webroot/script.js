@@ -51,6 +51,7 @@ const configs = [
 	{ id: 'hide_suspicious_ptys' },
 	{ id: 'custom_uname_spoofing' },
 	{ id: 'hide_framework_res_apk' },
+	{ id: 'libstagefright_spoofing' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'lineage_sepolicy_traces_hiding' },
