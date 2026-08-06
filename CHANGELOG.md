@@ -1,3 +1,22 @@
+## v0.0.57-custom.9 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The local fork added a new feature to hide manually-installed User CA Certificates in the /data/misc/user/* directory.
+* The local fork added a new feature to spoof build fingerprint fields across all partitions to match the main ro.build.fingerprint.
+* The local fork added a new feature to load custom stat entries statically from a file.
+* The local fork added a new option to the config to enable or disable syncing device props.
+* The local fork added a new option to the config to enable or disable hiding user CA certificates.
+* The local fork added a new option to the config to enable or disable syncing device props.
+* The local fork updated the module's name, version, and author in the module.prop file.
+* The local fork updated the module's update URL in the module.prop file.
+* The local fork updated the module's description in the module.prop file.
+* The local fork updated the webroot/index.html file to include a new card for User CA Certificates and a new card for device identity sync.
+* The local fork updated the webroot/script.js file to include new functions for loading and serializing custom stat entries.
+* The local fork updated the webroot/styles.css file to fix toggle alignment on cards with long multi-line descriptions and to
+
 ## v0.0.57-custom.8 - 2026-08-06
 
 ### Synced from upstream BRENE
