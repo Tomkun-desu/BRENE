@@ -339,3 +339,11 @@ md-tabs {
 .card-row md-ripple {
 	flex-shrink: 0;
 }
+
+/* Force long unbroken paths (e.g. /system/lib64/...) to wrap instead of overflowing past the toggle */
+.card-row__title,
+.card-row__sub,
+.card-row__tag--code {
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
