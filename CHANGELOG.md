@@ -1,3 +1,24 @@
+## v0.0.57-custom.8 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added a new feature to hide manually-installed (user) CA certificates from detection.
+* Added a new feature to sync build fingerprint fields across all partitions to match the main ro.build.fingerprint.
+* Added a new tab in the web interface to manage custom kstat entries.
+* Added a new option to the config file to enable syncing build props.
+* Modified the boot-completed script to add custom kstat entries statically.
+* Modified the post-fs-data script to sync build props across all partitions.
+* Modified the web interface to display the new features and options.
+* Modified the script.js file to add functionality for the new features.
+* Modified the styles.css file to fix alignment issues on cards with long multi-line descriptions.
+* Modified the module.prop file to update the module's name and version.
+* Modified the customize.sh file to add the new custom_sus_kstat.txt file to the list of customizable files.
+* Modified the config.sh file to add the new config_paths_hiding__user_ca_certs option.
+
 ## v0.0.57-custom.7 - 2026-08-06
 
 ### Synced from upstream BRENE
