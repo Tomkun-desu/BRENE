@@ -4,6 +4,28 @@
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+* Added a new feature to hide manually-installed user CA certificates from detection.
+* Added a new feature to sync product brand, device, manufacturer, model, and name across partitions.
+* Added a new tab in the web interface for managing user CA certificates.
+* Added a new tab in the web interface for syncing device identity.
+* Modified the `boot-completed.sh` script to wait up to 10 seconds for the `/sdcard/Android` directory to become accessible.
+* Modified the `boot-completed.sh` script to add a new feature for manually-installed user CA certificates.
+* Modified the `boot-completed.sh` script to add a new feature for syncing custom kstat entries.
+* Modified the `post-fs-data.sh` script to sync build-related props across all partitions.
+* Modified the `config.sh` script to add a new configuration option for user CA certificates.
+* Modified the `config.sh` script to add a new configuration option for syncing device identity.
+* Modified the `customize.sh` script to add a new file for custom kstat entries.
+* Modified the `module.prop` file to update the module name and version.
+* Modified the `webroot/index.html
+
+## v0.0.57-custom.9 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
 * The local fork added a new feature to hide manually-installed User CA Certificates in the /data/misc/user/* directory.
 * The local fork added a new feature to spoof build fingerprint fields across all partitions to match the main ro.build.fingerprint.
 * The local fork added a new feature to load custom stat entries statically from a file.
