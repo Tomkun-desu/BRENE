@@ -4,6 +4,30 @@
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
+Here is a summary of the changes in plain, simple bullet points:
+
+* Added a new feature to hide manually-installed user CA certificates.
+* Added a new feature to sync build props across all partitions.
+* Added a new tab to the web interface to manage custom kstat entries.
+* Added a new option to the config file to enable syncing build props.
+* Updated the boot-completed script to wait for the /sdcard/Android directory to be accessible.
+* Updated the post-fs-data script to sync build props across all partitions.
+* Updated the web interface to display the new features and options.
+* Updated the styles.css file to fix toggle alignment on cards with long multi-line descriptions.
+* Updated the script.js file to add functionality for creating, editing, and removing custom kstat entries.
+* Updated the module.prop file to change the module name and version.
+* Updated the config.sh file to add a new option to enable syncing build props.
+* Updated the customize.sh file to add a new file to the list of customizable files.
+* Removed the "..5.u.S" leftover file.
+* Updated the webroot/index.html file to add a new card row for user CA certificates and build props spoofing.
+* Updated the webroot/script.js file to add functionality
+
+## v0.0.57-custom.8 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
 Here are the changes in simple bullet points:
 
 * Added a new feature to hide manually-installed (user) CA certificates from detection.
