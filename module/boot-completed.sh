@@ -83,7 +83,7 @@ fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 ## First we need to wait until files are accessible in /sdcard ##
-until [[ -e "/sdcard/Android" ]]; do sleep 1; done
+_wait_count=0; until [[ -e "/sdcard/Android" ]] || [[ "${_wait_count}" -ge 10 ]]; do sleep 1; _wait_count=$((_wait_count + 1)); done
 
 ## Remove the '..5.u.S' leftover ##
 ## THe reason why this sus file is created is because users have grant the MANAGE_EXTERNAL_STORAGE permission for the apps that detecting sus files in /sdcard, or in /sdcard/Android/data where the apps are exploiting the unicode bugs to create files arbitrary.
