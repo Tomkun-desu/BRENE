@@ -324,3 +324,17 @@ md-tabs {
 	position: relative;
 	top: -1px;
 }
+
+/* Fix toggle alignment on cards with long multi-line descriptions */
+.card-row {
+	align-items: flex-start;
+}
+
+.card-row md-switch {
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.card-row md-ripple {
+	flex-shrink: 0;
+}
