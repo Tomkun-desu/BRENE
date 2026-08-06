@@ -4,6 +4,31 @@
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
+Here are the changes in simple bullet points:
+
+* The module now hides manually-installed User CA Certificates from detection.
+* A new feature was added to sync build-related props (fingerprint and sub-fields) across all partitions.
+* The module now logs when build props are spoofed.
+* The module's name has been changed to ".BRENE - Custom AI".
+* The module's version has been updated to "v0.0.57-custom.8".
+* The author of the module has been updated to include the community.
+* The update URL has been updated.
+* The module's description has been updated.
+* The module now logs when User CA Certificates are hidden.
+* The module's configuration has been updated to include a new option to hide User CA Certificates.
+* The module's configuration has been updated to include a new option to sync build props.
+* A new tab has been added to the module's web interface to manage custom kernel stat entries.
+* A new field has been added to the module's configuration to manage custom kernel stat entries.
+* The module's web interface has been updated to display custom kernel stat entries.
+* The module's web interface has been updated to allow users to add and remove custom kernel stat entries.
+* The module
+
+## v0.0.57-custom.8 - 2026-08-06
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
 Here is a summary of the changes in plain, simple bullet points:
 
 * Added a new feature to hide manually-installed user CA certificates.
