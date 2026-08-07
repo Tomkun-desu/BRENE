@@ -450,17 +450,7 @@ if [[ "${config_android_system_properties_spoofing}" == "1" ]]; then
 	if_prop_value_exits_resetprop_n "ro.vendor.warranty_bit" "0"
 	if_prop_value_exits_resetprop_n "ro.boot.warranty_bit" "0"
 
-	fingerprint_value=$(resetprop ro.build.fingerprint)
-	new_fingerprint_value="${fingerprint_value//userdebug/user}"
-	resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"

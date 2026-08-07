@@ -1,3 +1,22 @@
+## v0.0.57-custom.10 - 2026-08-07
+
+### Synced from upstream BRENE
+- Merge remote-tracking branch 'upstream/main'
+- add: new toggle "Hide LineageOS Strings"
+- improve: delete more props
+- improve: spoof more props
+- webui: add "Device Model" indicator
+
+### Local customizations
+- Added a new configuration option `config_paths_hiding__user_ca_certs` to hide manually-installed user CA certificates.
+- Added a new configuration option `config_sync_device_props` to sync device identity properties across partitions.
+- Modified the `boot-completed.sh` script to wait for the `/sdcard/Android` directory to be accessible before proceeding.
+- Added a new feature to the `post-fs-data.sh` script to sync device identity properties across partitions.
+- Added a new feature to the `utils.sh` script to add a static kernel stat entry for a given path.
+- Modified the `webroot/index.html` file to add a new card for user CA certificates and a new tab for kernel stat entries.
+- Modified the `webroot/script.js` file to add a new feature to load and apply kernel stat entries from a file.
+- Modified the `webroot/styles.css` file to fix toggle alignment on cards with long multi-line descriptions and to force long unbroken paths to wrap instead of overflowing past the toggle.
+
 ## v0.0.57-custom.9 - 2026-08-06
 
 ### Synced from upstream BRENE
