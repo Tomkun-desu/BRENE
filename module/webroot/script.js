@@ -216,24 +216,32 @@ exec('susfs show enabled_features').then((result) => {
 })
 
 // Load logs
-exec(`cat ${PERSISTENT_DIR}/log.txt`).then((result) => {
+window.refreshBreneLogs = async () => {
 	const container = document.getElementById('logs')
+	container.textContent = ''
 
-	if (result.errno !== 0) {
+	const r1 = await exec(`cat ${PERSISTENT_DIR}/log.txt`)
+	if (r1.errno !== 0) {
 		container.textContent += 'Failed to load logs'
 		return
 	}
-	container.textContent += result.stdout
+	container.textContent += r1.stdout
 	container.textContent += '\n'
 
-	exec(`cat ${PERSISTENT_DIR}/logs.txt`).then((result) => {
-		if (result.errno !== 0) {
-			container.textContent += 'Failed to load logs'
-			return
-		}
-		container.textContent += result.stdout
-	})
-})
+	const r2 = await exec(`cat ${PERSISTENT_DIR}/logs.txt`)
+	if (r2.errno !== 0) {
+		container.textContent += 'Failed to load logs'
+		return
+	}
+	container.textContent += r2.stdout
+}
+window.refreshBreneLogs()
+
+// Helper: log a live (no-reboot) action and refresh the log panel
+window.breneLiveLog = async (label, detail) => {
+	await exec(`grep -q '^config_brene_logs=1' ${PERSISTENT_DIR}/config.sh && echo "[${label}]: ${detail}" >> ${PERSISTENT_DIR}/logs.txt; true`)
+	if (window.refreshBreneLogs) window.refreshBreneLogs()
+}
 
 // Load brene version
 exec(`grep "^version=" ${MODDIR}/module.prop | cut -d'=' -f2`).then((result) => {
@@ -368,7 +376,8 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 		const esc = (s) => s.replace(/'/g, "'\\''")
 		exec(`/data/adb/ksu/bin/susfs set_uname '${esc(liveRelease)}' '${esc(liveVersion)}'`).then((result) => {
-			toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
+                        toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
+                        if (result.errno === 0) window.breneLiveLog('set_uname', `${liveRelease} ${liveVersion}`)
 		})
 	}
 
