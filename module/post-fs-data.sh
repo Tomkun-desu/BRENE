@@ -293,14 +293,18 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                 # Skip empty lines or comments
                 [[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
-                IFS=$'\t' read -ra kstat_args <<< "${i}"
-                if [[ "${#kstat_args[@]}" -eq 13 ]]; then
-                        ${SUSFS_BIN} add_sus_kstat_statically "${kstat_args[@]}"
+                OLDIFS="${IFS}"
+                IFS=$'\t'
+                set -- ${i}
+                IFS="${OLDIFS}"
+
+                if [[ "$#" -eq 13 ]]; then
+                        ${SUSFS_BIN} add_sus_kstat_statically "$@"
                         if [[ "${config_brene_logs}" == "1" ]]; then
                                 echo "[custom_sus_kstat]: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                         fi
                 elif [[ "${config_brene_logs}" == "1" ]]; then
-                        echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got ${#kstat_args[@]}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
 fi
