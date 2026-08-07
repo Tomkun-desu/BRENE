@@ -1,3 +1,20 @@
+## v0.0.57-custom.12 - 2026-08-07
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new feature to hide manually-installed User CA Certificates.
+* Modified the wait loop for accessing /sdcard/Android to have a timeout of 10 seconds.
+* Added a new feature to sync all build-related props (fingerprint and sub-fields) across all partitions.
+* Added a new feature to manually sync device identity (product brand, device, manufacturer, model, and name) across partitions.
+* Added a new feature to manually override the kstat (kernel statistics) for specific paths.
+* Modified the service.sh script to load custom_sus_kstat.txt and apply the kstat overrides.
+* Modified the utils.sh script to include a new function brene_sus_kstat_static to add kstat overrides statically.
+* Modified the webroot/index.html file to include a new card for User CA Certificates and a new card for Device Identity Sync.
+* Modified the webroot/script.js file to include new actions for User CA Certificates and Device Identity Sync.
+* Modified the webroot/styles.css file to include new styles for the new cards.
+
 ## v0.0.57-custom.11 - 2026-08-07
 
 ### Synced from upstream BRENE
