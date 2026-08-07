@@ -77,3 +77,18 @@ brene_sus_mount() {
 	${KSU_BIN} kernel notify-module-mounted
 	${KSU_BIN} kernel umount add -f 2 "$1" 2> /dev/null
 }
+brene_sus_kstat_static() {
+	TARGET=$1
+	[ -z "${TARGET}" ] && return
+	[ ! -e "${TARGET}" ] && return
+
+	STAT_OUT=$(stat -c "%i %d %h %s %b %o" "${TARGET}" 2>/dev/null)
+	[ -z "${STAT_OUT}" ] && return
+	set -- ${STAT_OUT}
+	INO=$1; DEV=$2; NLINK=$3; SIZE=$4; BLOCKS=$5; BLKSIZE=$6
+
+	if ${SUSFS_BIN} add_sus_kstat_statically "${TARGET}" "${INO}" "${DEV}" "${NLINK}" "${SIZE}" 'default' 'default' 'default' 'default' 'default' 'default' "${BLOCKS}" "${BLKSIZE}" && [[ "${config_brene_logs}" == "1" ]]; then
+		echo "[sus_kstat_static]: ${TARGET} (ino=${INO} dev=${DEV} nlink=${NLINK} size=${SIZE} blocks=${BLOCKS} blksize=${BLKSIZE})" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+	${SUSFS_BIN} update_sus_kstat "${TARGET}" 2> /dev/null
+}

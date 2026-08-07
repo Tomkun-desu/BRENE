@@ -197,6 +197,10 @@ if [[ "${config_paths_hiding__user_ca_certs}" == "1" ]]; then
                 [[ -e "${i}" ]] || continue
 		brene_sus_path_loop "${i}"
 	done
+
+	for d in /data/misc/user/*/cacerts-added; do
+		brene_sus_kstat_static "${d}"
+	done
 fi
 
 # /sdcard/Android/[data | media | obb]

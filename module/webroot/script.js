@@ -43,7 +43,13 @@ const configs = [
 	{ id: 'rom_props' },
 	{ id: 'brene_logs' },
 	{ id: 'enable_log' },
-	{ id: 'sync_device_props' },
+	{
+		id: 'sync_device_props',
+		action: (enabled) => {
+			if (!enabled) return
+			setFeature(`RESETPROP="";for c in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop;do [ -x "$c" ]&&RESETPROP="$c"&&break;done;[ -z "$RESETPROP" ]&&exit 1;MFP=$(getprop ro.build.fingerprint);MFP="\${MFP//userdebug/user}";MID=$(getprop ro.build.id);MREL=$(getprop ro.build.version.release);MSDK=$(getprop ro.build.version.sdk);MSDKF=$(getprop ro.build.version.sdk_full);MINC=$(getprop ro.build.version.incremental);MRC=$(getprop ro.build.version.release_or_codename);MDT=$(getprop ro.build.date);MDTU=$(getprop ro.build.date.utc);MSP=$(getprop ro.build.version.security_patch);MTG=$(getprop ro.build.tags);MTP=$(getprop ro.build.type);MBR=$(getprop ro.product.brand);MDEV=$(getprop ro.product.device);MMF=$(getprop ro.product.manufacturer);MMD=$(getprop ro.product.model);MNM=$(getprop ro.product.name);for part in $(getprop|grep -oE '^\\[ro\\.[a-z0-9_]+\\.build\\.fingerprint\\]'|sed -E 's/^\\[ro\\.([a-z0-9_]+)\\.build\\.fingerprint\\]$/\\1/');do [ "$part" = build ]&&continue;[ "$part" = bootimage ]&&continue;for f in fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type;do pn="ro.\${part}.build.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in fingerprint)nv="$MFP";;id)nv="$MID";;version.release)nv="$MREL";;version.sdk)nv="$MSDK";;version.incremental)nv="$MINC";;version.release_or_codename)nv="$MRC";;version.sdk_full)nv="$MSDKF";;date)nv="$MDT";;date.utc)nv="$MDTU";;version.security_patch)nv="$MSP";;tags)nv="$MTG";;type)nv="$MTP";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;for f in brand device manufacturer model name;do pn="ro.product.\${part}.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in brand)nv="$MBR";;device)nv="$MDEV";;manufacturer)nv="$MMF";;model)nv="$MMD";;name)nv="$MNM";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;done;echo done`)
+		},
+	},
 	{ id: 'hide_addon_d' },
 	{ id: 'uname_spoofing' },
 	{ id: 'hide_injections' },
@@ -61,7 +67,13 @@ const configs = [
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
 	{ id: 'paths_hiding__data_local_tmp' },
-	{ id: 'paths_hiding__user_ca_certs' },
+	{
+		id: 'paths_hiding__user_ca_certs',
+		action: (enabled) => {
+			if (!enabled) return
+			setFeature(`for i in /data/misc/user/*/cacerts-added/*; do [ -e "$i" ] && /data/adb/ksu/bin/susfs add_sus_path_loop "$i"; done; for d in /data/misc/user/*/cacerts-added; do [ -d "$d" ] || continue; s=$(stat -c "%i %d %h %s %b %o" "$d" 2>/dev/null); [ -z "$s" ] && continue; set -- $s; /data/adb/ksu/bin/susfs add_sus_kstat_statically "$d" "$1" "$2" "$3" "$4" default default default default default default "$5" "$6"; /data/adb/ksu/bin/susfs update_sus_kstat "$d"; done; echo done`)
+		},
+	},
 	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
 ]
 
