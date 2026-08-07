@@ -7,7 +7,6 @@ config_paths_hiding__sdcard_android_data_media_obb=1
 
 config_selinux=1
 config_su_compat=1
-config_saturation=1
 config_selinux_hide=1
 config_kernel_umount=1
 config_uname_spoofing=1
@@ -21,6 +20,7 @@ config_android_system_properties_spoofing=1
 
 config_pif_props=0
 config_rom_props=0
+config_saturation=0
 config_brene_logs=0
 config_enable_log=0
 config_hide_addon_d=0
