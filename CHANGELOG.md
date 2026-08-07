@@ -1,3 +1,25 @@
+## v0.0.57-custom.11 - 2026-08-07
+
+### Synced from upstream BRENE
+- Merge remote-tracking branch 'upstream/main'
+- webui: improve "Device Model" indicator
+- refactor: Custom Uname Spoofing
+
+### Local customizations
+* Added a new feature to hide manually-installed user CA certificates from detection.
+* Modified the wait loop in `boot-completed.sh` to use a counter to prevent infinite waiting.
+* Added a new feature to manually install User CA Certificates.
+* Added a new feature to sync device identity props across partitions.
+* Modified `post-fs-data.sh` to sync device identity props across partitions.
+* Added a new feature to allow users to customize kstat entries in `service.sh`.
+* Modified `utils.sh` to include a new function `brene_sus_kstat_static` to add kstat entries statically.
+* Modified `webroot/index.html` to include a new card for User CA Certificates and a new tab for kstat entries.
+* Modified `webroot/script.js` to include new functionality for kstat entries, including creating, serializing, and applying commands.
+* Modified `webroot/styles.css` to fix toggle alignment on cards with long multi-line descriptions and to force long unbroken paths to wrap instead of overflowing past the toggle.
+* Updated the module's version and author in `module/module.prop`.
+* Updated the module's config in `module/config.sh` to include a new option for syncing device identity props.
+* Updated the module's
+
 ## v0.0.57-custom.10 - 2026-08-07
 
 ### Synced from upstream BRENE
