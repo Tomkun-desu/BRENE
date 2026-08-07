@@ -1,3 +1,26 @@
+## v0.0.58-custom.2 - 2026-08-07
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new feature to hide manually-installed User CA Certificates.
+* Added a new feature to load custom sus kstat entries from a file.
+* Added a new feature to sync device identity props across partitions.
+* Added a new feature to spoof kernel version.
+* Added a new feature to spoof kernel release.
+* Added a new feature to sync build fingerprint props across partitions.
+* Added a new feature to sync sub-fields of build fingerprint props across partitions.
+* Added a new feature to sync product brand, device, manufacturer, model and name across partitions.
+* Added a new feature to sync product sub-fields across partitions.
+* Updated the UI to include a new tab for custom sus kstat entries.
+* Updated the UI to include a new feature to add and remove custom sus kstat entries.
+* Updated the UI to include a new feature to load and save custom sus kstat entries from a file.
+* Updated the UI to include a new feature to toggle the sync device identity props feature.
+* Updated the UI to include a new feature to toggle the sync product sub-fields feature.
+* Updated the UI to include a new feature to toggle the sync build fingerprint props feature.
+* Updated the UI to include a new feature to toggle the sync sub-fields of build fingerprint props
+
 ## v0.0.58-custom.1 - 2026-08-07
 
 ### Synced from upstream BRENE
