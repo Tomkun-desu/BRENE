@@ -39,6 +39,10 @@ const configs = [
 		id: 'selinux',
 		action: (enabled) => setFeature(`setenforce ${enabled ? 1 : 0}`),
 	},
+	{
+		id: 'saturation',
+		action: (enabled) => setFeature(`service call SurfaceFlinger 1022 f ${enabled ? 2.0 : 1.0}`),
+	},
 	{ id: 'pif_props' },
 	{ id: 'rom_props' },
 	{ id: 'brene_logs' },
