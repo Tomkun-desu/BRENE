@@ -1,3 +1,27 @@
+## v0.0.58-custom.6 - 2026-08-07
+
+### Synced from upstream BRENE
+- Merge remote-tracking branch 'upstream/main'
+- change: disable "Max Saturation" by default
+
+### Local customizations
+* Added a new feature to hide manually-installed User CA certificates.
+* Modified the custom uname spoofing feature to allow setting custom kernel release and version.
+* Added a new feature to sync device identity across partitions.
+* Added a new feature to load custom kstat entries from a file.
+* Added a new button to add custom kstat entries.
+* Modified the web interface to include a new tab for custom kstat entries.
+* Modified the web interface to include a new button to remove custom kstat entries.
+* Modified the web interface to include a new field to display kstat log entries.
+* Added a new function to serialize custom kstat entries.
+* Added a new function to load custom kstat entries from a file.
+* Modified the web interface to include a new button to apply custom kstat entries.
+* Modified the web interface to include a new button to reset custom kstat entries.
+* Modified the web interface to include a new button to save custom kstat entries to a file.
+* Modified the web interface to include a new button to load custom kstat entries from a file.
+* Modified the web interface to include a new button to remove custom kstat entries from the file.
+* Modified the web interface to include a new button to update the kstat
+
 ## v0.0.58-custom.5 - 2026-08-07
 
 ### Synced from upstream BRENE
