@@ -463,6 +463,10 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
 		loadKstatEntries(result.errno === 0 ? result.stdout : '')
 	})
+	exec(`grep -i kstat ${PERSISTENT_DIR}/logs.txt`).then((result) => {
+		const kstatLog = document.getElementById('kstat_log_display')
+		kstatLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no kstat log entries yet)'
+	})
 
 	// Tabs and Scroll Sync
 	tabs.addEventListener('change', () => {
