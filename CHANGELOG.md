@@ -1,3 +1,25 @@
+## v0.0.58-custom.7 - 2026-08-07
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new configuration option to hide manually-installed user CA certificates from detection.
+* Modified the wait loop in boot-completed.sh to retry up to 10 times before giving up.
+* Added a new feature to manually-installed user CA certificates.
+* Added a new feature to sync device identity across partitions.
+* Modified the custom uname spoofing feature to use a more robust method of determining the kernel version.
+* Added a new feature to load custom kstat entries from a text file.
+* Modified the web interface to include a new tab for kstat entries and a button to add new entries.
+* Modified the web interface to include a new feature to serialize and deserialize kstat entries.
+* Modified the web interface to include a new feature to load and display kstat log entries.
+* Modified the web interface to include a new feature to refresh the log panel.
+* Added a new feature to log live actions and refresh the log panel.
+* Modified the web interface to include a new feature to compute and display auto uname values.
+* Modified the web interface to include a new feature to update the uname values in real-time.
+* Modified the web interface to include a new feature to reset the uname values to their default state.
+* Modified the web interface to include a new feature
+
 ## v0.0.58-custom.6 - 2026-08-07
 
 ### Synced from upstream BRENE
