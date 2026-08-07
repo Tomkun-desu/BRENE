@@ -407,9 +407,26 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 				const v = entry.querySelector(`.kstat-${name}`).value.trim()
 				values.push(v === '' ? 'default' : v)
 			})
-			outLines.push(values.join(' '))
+			outLines.push(values.join('\t'))
 		})
 		return outLines.join('\n')
+	}
+
+	function buildKstatApplyCommands() {
+		const entries = kstatContainer.querySelectorAll('.kstat-entry')
+		const cmds = []
+		entries.forEach((entry) => {
+			const path = entry.querySelector('.kstat-path').value.trim()
+			if (!path) return
+			const values = [path]
+			kstatFieldNames.forEach((name) => {
+				const v = entry.querySelector(`.kstat-${name}`).value.trim()
+				values.push(v === '' ? 'default' : v)
+			})
+			const quoted = values.map((v) => `"${v.replace(/"/g, '\\\\"')}"`).join(' ')
+			cmds.push(`/data/adb/ksu/bin/susfs add_sus_kstat_statically ${quoted}`)
+		})
+		return cmds.join('\n')
 	}
 
 	function loadKstatEntries(text) {
@@ -504,7 +521,18 @@ cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
 ${content}
 UNIQUE_EOF
 		`).then((result) => {
-				toast(result.errno === 0 ? 'Success' : result.stderr)
+				if (result.errno === 0 && index === 4) {
+                                        const applyCmds = buildKstatApplyCommands()
+                                        if (applyCmds) {
+                                                exec(applyCmds).then((r2) => {
+                                                        toast(r2.errno === 0 ? 'Success (applied immediately)' : r2.stderr)
+                                                })
+                                        } else {
+                                                toast('Success')
+                                        }
+                                } else {
+                                        toast(result.errno === 0 ? 'Success' : result.stderr)
+                                }
 			})
 		}
 	}
