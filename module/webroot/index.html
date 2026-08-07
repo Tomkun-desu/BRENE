@@ -39,6 +39,14 @@
 			<section class="tab-panel active" data-panel="status">
 				<p class="section-label">General</p>
 				<div class="card-group">
+					<div class="card-row" id="device-model">
+						<div class="card-row__body">
+							<span class="card-row__title">Device Model</span>
+							<span class="card-row__sub">_</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
 					<div class="card-row" id="android-version">
 						<div class="card-row__body">
 							<span class="card-row__title">Android Version</span>
@@ -618,11 +626,11 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">LineageOS Sepolicy Traces Hiding</span>
+							<span class="card-row__title">Hide LineageOS Strings</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">/product/etc/selinux/product_sepolicy.cil</span>
 						</div>
-						<md-switch icons id="lineage_sepolicy_traces_hiding"></md-switch>
+						<md-switch icons id="hide_lineage_strings"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 

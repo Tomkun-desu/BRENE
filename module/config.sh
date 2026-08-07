@@ -30,10 +30,10 @@ config_hide_modules_img=0
 config_developer_options=0
 config_wireless_debugging=0
 config_lineage_paths_hiding=0
+config_hide_lineage_strings=0
 config_custom_uname_spoofing=0
 config_hide_framework_res_apk=0
 config_libstagefright_spoofing=0
-config_lineage_sepolicy_traces_hiding=0
 
 config_verified_boot_hash=''
 config_custom_uname_kernel_release='default'

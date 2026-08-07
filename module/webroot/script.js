@@ -55,12 +55,12 @@ const configs = [
 	{ id: 'hide_injections' },
 	{ id: 'lineage_paths_hiding' },
 	{ id: 'hide_suspicious_ptys' },
+	{ id: 'hide_lineage_strings' },
 	{ id: 'custom_uname_spoofing' },
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'libstagefright_spoofing' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
-	{ id: 'lineage_sepolicy_traces_hiding' },
 	{ id: 'proc_cmdline_bootconfig_spoofing' },
 	{ id: 'android_system_properties_spoofing' },
 
@@ -116,6 +116,17 @@ exec('uname -r').then((result) => {
 		return
 	}
 	container.innerText = result.stdout
+})
+
+// Load Device Model Status
+exec('resetprop ro.product.manufacturer && resetprop ro.product.model').then((result) => {
+	const container = document.querySelector('#device-model .card-row__sub')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load'
+		return
+	}
+	container.innerText = result.stdout.replace('\n', ' ')
 })
 
 // Load Custom ROM Status
