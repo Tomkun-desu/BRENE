@@ -342,12 +342,17 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 ;(async () => {
 	const unameRelease = document.getElementById('custom_uname_release')
 	const unameVersion = document.getElementById('custom_uname_version')
-	const updateUname = (release, version) => {
-		updateConfig2('config_custom_uname_kernel_release', release)
-		updateConfig2('config_custom_uname_kernel_version', version.trim() === '' ? 'default' : version)
-		unameRelease.value = release
-		unameVersion.value = version.trim() === '' ? 'default' : version
-	}
+        const updateUname = (release, version) => {
+                const finalVersion = version.trim() === '' ? 'default' : version
+                updateConfig2('config_custom_uname_kernel_release', release)
+                updateConfig2('config_custom_uname_kernel_version', finalVersion)
+                unameRelease.value = release
+                unameVersion.value = finalVersion
+                const esc = (s) => s.replace(/'/g, "'\\''")
+                exec(`/data/adb/ksu/bin/susfs set_uname '${esc(release)}' '${esc(finalVersion)}'`).then((result) => {
+                        toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
+                })
+        }
 
 	document.getElementById(`button_custom_uname_reset`).onclick = () => {
 		updateUname('default', 'default')
