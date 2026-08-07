@@ -388,7 +388,6 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		if (unameRelease.value !== '') updateUname(unameRelease.value, unameVersion.value)
 	}
 })()
-})()
 
 // Verified Boot Hash
 ;(async () => {
