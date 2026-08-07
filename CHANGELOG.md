@@ -1,3 +1,22 @@
+## v0.0.58-custom.5 - 2026-08-07
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The code has added a new feature to hide manually-installed User CA Certificates from detection.
+* The code has added a new feature to sync all build-related props (fingerprint + sub-fields) across all partitions.
+* The code has added a new feature to add custom entries to the SuSFS KSTAT table.
+* The code has added a new feature to load custom SuSFS KSTAT entries from a file.
+* The code has updated the web interface to include a new section for customizing User CA Certificates.
+* The code has updated the web interface to include a new section for syncing build-related props.
+* The code has updated the web interface to include a new section for adding custom SuSFS KSTAT entries.
+* The code has updated the web interface to include a new section for loading custom SuSFS KSTAT entries.
+* The code has updated the `post-fs-data.sh` script to handle custom Uname spoofing.
+* The code has updated the `post-fs-data.sh` script to handle syncing build-related props.
+* The code has updated the `service.sh` script to include a new feature to log the SuSFS KSTAT table.
+* The code has updated the `utils.sh` script to include a
+
 ## v0.0.58-custom.4 - 2026-08-07
 
 ### Synced from upstream BRENE
