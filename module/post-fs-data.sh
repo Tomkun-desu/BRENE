@@ -193,6 +193,7 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
 
     if [[ -n "${RESETPROP}" ]]; then
         MAIN_FP=$(getprop ro.build.fingerprint)
+        MAIN_FP="${MAIN_FP//userdebug/user}"
         MAIN_ID=$(getprop ro.build.id)
         MAIN_RELEASE=$(getprop ro.build.version.release)
         MAIN_SDK=$(getprop ro.build.version.sdk)

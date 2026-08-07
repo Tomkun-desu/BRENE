@@ -112,6 +112,7 @@ jobs:
 
               if [[ -n "${RESETPROP}" ]]; then
                   MAIN_FP=$(getprop ro.build.fingerprint)
+        MAIN_FP="${MAIN_FP//userdebug/user}"
                   MAIN_ID=$(getprop ro.build.id)
                   MAIN_RELEASE=$(getprop ro.build.version.release)
                   MAIN_SDK=$(getprop ro.build.version.sdk)
@@ -244,6 +245,38 @@ jobs:
           else
             echo "updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json" >> module/module.prop
           fi
+
+      - name: Neutralize redundant upstream fingerprint spoofing
+        if: steps.merge.outputs.conflict == 'false' && steps.diff.outputs.count != '0'
+        run: |
+          python3 << 'PYEOF'
+          path = "module/boot-completed.sh"
+          with open(path) as f:
+              content = f.read()
+
+          old = (
+              "\tfingerprint_value=$(resetprop ro.build.fingerprint)\n"
+              "\tnew_fingerprint_value=\"${fingerprint_value//userdebug/user}\"\n"
+              "\tresetprop_n \"ro.bootimage.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.odm.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.product.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.system.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.system_dlkm.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.system_ext.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.vendor.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+              "\tresetprop_n \"ro.vendor_dlkm.build.fingerprint\" \"${new_fingerprint_value}\"\n"
+          )
+          new_block = "\t# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)\n"
+
+          if old in content:
+              content = content.replace(old, new_block, 1)
+              with open(path, "w") as f:
+                  f.write(content)
+              print("Removed redundant upstream fingerprint block from boot-completed.sh")
+          else:
+              print("Redundant block not found (already clean or upstream changed it) -- nothing to do")
+          PYEOF
 
       - name: Capture diff against pure upstream
         if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
