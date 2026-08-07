@@ -149,7 +149,18 @@ if [[ "${config_custom_uname_spoofing}" == "1" ]]; then
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
-	brene_set_uname "${config_custom_uname_kernel_release}" "${config_custom_uname_kernel_version}"
+        final_uname_release="${config_custom_uname_kernel_release}"
+        final_uname_version="${config_custom_uname_kernel_version}"
+        if [[ "${final_uname_release}" == "default" || "${final_uname_version}" == "default" ]]; then
+                auto_kernel_version=$(cat /proc/version | awk '{print $3}' | cut -d'-' -f1)
+                auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+                auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g690101101069"
+                auto_uname_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
+                [[ "${final_uname_release}" == "default" ]] && final_uname_release="${auto_uname_release}"
+                [[ "${final_uname_version}" == "default" ]] && final_uname_version="${auto_uname_version}"
+        fi
+
+        brene_set_uname "${final_uname_release}" "${final_uname_version}"
 elif [[ "${config_uname_spoofing}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 		{

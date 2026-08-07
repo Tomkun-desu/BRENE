@@ -337,22 +337,40 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	enableSwitch.addEventListener('click', () => toggleAllModules(true))
 	disableSwitch.addEventListener('click', () => toggleAllModules(false))
 })()
-
 // Custom Uname buttons
 ;(async () => {
 	const unameRelease = document.getElementById('custom_uname_release')
 	const unameVersion = document.getElementById('custom_uname_version')
-        const updateUname = (release, version) => {
-                const finalVersion = version.trim() === '' ? 'default' : version
-                updateConfig2('config_custom_uname_kernel_release', release)
-                updateConfig2('config_custom_uname_kernel_version', finalVersion)
-                unameRelease.value = release
-                unameVersion.value = finalVersion
-                const esc = (s) => s.replace(/'/g, "'\\''")
-                exec(`/data/adb/ksu/bin/susfs set_uname '${esc(release)}' '${esc(finalVersion)}'`).then((result) => {
-                        toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
-                })
-        }
+
+	const computeAutoUname = async () => {
+		const kv = await exec("cat /proc/version | awk '{print \$3}' | cut -d'-' -f1")
+		const kmi = await exec("/data/adb/ksud boot-info current-kmi | cut -d'-' -f1")
+		const bd = await exec("resetprop ro.build.date | tr -s ' '")
+		const release = `${(kv.stdout || '').trim()}-${(kmi.stdout || '').trim()}-9-g690101101069`
+		const version = `#1 SMP PREEMPT ${(bd.stdout || '').trim()}`
+		return { release, version }
+	}
+
+	const updateUname = async (release, version) => {
+		const finalVersion = version.trim() === '' ? 'default' : version
+		updateConfig2('config_custom_uname_kernel_release', release)
+		updateConfig2('config_custom_uname_kernel_version', finalVersion)
+		unameRelease.value = release
+		unameVersion.value = finalVersion
+
+		let liveRelease = release
+		let liveVersion = finalVersion
+		if (release === 'default' || finalVersion === 'default') {
+			const auto = await computeAutoUname()
+			if (release === 'default') liveRelease = auto.release
+			if (finalVersion === 'default') liveVersion = auto.version
+		}
+
+		const esc = (s) => s.replace(/'/g, "'\\''")
+		exec(`/data/adb/ksu/bin/susfs set_uname '${esc(liveRelease)}' '${esc(liveVersion)}'`).then((result) => {
+			toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
+		})
+	}
 
 	document.getElementById(`button_custom_uname_reset`).onclick = () => {
 		updateUname('default', 'default')
@@ -360,6 +378,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	document.getElementById(`button_custom_uname_apply`).onclick = () => {
 		if (unameRelease.value !== '') updateUname(unameRelease.value, unameVersion.value)
 	}
+})()
 })()
 
 // Verified Boot Hash
