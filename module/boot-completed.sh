@@ -6,6 +6,7 @@ KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
+CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # Load utils
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
@@ -66,8 +67,7 @@ fi
 
 # Remove Custom ROM Properties
 if [[ "${config_rom_props}" == "1" ]]; then
-	crom="lineage|infinity|evolution|crdroid|arrow|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|avium|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|superior|clover|yaap"
-	resetprop | grep -iE "${crom}" | awk -F'[][]' '{print $2}' | while read -r prop; do
+	resetprop | grep -iE "${CUSTOM_ROM_NAMES}" | awk -F'[][]' '{print $2}' | while read -r prop; do
 		resetprop -d "${prop}"
 	done
 
@@ -446,11 +446,17 @@ if [[ "${config_verified_boot_hash}" != '' ]]; then
 	resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}"
 fi
 
-# LineageOS Paths Hiding
-if [[ "${config_lineage_paths_hiding}" == "1" ]]; then
-	find /system /system_ext /vendor /product -iname "*lineage*" | while read -r path; do
-		brene_sus_map "${path}"
-		brene_sus_path_loop "${path}"
+# Hide Custom ROM Paths
+if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
+	for i in ${CUSTOM_ROM_NAMES//|/ }; do
+		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
+			brene_sus_map "${path}"
+			brene_sus_path_loop "${path}"
+		done
+
+		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
+			brene_sus_path_loop "${path}"
+		done
 	done
 fi
 
