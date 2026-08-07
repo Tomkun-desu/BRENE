@@ -81,6 +81,11 @@ if [[ "${config_pif_props}" == "1" ]]; then
 	done
 fi
 
+# Max Saturation
+if [[ "${config_saturation}" == "1" ]]; then
+	service call SurfaceFlinger 1022 f 2.0
+fi
+
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 ## First we need to wait until files are accessible in /sdcard ##
 until [[ -e "/sdcard/Android" ]]; do sleep 1; done
