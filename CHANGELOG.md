@@ -1,3 +1,22 @@
+## v0.0.58-custom.4 - 2026-08-07
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* The module now hides manually-installed user CA certificates from detection.
+* The module now syncs device identity (product brand, device, manufacturer, model, and name) across partitions.
+* The module now has a new feature called "Custom Uname Spoofing" which allows users to spoof the uname for all processes.
+* The module now has a new feature called "KSTAT" which allows users to add custom kernel statistics.
+* The module's config file now has a new option called "config_paths_hiding__user_ca_certs" which controls the new CA certificate hiding feature.
+* The module's config file now has a new option called "config_sync_device_props" which controls the new device identity syncing feature.
+* The module's config file now has a new option called "config_custom_uname_kernel_release" and "config_custom_uname_kernel_version" which control the new custom uname spoofing feature.
+* The module's config file now has a new option called "config_brene_logs" which controls the logging feature.
+* The module's post-fs-data script now syncs build-related props (fingerprint and sub-fields) across all partitions.
+* The module's web interface now has a new tab
+
 ## v0.0.58-custom.3 - 2026-08-07
 
 ### Synced from upstream BRENE
