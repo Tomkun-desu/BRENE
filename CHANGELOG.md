@@ -1,3 +1,25 @@
+## v0.0.58-custom.1 - 2026-08-07
+
+### Synced from upstream BRENE
+- Merge remote-tracking branch 'upstream/main'
+- bump: version to v0.0.58
+- add: new toggle "Max Saturation"
+
+### Local customizations
+Here is a summary of the changes in plain, simple bullet points:
+
+* In `boot-completed.sh`, a new wait loop was added to check for the existence of `/sdcard/Android` before proceeding.
+* A new section was added to load custom `sus_kstat.txt` files, which contain information about kernel statistics.
+* A new section was added to manually install user CA certificates and hide them from detection.
+* In `config.sh`, a new option was added to enable hiding of user CA certificates.
+* In `customize.sh`, a new file was added to the list of custom files to be created.
+* In `module.prop`, the module name and version were updated.
+* In `post-fs-data.sh`, a new section was added to fully sync all build-related props across all partitions.
+* In `service.sh`, the path to the `resetprop` binary was updated.
+* In `utils.sh`, a new function was added to update kernel statistics statically.
+* In `webroot/index.html`, a new card was added to display the user CA certificates option and a new tab was added to display the kernel statistics option.
+* In `webroot/script.js`, new functions were added to create and serialize kernel statistics entries, and to load kernel
+
 ## v0.0.57-custom.12 - 2026-08-07
 
 ### Synced from upstream BRENE
