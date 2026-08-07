@@ -139,7 +139,18 @@ fi
 # you can get your uname args by running 'uname {-r|-v}' on your stock ROM #
 # pass 'default' to tell susfs to use the default value by uname #
 # ${SUSFS_BIN} set_uname 'default' 'default'
-if [[ "${config_uname_spoofing}" == "1" ]]; then
+if [[ "${config_custom_uname_spoofing}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "#####################"
+			echo "Custom Uname Spoofing"
+			echo "#####################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	brene_set_uname "${config_custom_uname_kernel_release}" "${config_custom_uname_kernel_version}"
+elif [[ "${config_uname_spoofing}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 		{
 			echo ""
@@ -155,17 +166,6 @@ if [[ "${config_uname_spoofing}" == "1" ]]; then
 	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
 	brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
-elif [[ "${config_custom_uname_spoofing}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "#####################"
-			echo "Custom Uname Spoofing"
-			echo "#####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
-	brene_set_uname "${config_custom_uname_kernel_release}" "${config_custom_uname_kernel_version}"
 fi
 
 ## Disable susfs kernel log ##
