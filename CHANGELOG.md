@@ -1,3 +1,24 @@
+## v0.0.58-custom.3 - 2026-08-07
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The custom module has added a new feature to hide manually-installed User CA Certificates.
+* The custom module has added a new feature to sync device identity across all partitions.
+* The custom module has added a new feature to customize the uname string for all processes.
+* The custom module has added a new option to the config file to enable the User CA Certificates feature.
+* The custom module has added a new option to the config file to enable the device identity sync feature.
+* The custom module has added a new option to the config file to customize the uname string.
+* The custom module has added a new feature to load custom kstat entries from a file.
+* The custom module has added a new feature to save custom kstat entries to a file.
+* The custom module has updated the web interface to include options for the new features.
+* The custom module has updated the web interface to display the custom kstat entries.
+* The custom module has updated the resetprop command to sync device identity across all partitions.
+* The custom module has updated the brene_sus_kstat_static function to add custom kstat entries statically.
+* The custom module has updated the brene_set_uname function to customize the uname string.
+* The custom module has updated the post
+
 ## v0.0.58-custom.2 - 2026-08-07
 
 ### Synced from upstream BRENE
