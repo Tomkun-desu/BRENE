@@ -112,7 +112,7 @@ jobs:
 
               if [[ -n "${RESETPROP}" ]]; then
                   MAIN_FP=$(getprop ro.build.fingerprint)
-        MAIN_FP="${MAIN_FP//userdebug/user}"
+                  MAIN_FP="${MAIN_FP//userdebug/user}"
                   MAIN_ID=$(getprop ro.build.id)
                   MAIN_RELEASE=$(getprop ro.build.version.release)
                   MAIN_SDK=$(getprop ro.build.version.sdk)
