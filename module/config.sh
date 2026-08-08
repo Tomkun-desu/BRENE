@@ -17,7 +17,7 @@ config_umount_suspicious_mounts=1
 config_hide_sus_mnts_for_non_su_procs=1
 config_proc_cmdline_bootconfig_spoofing=1
 config_spoof_system_properties=1
-config_spoof_system_properties_repeat=1
+config_spoof_system_properties_repeat=0
 
 config_pif_props=0
 config_rom_props=0
