@@ -1,3 +1,27 @@
+## v0.0.58-custom.8 - 2026-08-08
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added new feature to hide manually-installed User CA certificates.
+* Added new feature to sync device identity across all partitions.
+* Added new feature to spoof uname for all processes.
+* Added new feature to load custom sus kstat entries from a text file.
+* Added new UI elements to support these features.
+* Improved the waiting mechanism for /sdcard/Android to become accessible.
+* Improved the removal of leftover sus files.
+* Removed the need to resetprop the fingerprint and date fields individually.
+* Added a new script to sync all build-related props across all partitions.
+* Added a new feature to handle custom sus kstat entries.
+* Added a new feature to load custom sus kstat entries from a text file.
+* Improved the logging mechanism for the module.
+* Improved the handling of various errors and exceptions.
+* Improved the overall code quality and organization.
+* Added new comments and documentation to explain the code.
+* Improved the formatting and consistency of the code.
+* Added new tests to ensure the code works correctly.
+
 ## v0.0.58-custom.7 - 2026-08-07
 
 ### Synced from upstream BRENE
