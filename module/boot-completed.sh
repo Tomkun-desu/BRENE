@@ -416,12 +416,25 @@ spoof_android_system_properties() {
 	resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
+	resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
+
+	new_utc_value=$(resetprop ro.build.date.utc)
+	resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.odm_dlkm.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.product.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.system.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.system_dlkm.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
+	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"
