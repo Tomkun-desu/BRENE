@@ -51,7 +51,7 @@ const configs = [
 		id: 'sync_device_props',
 		action: (enabled) => {
 			if (!enabled) return
-			setFeature(`RESETPROP="";for c in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop;do [ -x "$c" ]&&RESETPROP="$c"&&break;done;[ -z "$RESETPROP" ]&&exit 1;MFP=$(getprop ro.build.fingerprint);MFP="\${MFP//userdebug/user}";MID=$(getprop ro.build.id);MREL=$(getprop ro.build.version.release);MSDK=$(getprop ro.build.version.sdk);MSDKF=$(getprop ro.build.version.sdk_full);MINC=$(getprop ro.build.version.incremental);MRC=$(getprop ro.build.version.release_or_codename);MDT=$(getprop ro.build.date);MDTU=$(getprop ro.build.date.utc);MSP=$(getprop ro.build.version.security_patch);MTG=$(getprop ro.build.tags);MTP=$(getprop ro.build.type);MBR=$(getprop ro.product.brand);MDEV=$(getprop ro.product.device);MMF=$(getprop ro.product.manufacturer);MMD=$(getprop ro.product.model);MNM=$(getprop ro.product.name);for part in $(getprop|grep -oE '^\\[ro\\.[a-z0-9_]+\\.build\\.fingerprint\\]'|sed -E 's/^\\[ro\\.([a-z0-9_]+)\\.build\\.fingerprint\\]$/\\1/');do [ "$part" = build ]&&continue;[ "$part" = bootimage ]&&continue;for f in fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type;do pn="ro.\${part}.build.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in fingerprint)nv="$MFP";;id)nv="$MID";;version.release)nv="$MREL";;version.sdk)nv="$MSDK";;version.incremental)nv="$MINC";;version.release_or_codename)nv="$MRC";;version.sdk_full)nv="$MSDKF";;date)nv="$MDT";;date.utc)nv="$MDTU";;version.security_patch)nv="$MSP";;tags)nv="$MTG";;type)nv="$MTP";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;for f in brand device manufacturer model name;do pn="ro.product.\${part}.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in brand)nv="$MBR";;device)nv="$MDEV";;manufacturer)nv="$MMF";;model)nv="$MMD";;name)nv="$MNM";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;done;echo done`)
+			return setFeature(`RESETPROP="";for c in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop;do [ -x "$c" ]&&RESETPROP="$c"&&break;done;[ -z "$RESETPROP" ]&&exit 1;MFP=$(getprop ro.build.fingerprint);MFP="\${MFP//userdebug/user}";MID=$(getprop ro.build.id);MREL=$(getprop ro.build.version.release);MSDK=$(getprop ro.build.version.sdk);MSDKF=$(getprop ro.build.version.sdk_full);MINC=$(getprop ro.build.version.incremental);MRC=$(getprop ro.build.version.release_or_codename);MDT=$(getprop ro.build.date);MDTU=$(getprop ro.build.date.utc);MSP=$(getprop ro.build.version.security_patch);MTG=$(getprop ro.build.tags);MTP=$(getprop ro.build.type);MBR=$(getprop ro.product.brand);MDEV=$(getprop ro.product.device);MMF=$(getprop ro.product.manufacturer);MMD=$(getprop ro.product.model);MNM=$(getprop ro.product.name);for part in $(getprop|grep -oE '^\\[ro\\.[a-z0-9_]+\\.build\\.fingerprint\\]'|sed -E 's/^\\[ro\\.([a-z0-9_]+)\\.build\\.fingerprint\\]$/\\1/');do [ "$part" = build ]&&continue;[ "$part" = bootimage ]&&continue;for f in fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type;do pn="ro.\${part}.build.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in fingerprint)nv="$MFP";;id)nv="$MID";;version.release)nv="$MREL";;version.sdk)nv="$MSDK";;version.incremental)nv="$MINC";;version.release_or_codename)nv="$MRC";;version.sdk_full)nv="$MSDKF";;date)nv="$MDT";;date.utc)nv="$MDTU";;version.security_patch)nv="$MSP";;tags)nv="$MTG";;type)nv="$MTP";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;for f in brand device manufacturer model name;do pn="ro.product.\${part}.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in brand)nv="$MBR";;device)nv="$MDEV";;manufacturer)nv="$MMF";;model)nv="$MMD";;name)nv="$MNM";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;done;echo done`)
 		},
 	},
 	{ id: 'hide_addon_d' },
@@ -271,9 +271,11 @@ function updateConfig2(config, value) {
 }
 
 // Helper function to set config immedialtely that no need to reboot
-function setFeature(cmd) {
-	exec(cmd).then((result) => {
+function setFeature(cmd, label) {
+	return exec(cmd).then((result) => {
 		toast(result.errno === 0 ? 'No need to reboot' : result.stderr)
+		if (result.errno === 0 && label) window.breneLiveLog(label, 'applied')
+		return result
 	})
 }
 
@@ -322,7 +324,12 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			const enabled = element.selected
 			const newConfigValue = +enabled
 			updateConfig(configId, newConfigValue)
-			if (config.action) config.action(enabled)
+			if (config.action) {
+				const featResult = await config.action(enabled)
+				if (featResult && featResult.errno === 0) {
+					window.breneLiveLog(config.id, enabled ? 'enabled' : 'disabled')
+				}
+			}
 		})
 	})
 })
@@ -359,12 +366,17 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		return { release, version }
 	}
 
-	const updateUname = async (release, version) => {
+	const setUnameFields = (release, version) => {
 		const finalVersion = version.trim() === '' ? 'default' : version
 		updateConfig2('config_custom_uname_kernel_release', release)
 		updateConfig2('config_custom_uname_kernel_version', finalVersion)
 		unameRelease.value = release
 		unameVersion.value = finalVersion
+		return finalVersion
+	}
+
+	const updateUname = async (release, version) => {
+		const finalVersion = setUnameFields(release, version)
 
 		let liveRelease = release
 		let liveVersion = finalVersion
@@ -376,13 +388,13 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 		const esc = (s) => s.replace(/'/g, "'\\''")
 		exec(`/data/adb/ksu/bin/susfs set_uname '${esc(liveRelease)}' '${esc(liveVersion)}'`).then((result) => {
-                        toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
-                        if (result.errno === 0) window.breneLiveLog('set_uname', `${liveRelease} ${liveVersion}`)
+			toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
+			if (result.errno === 0) window.breneLiveLog('set_uname', `${liveRelease} ${liveVersion}`)
 		})
 	}
 
 	document.getElementById(`button_custom_uname_reset`).onclick = () => {
-		updateUname('default', 'default')
+		setUnameFields('default', 'default')
 	}
 	document.getElementById(`button_custom_uname_apply`).onclick = () => {
 		if (unameRelease.value !== '') updateUname(unameRelease.value, unameVersion.value)
@@ -495,7 +507,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
 		loadKstatEntries(result.errno === 0 ? result.stdout : '')
 	})
-	exec(`grep -i kstat ${PERSISTENT_DIR}/logs.txt`).then((result) => {
+	exec(`grep '^\\[custom_sus_kstat\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const kstatLog = document.getElementById('kstat_log_display')
 		kstatLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no kstat log entries yet)'
 	})
