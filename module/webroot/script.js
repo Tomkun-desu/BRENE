@@ -77,14 +77,14 @@ document.querySelectorAll('a[href]').forEach((element) => {
 })
 
 // Load Android Version
-exec('resetprop ro.build.version.release').then((result) => {
+exec('resetprop ro.build.version.release && resetprop ro.build.version.sdk').then((result) => {
 	const container = document.querySelector('#android-version .card-row__sub')
 
 	if (result.errno !== 0) {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout
+	container.innerText = result.stdout.replace('\n', ' | SDK ')
 })
 
 // Load SuSFS Variant
