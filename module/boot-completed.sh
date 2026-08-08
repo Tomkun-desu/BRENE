@@ -371,8 +371,7 @@ if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	done
 fi
 
-# Android System Properties Spoofing
-if [[ "${config_android_system_properties_spoofing}" == "1" ]]; then
+spoof_android_system_properties() {
 	resetprop_n "init.svc.adbd" "stopped"
 	resetprop_n "init.svc_debug_pid.adbd" ""
 	resetprop_n "persist.sys.usb.config" "mtp"
@@ -388,10 +387,8 @@ if [[ "${config_android_system_properties_spoofing}" == "1" ]]; then
 	resetprop_n "ro.is_ever_orange" "0"
 	resetprop_n "ro.bootmode" "normal"
 	resetprop_n "ro.bootimage.build.tags" "release-keys"
-
 	resetprop_n "ro.build.type" "user"
 	resetprop_n "ro.build.tags" "release-keys"
-
 	resetprop_n "vendor.boot.vbmeta.device_state" "locked"
 	resetprop_n "vendor.boot.verifiedbootstate" "green"
 
@@ -439,6 +436,21 @@ if [[ "${config_android_system_properties_spoofing}" == "1" ]]; then
 	else
 		resetprop_n "sys.oem_unlock_allowed" "0"
 	fi
+
+	resetprop -c --force
+}
+
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+	spoof_android_system_properties
+fi
+
+# Spoof Android System Properties Every Minute
+if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
+	while true; do
+		sleep 60
+		spoof_android_system_properties
+	done &
 fi
 
 # Android Verified Boot Hash Spoofing

@@ -59,7 +59,8 @@ const configs = [
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'proc_cmdline_bootconfig_spoofing' },
-	{ id: 'android_system_properties_spoofing' },
+	{ id: 'spoof_system_properties' },
+	{ id: 'spoof_system_properties_repeat' },
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },

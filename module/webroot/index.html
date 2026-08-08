@@ -496,13 +496,21 @@
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Android System Properties Spoofing</span>
+							<span class="card-row__title">Spoof Android System Properties</span>
 							<span class="card-row__sub">Spoof some android system properties</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">[ro.build.type]: [userdebug]</span>
 							<span class="card-row__tag--code">[ro.boot.flash.locked]: [0]</span>
 						</div>
-						<md-switch icons id="android_system_properties_spoofing"></md-switch>
+						<md-switch icons id="spoof_system_properties"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof Android System Properties Every Minute</span>
+						</div>
+						<md-switch icons id="spoof_system_properties_repeat"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
