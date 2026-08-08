@@ -6,6 +6,7 @@ KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
+CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # Load utils
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
@@ -194,6 +195,20 @@ fi
 # Hide /system/addon.d Path
 if [[ "${config_hide_addon_d}" == "1" ]]; then
 	brene_sus_path "/system/addon.d"
+fi
+
+# Hide Custom ROM Paths
+if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
+	for i in ${CUSTOM_ROM_NAMES//|/ }; do
+		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
+			brene_sus_map "${path}"
+			brene_sus_path_loop "${path}"
+		done
+
+		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
+			brene_sus_path_loop "${path}"
+		done
+	done
 fi
 
 if [[ "${config_brene_logs}" == "1" ]]; then

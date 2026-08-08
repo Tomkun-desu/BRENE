@@ -458,20 +458,6 @@ if [[ "${config_verified_boot_hash}" != '' ]]; then
 	resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}"
 fi
 
-# Hide Custom ROM Paths
-if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
-	for i in ${CUSTOM_ROM_NAMES//|/ }; do
-		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
-			brene_sus_map "${path}"
-			brene_sus_path_loop "${path}"
-		done
-
-		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
-			brene_sus_path_loop "${path}"
-		done
-	done
-fi
-
 # Hide LineageOS Strings
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) | while read -r path; do
