@@ -62,6 +62,21 @@ true > "${PERSISTENT_DIR}/logs.txt"
 ## *Run 'ksu_susfs add_open_redirect' for more details of <uid_scheme> ##
 # ${SUSFS_BIN} add_open_redirect '/system/etc/hosts' '/data/local/tmp/my_hosts' '0'
 
+# Spoof /system/lib64/libstagefright.so
+if [[ "${config_spoof_libstagefright}" == "1" ]]; then
+	path=/system/lib64/libstagefright.so
+	file_name=$(basename "${path}")
+	fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+
+	[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+	[[ ! -f "${fake_file_path}" ]] && {
+		touch "${fake_file_path}"
+		susfs_clone_perm "${fake_file_path}" "${path}"
+	}
+
+	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+fi
+
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
 # No root process detects it for now, and this spoofing won't help much actually #
 # /proc/bootconfig #

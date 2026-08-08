@@ -489,21 +489,6 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	done
 fi
 
-# /system/lib64/libstagefright.so Spoofing
-if [[ "${config_libstagefright_spoofing}" == "1" ]]; then
-	path=/system/lib64/libstagefright.so
-	file_name=$(basename "${path}")
-	fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
-
-	[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-	[[ ! -f "${fake_file_path}" ]] && {
-		touch "${fake_file_path}"
-		susfs_clone_perm "${fake_file_path}" "${path}"
-	}
-
-	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
-fi
-
 # Hide /system/addon.d Path
 if [[ "${config_hide_addon_d}" == "1" ]]; then
 	brene_sus_path "/system/addon.d"

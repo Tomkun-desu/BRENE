@@ -55,7 +55,7 @@ const configs = [
 	{ id: 'hide_custom_rom_paths' },
 	{ id: 'custom_uname_spoofing' },
 	{ id: 'hide_framework_res_apk' },
-	{ id: 'libstagefright_spoofing' },
+	{ id: 'spoof_libstagefright' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'proc_cmdline_bootconfig_spoofing' },

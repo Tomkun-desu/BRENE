@@ -33,7 +33,7 @@ config_hide_lineage_strings=0
 config_hide_custom_rom_paths=0
 config_custom_uname_spoofing=0
 config_hide_framework_res_apk=0
-config_libstagefright_spoofing=0
+config_spoof_libstagefright=0
 
 config_verified_boot_hash=''
 config_custom_uname_kernel_release='default'
