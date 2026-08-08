@@ -1,6 +1,6 @@
 # shellcheck disable=SC2034
 # shellcheck disable=SC2148
-config_paths_hiding__non_standard_sdcard=1
+config_paths_hiding__non_standard_sdcard=0
 config_paths_hiding__non_standard_sdcard_android=1
 config_paths_hiding__data_local_tmp=1
 config_paths_hiding__sdcard_android_data_media_obb=1
@@ -17,7 +17,8 @@ config_enable_avc_log_spoofing=1
 config_umount_suspicious_mounts=1
 config_hide_sus_mnts_for_non_su_procs=1
 config_proc_cmdline_bootconfig_spoofing=1
-config_android_system_properties_spoofing=1
+config_spoof_system_properties=1
+config_spoof_system_properties_repeat=0
 
 config_pif_props=0
 config_rom_props=0
@@ -30,11 +31,11 @@ config_usb_debugging=0
 config_hide_modules_img=0
 config_developer_options=0
 config_wireless_debugging=0
-config_lineage_paths_hiding=0
 config_hide_lineage_strings=0
+config_hide_custom_rom_paths=0
 config_custom_uname_spoofing=0
 config_hide_framework_res_apk=0
-config_libstagefright_spoofing=0
+config_spoof_libstagefright=0
 
 config_verified_boot_hash=''
 config_custom_uname_kernel_release='default'

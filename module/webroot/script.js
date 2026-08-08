@@ -57,16 +57,17 @@ const configs = [
 	{ id: 'hide_addon_d' },
 	{ id: 'uname_spoofing' },
 	{ id: 'hide_injections' },
-	{ id: 'lineage_paths_hiding' },
 	{ id: 'hide_suspicious_ptys' },
 	{ id: 'hide_lineage_strings' },
+	{ id: 'hide_custom_rom_paths' },
 	{ id: 'custom_uname_spoofing' },
 	{ id: 'hide_framework_res_apk' },
-	{ id: 'libstagefright_spoofing' },
+	{ id: 'spoof_libstagefright' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'proc_cmdline_bootconfig_spoofing' },
-	{ id: 'android_system_properties_spoofing' },
+	{ id: 'spoof_system_properties' },
+	{ id: 'spoof_system_properties_repeat' },
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
@@ -90,14 +91,14 @@ document.querySelectorAll('a[href]').forEach((element) => {
 })
 
 // Load Android Version
-exec('resetprop ro.build.version.release').then((result) => {
+exec('resetprop ro.build.version.release && resetprop ro.build.version.sdk').then((result) => {
 	const container = document.querySelector('#android-version .card-row__sub')
 
 	if (result.errno !== 0) {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout
+	container.innerText = result.stdout.replace('\n', ' | SDK ')
 })
 
 // Load SuSFS Variant
@@ -112,14 +113,14 @@ exec('susfs show variant').then((result) => {
 })
 
 // Load Kernel Version
-exec('uname -r').then((result) => {
+exec("cat /proc/version | awk '{print $3}' && uname -r").then((result) => {
 	const container = document.querySelector('#kernel-version .card-row__sub')
 
 	if (result.errno !== 0) {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout
+	container.innerText = `Default: ${result.stdout.replace('\n', '\nSpoofed: ')}`
 })
 
 // Load Device Model Status

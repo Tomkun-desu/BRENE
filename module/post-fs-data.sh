@@ -6,6 +6,7 @@ KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
+CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # Load utils
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
@@ -61,6 +62,21 @@ true > "${PERSISTENT_DIR}/logs.txt"
 ## Now add the target path and redirected path with pre-defined uid scheme to kernel ##
 ## *Run 'ksu_susfs add_open_redirect' for more details of <uid_scheme> ##
 # ${SUSFS_BIN} add_open_redirect '/system/etc/hosts' '/data/local/tmp/my_hosts' '0'
+
+# Spoof /system/lib64/libstagefright.so
+if [[ "${config_spoof_libstagefright}" == "1" ]]; then
+	path=/system/lib64/libstagefright.so
+	file_name=$(basename "${path}")
+	fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+
+	[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+	[[ ! -f "${fake_file_path}" ]] && {
+		touch "${fake_file_path}"
+		susfs_clone_perm "${fake_file_path}" "${path}"
+	}
+
+	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+fi
 
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
 # No root process detects it for now, and this spoofing won't help much actually #
@@ -184,6 +200,25 @@ if [[ "${config_enable_log}" == "1" ]]; then
 	${SUSFS_BIN} enable_log 1
 elif [[ "${config_enable_log}" == "0" ]]; then
 	${SUSFS_BIN} enable_log 0
+fi
+
+# Hide /system/addon.d Path
+if [[ "${config_hide_addon_d}" == "1" ]]; then
+	brene_sus_path "/system/addon.d"
+fi
+
+# Hide Custom ROM Paths
+if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
+	for i in ${CUSTOM_ROM_NAMES//|/ }; do
+		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
+			brene_sus_map "${path}"
+			brene_sus_path_loop "${path}"
+		done
+
+		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
+			brene_sus_path_loop "${path}"
+		done
+	done
 fi
 
 if [[ "${config_brene_logs}" == "1" ]]; then
