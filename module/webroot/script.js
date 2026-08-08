@@ -99,14 +99,14 @@ exec('susfs show variant').then((result) => {
 })
 
 // Load Kernel Version
-exec('uname -r').then((result) => {
+exec("cat /proc/version | awk '{print $3}' && uname -r").then((result) => {
 	const container = document.querySelector('#kernel-version .card-row__sub')
 
 	if (result.errno !== 0) {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout
+	container.innerText = `Default: ${result.stdout.replace('\n', '\nSpoofed: ')}`
 })
 
 // Load Device Model Status
