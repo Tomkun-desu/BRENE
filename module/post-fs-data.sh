@@ -191,6 +191,11 @@ elif [[ "${config_enable_log}" == "0" ]]; then
 	${SUSFS_BIN} enable_log 0
 fi
 
+# Hide /system/addon.d Path
+if [[ "${config_hide_addon_d}" == "1" ]]; then
+	brene_sus_path "/system/addon.d"
+fi
+
 if [[ "${config_brene_logs}" == "1" ]]; then
 	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi

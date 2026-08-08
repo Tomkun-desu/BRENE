@@ -489,11 +489,6 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	done
 fi
 
-# Hide /system/addon.d Path
-if [[ "${config_hide_addon_d}" == "1" ]]; then
-	brene_sus_path "/system/addon.d"
-fi
-
 resetprop -c --force
 
 if [[ "${config_brene_logs}" == "1" ]]; then
