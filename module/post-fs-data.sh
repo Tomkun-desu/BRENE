@@ -335,6 +335,14 @@ fi
 # Format per line: <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
 # Use the literal word 'default' for any field to leave it as the real current value.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "########################"
+                        echo "Custom KSTAT"
+                        echo "########################"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
         while IFS= read -r i; do
                 # Skip empty lines or comments
                 [[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
