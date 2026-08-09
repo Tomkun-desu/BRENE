@@ -92,6 +92,9 @@ else
 	done < "${MODPATH}/config.sh"
 fi
 
+# Remove fake_files folder
+[[ -d "${PERSISTENT_DIR}/fake_files" ]] && rm -rf "${PERSISTENT_DIR}/fake_files"
+
 # Disable outdated modules
 # echo "[✅] Disabling outdated modules"
 # modules="

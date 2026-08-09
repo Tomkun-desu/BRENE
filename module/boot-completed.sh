@@ -479,8 +479,7 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 
 		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
 		[[ ! -f "${fake_file_path}" ]] && {
-			cp "${path}" "${PERSISTENT_DIR}/fake_files"
-			sed -i "s/lineage//g" "${fake_file_path}"
+			touch "${fake_file_path}"
 			susfs_clone_perm "${fake_file_path}" "${path}"
 		}
 
