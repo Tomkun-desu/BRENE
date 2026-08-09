@@ -471,22 +471,6 @@ if [[ "${config_verified_boot_hash}" != '' ]]; then
 	resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}"
 fi
 
-# Hide LineageOS Strings
-if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) | while read -r path; do
-		file_name=$(basename "${path}")
-		fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
-
-		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-		[[ ! -f "${fake_file_path}" ]] && {
-			touch "${fake_file_path}"
-			susfs_clone_perm "${fake_file_path}" "${path}"
-		}
-
-		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
-	done
-fi
-
 resetprop -c --force
 
 if [[ "${config_brene_logs}" == "1" ]]; then
