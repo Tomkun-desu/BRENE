@@ -1,3 +1,27 @@
+## v0.0.58-custom.10 - 2026-08-10
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added code to hide custom recovery (TWRP/OrangeFox) leftover folders.
+* Added code to hide manually-installed User CA Certificates.
+* Added code to sync all build-related props (fingerprint + sub-fields) across all partitions.
+* Added code to load custom KSTAT entries from a file.
+* Added code to display custom KSTAT entries in the UI.
+* Added code to create and remove custom KSTAT entries in the UI.
+* Added code to serialize and deserialize custom KSTAT entries.
+* Added code to load custom KSTAT entries from the file into the UI.
+* Added code to display the custom KSTAT log in the UI.
+* Added code to refresh the logs panel when a live action is performed.
+* Added code to display a live log message when a live action is performed.
+* Added code to compute the auto uname values when the custom uname fields are set to 'default'.
+* Added code to apply the custom uname values to the system.
+* Added code to reset the custom uname fields to their default values.
+* Added code to apply the custom uname values when the apply button is clicked.
+* Added code to update the custom uname fields when the custom uname values are changed.
+* Added code to display the custom uname fields in the
+
 ## v0.0.58-custom.9 - 2026-08-09
 
 ### Synced from upstream BRENE
