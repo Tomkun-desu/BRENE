@@ -71,6 +71,7 @@ const configs = [
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
+	{ id: 'hide_custom_recovery_folders' },
 	{ id: 'paths_hiding__data_local_tmp' },
 	{
 		id: 'paths_hiding__user_ca_certs',

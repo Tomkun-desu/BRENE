@@ -171,6 +171,22 @@ if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
 	done
 fi
 
+# Hide custom recovery (TWRP/OrangeFox) leftover folders
+if [[ "${config_hide_custom_recovery_folders}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "################################"
+			echo "Hide Custom Recovery Folders"
+			echo "################################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	for recovery_path in /cache/recovery /data/cache/recovery /data/recovery; do
+		[[ -e "${recovery_path}" ]] && brene_sus_path_loop "${recovery_path}"
+	done
+fi
+
 # /data/local/tmp
 if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
