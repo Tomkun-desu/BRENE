@@ -1,3 +1,28 @@
+## v0.0.58-custom.9 - 2026-08-09
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in simple bullet points:
+
+* Added a new feature to hide manually-installed (user) CA certificates from detection.
+* Added a new feature to sync product brand, device, manufacturer, model, and name across partitions.
+* Added a new feature to spoof uname for all processes.
+* Added a new feature to customize kernel release and version.
+* Added a new feature to load custom kstat entries.
+* Added a new tab to the web interface for managing custom kstat entries.
+* Modified the web interface to display logs in real-time.
+* Modified the web interface to add a live log feature.
+* Modified the web interface to add a button to refresh the log panel.
+* Modified the web interface to add a feature to set custom kstat entries.
+* Modified the web interface to add a feature to remove custom kstat entries.
+* Modified the web interface to add a feature to serialize custom kstat entries.
+* Modified the web interface to load custom kstat entries from a file.
+* Modified the web interface to display custom kstat entries in a table.
+* Modified the web interface to add a feature to save custom kstat entries to a file.
+* Modified the web interface to add a feature to load custom kstat entries from a
+
 ## v0.0.58-custom.8 - 2026-08-08
 
 ### Synced from upstream BRENE
