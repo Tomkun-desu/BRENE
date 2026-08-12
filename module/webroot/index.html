@@ -542,7 +542,7 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Uname Spoofing</span>
+							<span class="card-row__title">Spoof Uname</span>
 							<span class="card-row__sub">Spoof uname for all processes</span>
 							<span class="card-row__sub">Only 'release' and 'version' are spoofed as others are no longer needed</span>
 							<span class="card-row__tag--code">Example of detections:</span>
@@ -556,21 +556,21 @@
 							<span class="card-row__tag--code">- Tampered kernel</span>
 							<span class="card-row__tag--code">- Third-party kernel</span>
 						</div>
-						<md-switch icons id="uname_spoofing"></md-switch>
+						<md-switch icons id="spoof_uname"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Custom Uname Spoofing</span>
+							<span class="card-row__title">Custom Spoof Uname</span>
 							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
 						</div>
-						<md-switch icons id="custom_uname_spoofing"></md-switch>
+						<md-switch icons id="custom_spoof_uname"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 					<div class="card-row">
 						<div class="field-stack">
-							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12-9-g690101101069" id="custom_uname_release"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12" id="custom_uname_release"></md-outlined-text-field>
 							<!-- <md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2069" id="custom_uname_version"></md-outlined-text-field> -->
 							<div class="btn-row">
 								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>

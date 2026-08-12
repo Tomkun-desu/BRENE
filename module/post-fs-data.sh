@@ -150,34 +150,34 @@ elif [[ "${config_hide_sus_mnts_for_non_su_procs}" == "0" ]]; then
 	${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 0
 fi
 
-# Uname Spoofing
+# Spoof Uname
 #### Spoof the uname, effective for all processes ####
 # you can get your uname args by running 'uname {-r|-v}' on your stock ROM #
 # pass 'default' to tell susfs to use the default value by uname #
 # ${SUSFS_BIN} set_uname 'default' 'default'
-if [[ "${config_uname_spoofing}" == "1" ]]; then
+if [[ "${config_spoof_uname}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 		{
 			echo ""
-			echo "##############"
-			echo "Uname Spoofing"
-			echo "##############"
+			echo "###########"
+			echo "Spoof Uname"
+			echo "###########"
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
 	kernel_version=$(cat /proc/version | awk '{print $3}' | cut -d'-' -f1)
 	kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-	uname_kernel_release="${kernel_version}-${kmi}-9-g690101101069"
+	uname_kernel_release="${kernel_version}-${kmi}"
 	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
 	brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
-elif [[ "${config_custom_uname_spoofing}" == "1" ]]; then
+elif [[ "${config_custom_spoof_uname}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 		{
 			echo ""
-			echo "#####################"
-			echo "Custom Uname Spoofing"
-			echo "#####################"
+			echo "##################"
+			echo "Custom Spoof Uname"
+			echo "##################"
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
