@@ -84,7 +84,9 @@ exec('resetprop ro.build.version.release && resetprop ro.build.version.sdk').the
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout.replace('\n', ' | SDK ')
+	const results = result.stdout.replaceAll('\n', ' ')
+	const splits = results.split(' ')
+	container.innerText = `${splits[0]} (API ${splits[1]}) | SDK ${splits[1]}`
 })
 
 // Load SuSFS Variant
