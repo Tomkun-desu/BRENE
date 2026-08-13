@@ -86,9 +86,27 @@ if [[ "${config_saturation}" == "1" ]]; then
 	service call SurfaceFlinger 1022 f 2.0
 fi
 
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+	spoof_android_system_properties
+fi
+
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 ## First we need to wait until files are accessible in /sdcard ##
 until [[ -e "/sdcard/Android" ]]; do sleep 1; done
+
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+	spoof_android_system_properties
+fi
+
+# Spoof Android System Properties Every Minute
+if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
+	while true; do
+		sleep 60
+		spoof_android_system_properties
+	done &
+fi
 
 ## Remove the '..5.u.S' leftover ##
 ## THe reason why this sus file is created is because users have grant the MANAGE_EXTERNAL_STORAGE permission for the apps that detecting sus files in /sdcard, or in /sdcard/Android/data where the apps are exploiting the unicode bugs to create files arbitrary.
@@ -353,101 +371,6 @@ if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	find /system -iname "*framework-res.apk" | while read -r path; do
 		brene_sus_map "${path}"
 	done
-fi
-
-spoof_android_system_properties() {
-	resetprop_n "init.svc.adbd" "stopped"
-	resetprop_n "init.svc_debug_pid.adbd" ""
-	resetprop_n "persist.sys.usb.config" "mtp"
-	resetprop_n "ro.adb.secure" "1"
-	resetprop_n "ro.crypto.state" "encrypted"
-	resetprop_n "ro.debuggable" "0"
-	resetprop_n "ro.force.debuggable" "0"
-	resetprop_n "ro.kernel.qemu" ""
-	resetprop_n "ro.secure" "1"
-	resetprop_n "ro.build.selinux" "1"
-	resetprop_n "ro.build.selinux.enforce" "1"
-	resetprop_n "ro.secureboot.lockstate" "locked"
-	resetprop_n "ro.is_ever_orange" "0"
-	resetprop_n "ro.bootmode" "normal"
-	resetprop_n "ro.bootimage.build.tags" "release-keys"
-	resetprop_n "ro.build.type" "user"
-	resetprop_n "ro.build.tags" "release-keys"
-	resetprop_n "vendor.boot.vbmeta.device_state" "locked"
-	resetprop_n "vendor.boot.verifiedbootstate" "green"
-
-	resetprop_n "ro.boot.flash.locked" "1"
-	resetprop_n "ro.boot.realme.lockstate" "1"
-	resetprop_n "ro.boot.realmebootstate" "green"
-	resetprop_n "ro.boot.verifiedbooterror" ""
-	resetprop_n "ro.boot.verifiedbootstate" "green"
-	resetprop_n "ro.boot.veritymode" "enforcing"
-	resetprop_n "ro.boot.veritymode.managed" "yes"
-
-	resetprop_n "ro.boot.vbmeta.size" "4096"
-	resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
-	resetprop_n "ro.boot.vbmeta.avb_version" "1.3"
-	resetprop_n "ro.boot.vbmeta.device_state" "locked"
-	resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
-
-	if_prop_value_exits_resetprop_n "ro.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.vendor.boot.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.vendor.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.boot.warranty_bit" "0"
-
-	fingerprint_value=$(resetprop ro.build.fingerprint)
-	new_fingerprint_value="${fingerprint_value//userdebug/user}"
-	resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
-
-	new_utc_value=$(resetprop ro.build.date.utc)
-	resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.odm_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.product.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
-
-	## Delete some prop names for newer pixel device ##
-	resetprop -d "ro.boot.verifiedbooterror"
-	resetprop -d "ro.boot.verifyerrorpart"
-	resetprop -d "crashrecovery.rescue_boot_count"
-
-	resetprop -d service.adb.root
-	resetprop -d service.adb.tcp.port
-
-	if [[ "$(resetprop ro.build.version.sdk)" -ge "36" ]]; then
-		resetprop -d sys.oem_unlock_allowed
-	else
-		resetprop_n "sys.oem_unlock_allowed" "0"
-	fi
-
-	resetprop -c --force
-}
-
-# Spoof Android System Properties
-if [[ "${config_spoof_system_properties}" == "1" ]]; then
-	spoof_android_system_properties
-fi
-
-# Spoof Android System Properties Every Minute
-if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
-	while true; do
-		sleep 60
-		spoof_android_system_properties
-	done &
 fi
 
 resetprop -c --force
