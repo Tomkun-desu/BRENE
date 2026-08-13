@@ -165,7 +165,7 @@ if [[ "${config_spoof_uname}" == "1" ]]; then
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
-	kernel_version=$(cat /proc/version | awk '{print $3}' | cut -d'-' -f1)
+	kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 	kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
 	uname_kernel_release="${kernel_version}-${kmi}"
 	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
