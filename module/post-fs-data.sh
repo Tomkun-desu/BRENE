@@ -227,6 +227,22 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	done
 fi
 
+# Hide Suspicious PTYs
+if [[ "${config_hide_suspicious_pty}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "####################"
+			echo "Hide Suspicious PTYs"
+			echo "####################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	for i in $(seq 0 5); do
+		brene_sus_path_loop "/dev/pts/${i}"
+	done
+fi
+
 if [[ "${config_brene_logs}" == "1" ]]; then
 	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi

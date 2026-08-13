@@ -51,7 +51,7 @@ const configs = [
 	{ id: 'hide_addon_d' },
 	{ id: 'hide_injections' },
 	{ id: 'custom_spoof_uname' },
-	{ id: 'hide_suspicious_ptys' },
+	{ id: 'hide_suspicious_pty' },
 	{ id: 'hide_lineage_strings' },
 	{ id: 'spoof_libstagefright' },
 	{ id: 'hide_custom_rom_paths' },

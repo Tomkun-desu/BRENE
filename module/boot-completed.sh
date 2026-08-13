@@ -348,22 +348,6 @@ if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	done
 fi
 
-# Hide Suspicious PTYs
-if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################"
-			echo "Hide Suspicious PTYs"
-			echo "####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
-	for i in $(seq 0 9); do
-		brene_sus_path_loop "/dev/pts/${i}"
-	done
-fi
-
 # Hide framework-res.apk
 if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	find /system -iname "*framework-res.apk" | while read -r path; do
