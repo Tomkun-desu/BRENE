@@ -128,7 +128,23 @@ inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
 ## Be reminded that without HMA's vold app data enabled, added sus_paths are still vulnerable to zwc exploit, so in this case users also have to add its underlying path as well ##
 
-# Suspicious Paths Hiding
+# Paths Hiding
+
+# Hide Custom Recovery Paths
+if [[ "${config_hide_custom_recovery}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "##########################"
+			echo "Hide Custom Recovery Paths"
+			echo "##########################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	[[ -e "/sdcard/Fox" ]] && brene_sus_path_loop "/sdcard/Fox"
+	[[ -e "/sdcard/TWRP" ]] && brene_sus_path_loop "/sdcard/TWRP"
+	[[ -e "/data/recovery" ]] && brene_sus_path_loop "/data/recovery"
+fi
 
 # Non-standard /sdcard
 if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
