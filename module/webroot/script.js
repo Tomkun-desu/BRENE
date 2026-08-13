@@ -199,7 +199,7 @@ exec('ksud module list').then((result) => {
 		const statusSpan = row.querySelector('.status-text')
 
 		if (moduleIds.includes(moduleKey)) {
-			statusSpan.innerText = 'Status: Installed ❌'
+			statusSpan.innerText = 'Status: Installed'
 			statusSpan.style.color = '#ff0000be'
 		}
 	})
