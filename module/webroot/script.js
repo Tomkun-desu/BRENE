@@ -119,7 +119,19 @@ exec('resetprop ro.product.manufacturer && resetprop ro.product.model && resetpr
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout.replace('\n', ' ').replace('\n', ' | ')
+
+	let model
+	const splits = result.stdout.split('\n')
+
+	exec('resetprop ro.product.marketname')
+		.then((result) => {
+			if (result.errno !== 0) return
+			model = result.stdout
+		})
+		.then(() => {
+			model = model || splits[1]
+			container.innerText = `${splits[0]} ${model} | ${splits[2]}`
+		})
 })
 
 // Load Custom ROM Status
