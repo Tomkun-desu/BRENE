@@ -112,7 +112,7 @@ exec("cat /proc/version | awk '{print $3}' && uname -r").then((result) => {
 })
 
 // Load Device Model Status
-exec('resetprop ro.product.manufacturer && resetprop ro.product.model && resetprop ro.build.product').then((result) => {
+exec('resetprop ro.product.manufacturer && resetprop ro.product.model && resetprop ro.product.device').then((result) => {
 	const container = document.querySelector('#device-model .card-row__sub')
 
 	if (result.errno !== 0) {
