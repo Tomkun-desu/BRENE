@@ -16,7 +16,6 @@ config_hide_custom_recovery=1
 config_enable_avc_log_spoofing=1
 config_umount_suspicious_mounts=1
 config_hide_sus_mnts_for_non_su_procs=1
-config_proc_cmdline_bootconfig_spoofing=1
 config_spoof_system_properties=1
 config_spoof_system_properties_repeat=0
 
@@ -32,9 +31,10 @@ config_developer_options=0
 config_custom_spoof_uname=0
 config_wireless_debugging=0
 config_hide_lineage_strings=0
+config_spoof_libstagefright=0
 config_hide_custom_rom_paths=0
 config_hide_framework_res_apk=0
-config_spoof_libstagefright=0
+config_spoof_cmdline_or_bootconfig=0
 
 config_custom_uname_kernel_release='default'
 config_custom_uname_kernel_version='default'

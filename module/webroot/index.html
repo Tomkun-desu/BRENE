@@ -534,14 +534,14 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">/proc/cmdline or /proc/bootconfig Spoofing</span>
+							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
 							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
 							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">androidboot.warranty_bit = "1"</span>
 							<span class="card-row__tag--code">androidboot.verifiedbootstate = "orange"</span>
 						</div>
-						<md-switch icons id="proc_cmdline_bootconfig_spoofing"></md-switch>
+						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 

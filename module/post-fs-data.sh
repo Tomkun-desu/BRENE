@@ -101,7 +101,8 @@ fi
 # ${SUSFS_BIN} set_cmdline_or_bootconfig ${FAKE_PROC_CMDLINE_FILE}
 # EOF
 
-if [[ "${config_proc_cmdline_bootconfig_spoofing}" == "1" ]]; then
+# Spoof /proc/cmdline or /proc/bootconfig
+if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 	susfs_variant=$(${SUSFS_BIN} show variant)
 
 	if [[ "${susfs_variant}" == "GKI" ]]; then

@@ -59,7 +59,7 @@ const configs = [
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
-	{ id: 'proc_cmdline_bootconfig_spoofing' },
+	{ id: 'spoof_cmdline_or_bootconfig' },
 	{ id: 'spoof_system_properties' },
 	{ id: 'spoof_system_properties_repeat' },
 
