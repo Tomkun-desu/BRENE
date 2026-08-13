@@ -450,11 +450,6 @@ if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
 	done &
 fi
 
-# Android Verified Boot Hash Spoofing
-if [[ "${config_verified_boot_hash}" != '' ]]; then
-	resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}"
-fi
-
 resetprop -c --force
 
 if [[ "${config_brene_logs}" == "1" ]]; then
