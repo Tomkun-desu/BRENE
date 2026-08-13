@@ -171,7 +171,10 @@ if [[ "${config_spoof_uname}" == "1" ]]; then
 	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
 	brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
-elif [[ "${config_custom_spoof_uname}" == "1" ]]; then
+fi
+
+# Custom Spoof Uname
+if [[ "${config_custom_spoof_uname}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 		{
 			echo ""
