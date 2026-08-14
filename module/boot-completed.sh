@@ -86,6 +86,11 @@ if [[ "${config_saturation}" == "1" ]]; then
 	service call SurfaceFlinger 1022 f 2.0
 fi
 
+# Show Refresh Rate
+if [[ "${config_show_refresh_rate}" == "1" ]]; then
+	service call SurfaceFlinger 1034 i32 1
+fi
+
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
 	spoof_android_system_properties

@@ -27,6 +27,7 @@ config_enable_log=0
 config_hide_addon_d=0
 config_usb_debugging=0
 config_hide_modules_img=0
+config_show_refresh_rate=0
 config_developer_options=0
 config_custom_spoof_uname=0
 config_wireless_debugging=0

@@ -43,6 +43,10 @@ const configs = [
 		id: 'saturation',
 		action: (enabled) => setFeature(`service call SurfaceFlinger 1022 f ${enabled ? 2.0 : 1.0}`),
 	},
+	{
+		id: 'show_refresh_rate',
+		action: (enabled) => setFeature(`service call SurfaceFlinger 1034 i32 ${enabled ? 1 : 0}`),
+	},
 	{ id: 'pif_props' },
 	{ id: 'rom_props' },
 	{ id: 'brene_logs' },
