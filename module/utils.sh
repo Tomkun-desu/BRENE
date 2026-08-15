@@ -95,6 +95,9 @@ spoof_android_system_properties() {
 
 	fingerprint_value=$(resetprop ro.build.fingerprint)
 	new_fingerprint_value="${fingerprint_value//userdebug/user}"
+	new_fingerprint_value="${new_fingerprint_value//evolution/}"
+	new_fingerprint_value="${new_fingerprint_value//crdroid/}"
+	new_fingerprint_value="${new_fingerprint_value//lineage/}"
 	resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
 	resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
