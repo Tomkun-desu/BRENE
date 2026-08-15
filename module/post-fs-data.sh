@@ -72,9 +72,9 @@ if [[ "${config_spoof_libstagefright}" == "1" ]]; then
 	[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
 	[[ ! -f "${fake_file_path}" ]] && {
 		touch "${fake_file_path}"
-		susfs_clone_perm "${fake_file_path}" "${path}"
 	}
 
+	susfs_clone_perm "${fake_file_path}" "${path}"
 	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
 fi
 
@@ -224,9 +224,9 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
 		[[ ! -f "${fake_file_path}" ]] && {
 			touch "${fake_file_path}"
-			susfs_clone_perm "${fake_file_path}" "${path}"
 		}
 
+		susfs_clone_perm "${fake_file_path}" "${path}"
 		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
 	done
 fi
