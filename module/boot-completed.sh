@@ -96,6 +96,17 @@ if [[ "${config_spoof_system_properties}" == "1" ]]; then
 	spoof_android_system_properties
 fi
 
+# Fix /data/local/tmp Inconsistencies
+if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
+	target_folder="/data/local/tmp"
+
+	mkdir -p "${target_folder}"
+	chmod 0771 "${target_folder}"
+	chown shell:shell "${target_folder}"
+	chcon u:object_r:shell_data_file:s0 "${target_folder}"
+	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '512'
+fi
+
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 ## First we need to wait until files are accessible in /sdcard ##
 until [[ -e "/sdcard/Android" ]]; do sleep 1; done

@@ -704,6 +704,22 @@
 						<md-switch icons id="enable_log"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Duck Detector:</span>
+							<span class="card-row__tag--code">- Expected mode 0771 for /data/local/tmp, but found 0777.</span>
+							<span class="card-row__tag--code">- Expected shell:shell (2000:2000) for /data/local/tmp, but found 3000:3000.</span>
+							<span class="card-row__tag--code">
+								- The inode for /data/local/tmp is 137011, above the heuristic review threshold 10000. This is weaker than owner/mode drift and can also reflect deletion or
+								recreation history.</span
+							>
+						</div>
+						<md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
 				</div>
 			</section>
 
