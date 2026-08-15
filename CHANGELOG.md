@@ -1,21 +1,20 @@
 # Changelog
 
-# BRENE v0.0.59 - Supports SuSFS 2.2.0+
+# BRENE v0.0.60 - Supports SuSFS 2.2.0+
 
-- change: disable "Max Saturation" by default
-- change: disable "Non-standard /sdcard Paths" by default
-- add: new toggle "Hide Custom ROM Paths"
-- add: new toggle "Spoof Android System Properties Every Minute"
-- improve: move "Spoof /system/lib64/libstagefright.so" to post-fs-data stage
-- improve: move "Hide /system/addon.d Path" to post-fs-data stage
-- improve: move "Hide Custom ROM Paths" to post-fs-data stage
-- webui: improve warnings using yellow color
-- change: disable "Spoof Android System Properties Every Minute" by default
-- improve: spoof more props (utc props)
-- webui: improve "Kernel Version" indicator
-- webui: improve "Android Version" indicator
-- improve: Hide LineageOS Strings
-- improve: move "Hide LineageOS Strings" to post-fs-data stage
-- webui: improve "Android Version" indicator again
-- remove: "-9-g690101101069" string in "Spoof Uname"
-- bump: version to v0.0.59
+- fix: use the new module id of TEESimulator
+- fix: extract base kernel version by matching X.Y.Z pattern
+- fix: use ro.product.device instead of ro.build.product
+- fix: Device Model Status in other brands like Xiaomi
+- improve: move "Hide Suspicious PTYs" to post-fs-data stage
+- drop: Android Verified Boot Hash Spoofing
+- improve: run "Spoof Android System Properties" before and after the files are accessible in /sdcard
+- add: incompatible module "ROD-Manager"
+- add: new toggle "Hide Custom Recovery Paths"
+- improve: flatten conditional in "Spoof Uname"
+- change: disable "Spoof /proc/cmdline or /proc/bootconfig" by default
+- add: new toggle "Show Refresh Rate"
+- improve: remove some custom rom strings in fingerprint props
+- add: new toggle "Fix /data/local/tmp Inconsistencies"
+- improve: try to fix some issues with "Spoof libstagefright.so" and "Hide LineageOS Strings"
+- bump: version to v0.0.60
