@@ -206,7 +206,7 @@ if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	for i in ${CUSTOM_ROM_NAMES//|/ }; do
 		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
 			brene_sus_map "${path}"
-			brene_sus_path_loop "${path}"
+			brene_sus_path "${path}"
 		done
 
 		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
