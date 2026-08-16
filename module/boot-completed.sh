@@ -405,6 +405,11 @@ if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	done
 fi
 
+# Spoof Android Verified Boot Hash
+if [[ "${config_spoof_verified_boot_hash}" != '' ]]; then
+	resetprop_n "ro.boot.vbmeta.digest" "${config_spoof_verified_boot_hash}"
+fi
+
 resetprop -c --force
 
 if [[ "${config_brene_logs}" == "1" ]]; then

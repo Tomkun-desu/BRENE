@@ -38,5 +38,6 @@ config_hide_custom_rom_paths=0
 config_hide_framework_res_apk=0
 config_spoof_cmdline_or_bootconfig=0
 
+config_spoof_verified_boot_hash=''
 config_custom_uname_kernel_release='default'
 config_custom_uname_kernel_version='default'

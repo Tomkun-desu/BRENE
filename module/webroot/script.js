@@ -303,6 +303,9 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	document.getElementById('custom_uname_release').value = configValues['config_custom_uname_kernel_release']
 	// document.getElementById('custom_uname_version').value = configValues['config_custom_uname_kernel_version']
 
+	// Verified Boot Hash
+	document.getElementById('vbh_text_field').value = configValues['config_spoof_verified_boot_hash']
+
 	// toggle
 	configs.forEach((config) => {
 		const configId = `config_${config.id}`
@@ -360,6 +363,17 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	document.getElementById(`button_custom_uname_apply`).onclick = () => {
 		if (unameRelease.value !== '') updateUname(unameRelease.value)
 	}
+})()
+
+// Verified Boot Hash
+;(async () => {
+	const button = document.getElementById('vbh_button')
+	const textField = document.getElementById('vbh_text_field')
+
+	button.addEventListener('click', () => {
+		updateConfig2('config_spoof_verified_boot_hash', textField.value)
+		toast('Reboot to take effect')
+	})
 })()
 
 //
