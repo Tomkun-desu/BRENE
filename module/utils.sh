@@ -61,7 +61,6 @@ spoof_android_system_properties() {
 	resetprop_n "ro.crypto.state" "encrypted"
 	resetprop_n "ro.debuggable" "0"
 	resetprop_n "ro.force.debuggable" "0"
-	resetprop_n "ro.kernel.qemu" ""
 	resetprop_n "ro.secure" "1"
 	resetprop_n "ro.secureboot.lockstate" "locked"
 	resetprop_n "ro.is_ever_orange" "0"
@@ -127,6 +126,7 @@ spoof_android_system_properties() {
 	resetprop -d service.adb.root
 	resetprop -d service.adb.tcp.port
 
+	# https://android.googlesource.com/platform/frameworks/base/+/bab174bf0883cbc5039a2860a1af706a56fe6ca0%5E%21/
 	if [[ "$(resetprop ro.build.version.sdk)" -ge "36" ]]; then
 		resetprop -d sys.oem_unlock_allowed
 	else
