@@ -286,9 +286,9 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 		echo "#############################"
 	} >> "${PERSISTENT_DIR}/logs.txt"
 fi
-# brene_sus_path "/sys/block/loop0"
-brene_sus_path "/vendor/bin/install-recovery.sh"
-brene_sus_path "/system/bin/install-recovery.sh"
+# brene_sus_path_loop "/sys/block/loop0"
+brene_sus_path_loop "/vendor/bin/install-recovery.sh"
+brene_sus_path_loop "/system/bin/install-recovery.sh"
 
 # Load custom_sus_map.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]]; then

@@ -126,8 +126,8 @@ fi
 # if [[ $config_hide_modules_img == 1 ]]; then
 ## Hide all sus ext4 loops and jbd2 journals if they are still mounted and with jdb2 journal enabled ##
 # 	for device in $(ls -Ld /proc/fs/jbd2/loop*8 | sed 's|/proc/fs/jbd2/||; s|-8||'); do
-# 		brene_sus_path /proc/fs/jbd2/${device}-8
-# 		brene_sus_path /proc/fs/ext4/${device}
+# 		brene_sus_path_loop /proc/fs/jbd2/${device}-8
+# 		brene_sus_path_loop /proc/fs/ext4/${device}
 # 	done
 ## Also we need to spoof the nlink of /proc/fs/jbd2 to 2 ##
 # ${SUSFS_BIN} add_sus_kstat_statically '/proc/fs/jbd2' 'default' 'default' '2' 'default' 'default' 'default' 'default' 'default' 'default' 'default' 'default' 'default'
@@ -198,7 +198,7 @@ fi
 
 # Hide /system/addon.d Path
 if [[ "${config_hide_addon_d}" == "1" ]]; then
-	brene_sus_path "/system/addon.d"
+	brene_sus_path_loop "/system/addon.d"
 fi
 
 # Hide Custom ROM Paths
@@ -206,7 +206,7 @@ if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	for i in ${CUSTOM_ROM_NAMES//|/ }; do
 		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
 			brene_sus_map "${path}"
-			brene_sus_path "${path}"
+			brene_sus_path_loop "${path}"
 		done
 
 		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
