@@ -247,6 +247,11 @@ if [[ "${config_hide_suspicious_pty}" == "1" ]]; then
 	done
 fi
 
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+	spoof_android_system_properties
+fi
+
 if [[ "${config_brene_logs}" == "1" ]]; then
 	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi

@@ -91,11 +91,6 @@ if [[ "${config_show_refresh_rate}" == "1" ]]; then
 	service call SurfaceFlinger 1034 i32 1
 fi
 
-# Spoof Android System Properties
-if [[ "${config_spoof_system_properties}" == "1" ]]; then
-	spoof_android_system_properties
-fi
-
 # Fix /data/local/tmp Inconsistencies
 if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
 	target_folder="/data/local/tmp"
@@ -105,6 +100,11 @@ if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
 	chown shell:shell "${target_folder}"
 	chcon u:object_r:shell_data_file:s0 "${target_folder}"
 	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '512'
+fi
+
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+	spoof_android_system_properties
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
