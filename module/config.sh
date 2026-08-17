@@ -16,6 +16,7 @@ config_hide_custom_recovery=1
 config_enable_avc_log_spoofing=1
 config_umount_suspicious_mounts=1
 config_hide_sus_mnts_for_non_su_procs=1
+config_fix_debug_ramdisk_inconsistencies=1
 config_fix_data_local_tmp_inconsistencies=1
 config_spoof_system_properties=1
 config_spoof_system_properties_repeat=0
