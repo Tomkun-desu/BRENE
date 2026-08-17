@@ -99,7 +99,10 @@ if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
 	chmod 0771 "${target_folder}"
 	chown shell:shell "${target_folder}"
 	chcon u:object_r:shell_data_file:s0 "${target_folder}"
-	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '512'
+	# add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+	# ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
+	# Example: stat -c %i <path>
+	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '4096'
 fi
 
 # Fix /debug_ramdisk Inconsistencies
