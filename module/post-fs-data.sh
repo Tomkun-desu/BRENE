@@ -198,6 +198,7 @@ fi
 
 # Hide /system/addon.d Path
 if [[ "${config_hide_addon_d}" == "1" ]]; then
+	brene_sus_map "/system/addon.d"
 	brene_sus_path_loop "/system/addon.d"
 fi
 
@@ -209,7 +210,13 @@ if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 			brene_sus_path_loop "${path}"
 		done
 
+		find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" | while read -r path; do
+			brene_sus_map "${path}"
+			brene_sus_path_loop "${path}"
+		done
+
 		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
+			brene_sus_map "${path}"
 			brene_sus_path_loop "${path}"
 		done
 	done
