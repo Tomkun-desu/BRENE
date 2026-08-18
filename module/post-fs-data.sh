@@ -27,7 +27,7 @@ true > "${PERSISTENT_DIR}/logs.txt"
 ##  - It is stronly suggested to use dynamically if the target path will be mounted
 # cat <<EOF >/dev/null
 # # First, clone the permission before adding to sus_kstat
-# susfs_clone_perm "$MODDIR/hosts" /system/etc/hosts
+# brene_clone_perm "$MODDIR/hosts" /system/etc/hosts
 
 # # Second, before bind mount your file/directory, use 'add_sus_kstat' to add the path #
 # ${SUSFS_BIN} add_sus_kstat '/system/etc/hosts'
@@ -58,7 +58,7 @@ true > "${PERSISTENT_DIR}/logs.txt"
 # 1. Both target_pathname and redirected_pathname must be existed before they can be added to kernel.
 # 2. Users have to take care of the selinux permission for both target_pathname and redirected_pathname by themselves first.
 ## Set the permission of the redirected path first ##
-# susfs_clone_perm '/data/local/tmp/my_hosts' '/system/etc/hosts'
+# brene_clone_perm '/data/local/tmp/my_hosts' '/system/etc/hosts'
 ## Now add the target path and redirected path with pre-defined uid scheme to kernel ##
 ## *Run 'ksu_susfs add_open_redirect' for more details of <uid_scheme> ##
 # ${SUSFS_BIN} add_open_redirect '/system/etc/hosts' '/data/local/tmp/my_hosts' '0'
@@ -74,7 +74,7 @@ if [[ "${config_spoof_libstagefright}" == "1" ]]; then
 		touch "${fake_file_path}"
 	}
 
-	susfs_clone_perm "${fake_file_path}" "${path}"
+	brene_clone_perm "${fake_file_path}" "${path}"
 	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
 fi
 
@@ -226,7 +226,7 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 			touch "${fake_file_path}"
 		}
 
-		susfs_clone_perm "${fake_file_path}" "${path}"
+		brene_clone_perm "${fake_file_path}" "${path}"
 		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
 	done
 fi
