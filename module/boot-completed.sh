@@ -91,33 +91,6 @@ if [[ "${config_show_refresh_rate}" == "1" ]]; then
 	service call SurfaceFlinger 1034 i32 1
 fi
 
-# Fix /data/local/tmp Inconsistencies
-if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
-	target_folder="/data/local/tmp"
-
-	mkdir -p "${target_folder}"
-	chmod 0771 "${target_folder}"
-	chown shell:shell "${target_folder}"
-	chcon u:object_r:shell_data_file:s0 "${target_folder}"
-	# add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
-	# ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
-	# Example: stat -c %i <path>
-	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '4096'
-fi
-
-# Fix /debug_ramdisk Inconsistencies
-if [[ "${config_fix_debug_ramdisk_inconsistencies}" == "1" ]]; then
-	target_folder="/debug_ramdisk"
-
-	chmod 0755 "${target_folder}"
-	chown root:root "${target_folder}"
-	chcon u:object_r:tmpfs:s0 "${target_folder}"
-	# add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
-	# ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
-	# Example: stat -c %i <path>
-	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '20' 'default' 'default' '4096' '1230811200' 'default' '1230811200' 'default' '1230811200' 'default' '8' '4096'
-fi
-
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
 	spoof_android_system_properties
@@ -424,6 +397,33 @@ fi
 # Spoof Android Verified Boot Hash
 if [[ "${config_spoof_verified_boot_hash}" != '' ]]; then
 	resetprop_n "ro.boot.vbmeta.digest" "${config_spoof_verified_boot_hash}"
+fi
+
+# Fix /data/local/tmp Inconsistencies
+if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
+	target_folder="/data/local/tmp"
+
+	mkdir -p "${target_folder}"
+	chmod 0771 "${target_folder}"
+	chown shell:shell "${target_folder}"
+	chcon u:object_r:shell_data_file:s0 "${target_folder}"
+	# add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+	# ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
+	# Example: stat -c %i <path>
+	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '4096'
+fi
+
+# Fix /debug_ramdisk Inconsistencies
+if [[ "${config_fix_debug_ramdisk_inconsistencies}" == "1" ]]; then
+	target_folder="/debug_ramdisk"
+
+	chmod 0755 "${target_folder}"
+	chown root:root "${target_folder}"
+	chcon u:object_r:tmpfs:s0 "${target_folder}"
+	# add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+	# ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
+	# Example: stat -c %i <path>
+	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '20' 'default' 'default' '4096' '1230811200' 'default' '1230811200' 'default' '1230811200' 'default' '8' '4096'
 fi
 
 resetprop -c --force
