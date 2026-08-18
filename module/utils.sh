@@ -18,9 +18,7 @@ brene_clone_perm() {
 		return
 	fi
 
-	permission=$(busybox stat -c "%a" "${FROM}")
-	owner=$(busybox stat -c "%U" "${FROM}")
-	group=$(busybox stat -c "%G" "${FROM}")
+	read -r permission owner group < <(busybox stat -c "%a %U %G" "${FROM}")
 
 	busybox chmod "${permission}" "${TO}"
 	busybox chown "${owner}":"${group}" "${TO}"
