@@ -1,20 +1,19 @@
 # Changelog
 
-# BRENE v0.0.60 - Supports SuSFS 2.2.0+
+# BRENE v0.0.61 - Supports SuSFS 2.2.0+
 
-- fix: use the new module id of TEESimulator
-- fix: extract base kernel version by matching X.Y.Z pattern
-- fix: use ro.product.device instead of ro.build.product
-- fix: Device Model Status in other brands like Xiaomi
-- improve: move "Hide Suspicious PTYs" to post-fs-data stage
-- drop: Android Verified Boot Hash Spoofing
-- improve: run "Spoof Android System Properties" before and after the files are accessible in /sdcard
-- add: incompatible module "ROD-Manager"
-- add: new toggle "Hide Custom Recovery Paths"
-- improve: flatten conditional in "Spoof Uname"
-- change: disable "Spoof /proc/cmdline or /proc/bootconfig" by default
-- add: new toggle "Show Refresh Rate"
-- improve: remove some custom rom strings in fingerprint props
-- add: new toggle "Fix /data/local/tmp Inconsistencies"
-- improve: try to fix some issues with "Spoof libstagefright.so" and "Hide LineageOS Strings"
-- bump: version to v0.0.60
+- improve: avoids overheat in "Hide Custom ROM Paths" the paths are read-only, use sus path instead of sus path loop
+- add: re-implement "Spoof Android Verified Boot Hash"
+- drop: selinux props
+- drop: ro.kernel.qemu prop
+- improve: run "Spoof Android System Properties" in post-fs-data stage
+- improve: replace all brene_sus_path calls with brene_sus_path_loop calls
+- improve: SuSFS version checks
+- add: new toggle "Fix /debug_ramdisk Inconsistencies"
+- fix: use 4096 not 512 in the <blksize> field
+- refactor: clone_perm function
+- improve: brene_clone_perm function
+- improve: try to fix some issues in "Fix /data/local/tmp Inconsistencies" and "Fix /debug_ramdisk Inconsistencies"
+- improve: add more custom rom paths to "Hide Custom ROM Paths"
+- improve: spoof date props
+- bump: version to v0.0.61
