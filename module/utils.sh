@@ -131,7 +131,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop -n -p "persist.vendor.build.date.utc" "${new_utc_value}"
+	resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"
