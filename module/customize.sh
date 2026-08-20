@@ -34,8 +34,8 @@ fi
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}"
 chmod +x "${MODPATH}/inotify.sh"
 chmod 755 "${DEST_BIN_DIR}/susfs"
-ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
-ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
+ln -sf "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus"       # For development
+ln -sf "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" # For compatibility
 
 susfs_ver=$(${SUSFS_BIN} show version)
 if [[ "${susfs_ver}" == "v2"* ]]; then
@@ -45,7 +45,7 @@ else
 fi
 
 # Reset module description
-${KSU_BIN} module config set override.description "[Module Status: ⏱️ | SuSFS Patches: ⏱️] A SuSFS/KernelSU module for SuSFS patched kernels"
+${KSU_BIN} module config set override.description "[SuSFS: ⏱️] A SuSFS/KernelSU module for SuSFS patched kernels"
 
 # Disable other SuSFS modules
 [[ -e "${KSU_MODULES_DIR}/susfs4ksu" ]] && {

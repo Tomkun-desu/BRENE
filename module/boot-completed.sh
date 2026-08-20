@@ -16,10 +16,10 @@ CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising
 # Update Description
 susfs_ver=$(${SUSFS_BIN} show version)
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
-if [[ -n "${susfs_ver}" ]]; then
-	${KSU_BIN} module config set override.description "[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}] ${description}"
+if [[ "${susfs_ver}" == "v2"* ]]; then
+	${KSU_BIN} module config set override.description "[SuSFS: ${susfs_ver} 💯] ${description}"
 else
-	${KSU_BIN} module config set override.description "[Module Status: ❌ | SuSFS Patches: ❌] ${description}"
+	${KSU_BIN} module config set override.description "[SuSFS: ❌] ${description}"
 fi
 
 # SU Compat
