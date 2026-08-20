@@ -449,13 +449,19 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		}
 
 		if (file) {
-			exec(`
+			if (content === '') {
+				exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
+					toast(result.errno === 0 ? 'Success' : result.stderr)
+				})
+			} else {
+				exec(`
 cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
 ${content}
 UNIQUE_EOF
-		`).then((result) => {
-				toast(result.errno === 0 ? 'Success' : result.stderr)
-			})
+				`).then((result) => {
+					toast(result.errno === 0 ? 'Success' : result.stderr)
+				})
+			}
 		}
 	}
 })()
