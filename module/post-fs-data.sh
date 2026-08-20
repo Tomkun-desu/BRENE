@@ -210,12 +210,17 @@ if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 			brene_sus_path_loop "${path}"
 		done
 
-		find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" | while read -r path; do
+		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
 			brene_sus_map "${path}"
 			brene_sus_path_loop "${path}"
 		done
+	done
+fi
 
-		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
+# Hide Custom ROM Paths (Extreme)
+if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
+	for i in ${CUSTOM_ROM_NAMES//|/ }; do
+		find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" | while read -r path; do
 			brene_sus_map "${path}"
 			brene_sus_path_loop "${path}"
 		done

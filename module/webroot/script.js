@@ -60,6 +60,7 @@ const configs = [
 	{ id: 'hide_lineage_strings' },
 	{ id: 'spoof_libstagefright' },
 	{ id: 'hide_custom_rom_paths' },
+	{ id: 'hide_custom_rom_paths_2' },
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
