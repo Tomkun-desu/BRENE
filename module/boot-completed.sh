@@ -376,9 +376,11 @@ fi
 # EOF
 
 #### Adding sus mounts to umount list via built-in KernelSU kernel umount (not via add_try_umount from old susfs) ####
-# Umount Suspicious Mounts
 
+# Umount Suspicious Mounts
 if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
+	${KSU_BIN} feature set kernel_umount 1
+
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
 	${KSU_BIN} kernel notify-module-mounted
 

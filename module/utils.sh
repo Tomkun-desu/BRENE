@@ -172,6 +172,7 @@ brene_set_uname() {
 	fi
 }
 brene_sus_mount() {
+	${KSU_BIN} feature set kernel_umount 1
 	${KSU_BIN} kernel notify-module-mounted
 	${KSU_BIN} kernel umount add -f 2 "$1" 2> /dev/null
 }
