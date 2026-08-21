@@ -279,8 +279,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">Hide Custom Recovery Paths</span>
 							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/Fox</span>
-							<span class="card-row__tag--code">/sdcard/TWRP</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Fox</span>
+							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 							<span class="card-row__tag--code">/data/recovery</span>
 						</div>
 						<md-switch icons id="hide_custom_recovery"></md-switch>
@@ -289,13 +289,13 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Non-standard /sdcard Paths</span>
+							<span class="card-row__title">Non-standard /storage/emulated/0 Paths</span>
 							<span class="card-row__sub">Standard Paths:</span>
 							<span class="card-row__sub">
 								Alarms, Android, Audiobooks, DCIM, Documents, Download, Movies, Music, Notifications, Pictures, Podcasts, Recordings, Ringtones, (MIUI)
 							</span>
 							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/TWRP</span>
+							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 						</div>
 						<md-switch icons id="paths_hiding__non_standard_sdcard"></md-switch>
 						<md-ripple></md-ripple>
@@ -303,11 +303,11 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Non-standard /sdcard/Android Paths</span>
+							<span class="card-row__title">Non-standard /storage/emulated/0/Android Paths</span>
 							<span class="card-row__sub"> Standard Paths: </span>
 							<span class="card-row__sub">data, media, obb</span>
 							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/Android/fas-rs</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Android/fas-rs</span>
 						</div>
 						<md-switch icons id="paths_hiding__non_standard_sdcard_android"></md-switch>
 						<md-ripple></md-ripple>
@@ -325,11 +325,11 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">/sdcard/Android/[data | media | obb] Paths</span>
+							<span class="card-row__title">/storage/emulated/0/Android/[data | media | obb] Paths</span>
 							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/Android/data/ io.github.muntashirakon.AppManager</span>
-							<span class="card-row__tag--code">/sdcard/Android/media/ io.github.muntashirakon.AppManager</span>
-							<span class="card-row__tag--code">/sdcard/Android/obb/ io.github.muntashirakon.AppManager</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Android/data/ io.github.muntashirakon.AppManager</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Android/media/ io.github.muntashirakon.AppManager</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Android/obb/ io.github.muntashirakon.AppManager</span>
 						</div>
 						<md-switch icons id="paths_hiding__sdcard_android_data_media_obb"></md-switch>
 						<md-ripple></md-ripple>
@@ -468,7 +468,7 @@
 							<span class="card-row__sub">Also it does not check if the path is existed or not, instead it checks for empty string only, so be careful what to add</span>
 							<span class="card-row__sub">For paths that are frequently modified, we can add them via 'add_sus_path_loop'</span>
 							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/sdcard/TWRP</span>
+							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
 							<!-- SUS PATH LOOP -->
 						</div>

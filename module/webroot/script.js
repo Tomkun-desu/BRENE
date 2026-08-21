@@ -154,7 +154,7 @@ exec('[[ -n "$(find /system -iname "*lineage*")" ]] && echo "Yes" || echo "No"')
 })
 
 // Load ..5.u.S Status
-exec('[[ -e /sdcard/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((result) => {
+exec('[[ -e /storage/emulated/0/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((result) => {
 	const container = document.querySelector('#sus-status .card-row__sub')
 
 	if (result.errno !== 0) {
@@ -454,6 +454,8 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 					toast(result.errno === 0 ? 'Success' : result.stderr)
 				})
 			} else {
+				content = content.replaceAll('/sdcard', '/storage/emulated/0')
+
 				exec(`
 cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
 ${content}
