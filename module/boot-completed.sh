@@ -60,6 +60,21 @@ elif [[ "${config_wireless_debugging}" == "0" ]]; then
 	settings put global adb_wifi_enabled 0
 fi
 
+# Disable Child Process Restrictions
+if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
+	resetprop_n persist.sys.fflag.override.settings_enable_monitor_phantom_procs false
+fi
+
+# Max Saturation
+if [[ "${config_saturation}" == "1" ]]; then
+	service call SurfaceFlinger 1022 f 2.0
+fi
+
+# Show Refresh Rate
+if [[ "${config_show_refresh_rate}" == "1" ]]; then
+	service call SurfaceFlinger 1034 i32 1
+fi
+
 # SELinux Enforcing
 if [[ "${config_selinux}" == "1" ]]; then
 	[[ "$(getenforce)" != "Enforcing" ]] && setenforce 1
@@ -79,16 +94,6 @@ if [[ "${config_pif_props}" == "1" ]]; then
 	resetprop | grep -iE "pihook|pixelprops|spoof" | awk -F'[][]' '{print $2}' | while read -r prop; do
 		resetprop -d -p "${prop}"
 	done
-fi
-
-# Max Saturation
-if [[ "${config_saturation}" == "1" ]]; then
-	service call SurfaceFlinger 1022 f 2.0
-fi
-
-# Show Refresh Rate
-if [[ "${config_show_refresh_rate}" == "1" ]]; then
-	service call SurfaceFlinger 1034 i32 1
 fi
 
 # Spoof Android System Properties

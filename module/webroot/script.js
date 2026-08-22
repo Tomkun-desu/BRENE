@@ -47,6 +47,12 @@ const configs = [
 		id: 'show_refresh_rate',
 		action: (enabled) => setFeature(`service call SurfaceFlinger 1034 i32 ${enabled ? 1 : 0}`),
 	},
+	{
+		id: 'disable_child_process_restrictions',
+		action: (enabled) => {
+			setFeature(`resetprop -n persist.sys.fflag.override.settings_enable_monitor_phantom_procs ${enabled ? false : true}`)
+		},
+	},
 	{ id: 'pif_props' },
 	{ id: 'rom_props' },
 	{ id: 'brene_logs' },
