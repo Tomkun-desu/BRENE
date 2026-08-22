@@ -326,6 +326,33 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			if (config.action) config.action(enabled)
 		})
 	})
+
+	// Reset Settings
+	const dialog = document.getElementById('dialog')
+	const openButton = document.getElementById('reset_settings')
+	openButton.addEventListener('click', () => {
+		dialog.show()
+	})
+	dialog.addEventListener('close', () => {
+		if (dialog.returnValue === 'confirm') {
+			exec(`
+				cp -f ${MODDIR}/config.sh ${PERSISTENT_DIR}
+			`).then((result) => {
+				configs.forEach((config) => {
+					const configId = `config_${config.id}`
+					const element = document.getElementById(config.id)
+					if (!element) return
+
+					const value = configValues[configId]
+					if (value !== undefined) {
+						element.selected = parseInt(value) === 1
+					}
+				})
+
+				toast(result.errno === 0 ? 'Success' : result.stderr)
+			})
+		}
+	})
 })
 
 // KSU Modules toggles
