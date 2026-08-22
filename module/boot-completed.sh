@@ -146,9 +146,9 @@ if [[ "${config_hide_custom_recovery}" == "1" ]]; then
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
-	[[ -e "/storage/emulated/0/Fox" ]] && brene_sus_path_loop "/storage/emulated/0/Fox"
-	[[ -e "/storage/emulated/0/TWRP" ]] && brene_sus_path_loop "/storage/emulated/0/TWRP"
-	[[ -e "/data/recovery" ]] && brene_sus_path_loop "/data/recovery"
+	[[ -e "/storage/emulated/0/Fox" ]] && brene_sus_path "/storage/emulated/0/Fox"
+	[[ -e "/storage/emulated/0/TWRP" ]] && brene_sus_path "/storage/emulated/0/TWRP"
+	[[ -e "/data/recovery" ]] && brene_sus_path "/data/recovery"
 fi
 
 # Non-standard /storage/emulated/0
@@ -179,7 +179,7 @@ if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
 
 		[[ "${pass}" == "1" ]] && continue
 
-		brene_sus_path_loop "${i}"
+		brene_sus_path "${i}"
 	done
 fi
 
@@ -206,7 +206,7 @@ if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
 
 		[[ "${pass}" == "1" ]] && continue
 
-		brene_sus_path_loop "${i}"
+		brene_sus_path "${i}"
 	done
 fi
 
@@ -222,7 +222,7 @@ if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	fi
 
 	for i in /data/local/tmp/*; do
-		brene_sus_path_loop "${i}"
+		brene_sus_path "${i}"
 	done
 fi
 
@@ -248,9 +248,9 @@ if [[ "${config_paths_hiding__sdcard_android_data_media_obb}" == "1" ]]; then
 		full_path1="${path1}/data/${i}"
 		full_path2="${path1}/media/${i}"
 		full_path3="${path1}/obb/${i}"
-		[[ -e "${full_path1}" ]] && brene_sus_path_loop "${full_path1}"
-		[[ -e "${full_path2}" ]] && brene_sus_path_loop "${full_path2}"
-		[[ -e "${full_path3}" ]] && brene_sus_path_loop "${full_path3}"
+		[[ -e "${full_path1}" ]] && brene_sus_path "${full_path1}"
+		[[ -e "${full_path2}" ]] && brene_sus_path "${full_path2}"
+		[[ -e "${full_path3}" ]] && brene_sus_path "${full_path3}"
 	done
 
 	# path1=/storage/emulated/0/Android/data
@@ -260,9 +260,9 @@ if [[ "${config_paths_hiding__sdcard_android_data_media_obb}" == "1" ]]; then
 	# 	full_path1="${path1}/${i}"
 	# 	full_path2="${path2}/${i}"
 	# 	full_path3="${path3}/${i}"
-	# 	[[ -e "${full_path1}" ]] && brene_sus_path_loop "${full_path1}"
-	# 	[[ -e "${full_path2}" ]] && brene_sus_path_loop "${full_path2}"
-	# 	[[ -e "${full_path3}" ]] && brene_sus_path_loop "${full_path3}"
+	# 	[[ -e "${full_path1}" ]] && brene_sus_path "${full_path1}"
+	# 	[[ -e "${full_path2}" ]] && brene_sus_path "${full_path2}"
+	# 	[[ -e "${full_path3}" ]] && brene_sus_path "${full_path3}"
 	# done
 fi
 
@@ -275,9 +275,9 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 		echo "#############################"
 	} >> "${PERSISTENT_DIR}/logs.txt"
 fi
-# brene_sus_path_loop "/sys/block/loop0"
-brene_sus_path_loop "/vendor/bin/install-recovery.sh"
-brene_sus_path_loop "/system/bin/install-recovery.sh"
+# brene_sus_path "/sys/block/loop0"
+brene_sus_path "/vendor/bin/install-recovery.sh"
+brene_sus_path "/system/bin/install-recovery.sh"
 
 # Load custom_sus_map.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]]; then
