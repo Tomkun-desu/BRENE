@@ -380,20 +380,6 @@ fi
 # fi
 # EOF
 
-#### Adding sus mounts to umount list via built-in KernelSU kernel umount (not via add_try_umount from old susfs) ####
-
-# Umount Suspicious Mounts
-if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
-	${KSU_BIN} feature set kernel_umount 1
-
-	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
-	${KSU_BIN} kernel notify-module-mounted
-
-	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r mount; do
-		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
-	done
-fi
-
 # Hide framework-res.apk
 if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	find /system -iname "*framework-res.apk" | while read -r path; do

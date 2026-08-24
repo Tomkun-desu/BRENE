@@ -69,7 +69,6 @@ const configs = [
 	{ id: 'hide_custom_rom_paths_2' },
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'enable_avc_log_spoofing' },
-	{ id: 'umount_suspicious_mounts' },
 	{ id: 'spoof_cmdline_or_bootconfig' },
 	{ id: 'fix_debug_ramdisk_inconsistencies' },
 	{ id: 'fix_data_local_tmp_inconsistencies' },
