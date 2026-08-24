@@ -13,7 +13,6 @@ config_kernel_umount=1
 config_hide_injections=1
 config_hide_custom_recovery=1
 config_enable_avc_log_spoofing=1
-config_umount_suspicious_mounts=1
 config_hide_sus_mnts_for_non_su_procs=1
 config_fix_debug_ramdisk_inconsistencies=1
 config_fix_data_local_tmp_inconsistencies=1
@@ -38,6 +37,7 @@ config_spoof_libstagefright=0
 config_hide_custom_rom_paths=0
 config_hide_custom_rom_paths_2=0
 config_hide_framework_res_apk=0
+config_umount_suspicious_mounts=0
 config_spoof_cmdline_or_bootconfig=0
 config_disable_child_process_restrictions=0
 
