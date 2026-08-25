@@ -540,13 +540,13 @@ UNIQUE_EOF
 	let touchStartY = 0
 
 	const updateUI = (index) => {
+		buttons[index].click()
+
 		buttons[index].scrollIntoView({
-			behavior: 'smooth',
+			behavior: 'auto',
 			block: 'nearest',
 			inline: 'center',
 		})
-
-		buttons[index].click()
 	}
 
 	const changeTab = (index) => {
@@ -568,14 +568,17 @@ UNIQUE_EOF
 	bodyContent.addEventListener(
 		'touchend',
 		(e) => {
-			if (e.target.closest('.tab-bar') === null && e.target.closest('.app-header') === null) {
+			if (e.target.closest('.tab-bar') === null) {
 				const touchEndX = e.changedTouches[0].clientX
 				const touchEndY = e.changedTouches[0].clientY
 
 				const diffX = touchStartX - touchEndX
 				const diffY = touchStartY - touchEndY
 
-				if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > Math.abs(diffY)) {
+				const isHorizontalSwipe = Math.abs(diffX) > SWIPE_THRESHOLD
+				const isDominantX = Math.abs(diffX) > Math.abs(diffY) * 3
+
+				if (isHorizontalSwipe && isDominantX) {
 					if (diffX > 0) {
 						changeTab(currentIndex + 1)
 					} else {
