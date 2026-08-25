@@ -70,7 +70,6 @@ const configs = [
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'spoof_cmdline_or_bootconfig' },
-	{ id: 'fix_debug_ramdisk_inconsistencies' },
 	{ id: 'fix_data_local_tmp_inconsistencies' },
 	{ id: 'spoof_system_properties' },
 	{ id: 'spoof_system_properties_repeat' },
