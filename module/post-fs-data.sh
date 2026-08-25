@@ -168,7 +168,8 @@ if [[ "${config_spoof_uname}" == "1" ]]; then
 
 	kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 	kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-	uname_kernel_release="${kernel_version}-${kmi}"
+
+	uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1)" # e.g., "6.1.145-android14-9-g00000000"
 	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
 	brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
