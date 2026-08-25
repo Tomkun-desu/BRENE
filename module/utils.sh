@@ -141,6 +141,8 @@ spoof_android_system_properties() {
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"
 	resetprop -d "ro.boot.verifyerrorpart"
+	resetprop -d "vendor.boot.verifyerrorpart"
+	resetprop -d "vendor.boot.verifiedbooterror"
 	resetprop -d "crashrecovery.rescue_boot_count"
 
 	resetprop -d "service.adb.root"
