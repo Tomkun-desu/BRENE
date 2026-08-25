@@ -60,7 +60,7 @@ mkdir -p "${PERSISTENT_DIR}"
 
 files="
 custom_sus_map.txt
-custom_sus_mount.txt
+custom_kernel_umount.txt
 custom_sus_path.txt
 custom_sus_path_loop.txt
 "

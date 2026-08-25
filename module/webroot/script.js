@@ -413,7 +413,6 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 //
 ;(async () => {
 	const mapField = document.getElementById('custom_sus_map_text_field')
-	const mountField = document.getElementById('custom_sus_mount_text_field')
 	const pathField = document.getElementById('custom_sus_path_text_field')
 	const loopField = document.getElementById('custom_sus_path_loop_text_field')
 	const applyButton = document.getElementById('unified_apply_button')
@@ -422,16 +421,13 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 	// Load all contents
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_map.txt`).then((result) => {
-		mapField.value = result.errno === 0 ? `${result.stdout}\n` : ''
-	})
-	exec(`cat ${PERSISTENT_DIR}/custom_sus_mount.txt`).then((result) => {
-		mountField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		mapField.value = result.errno === 0 ? `${result.stdout}` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path.txt`).then((result) => {
-		pathField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		pathField.value = result.errno === 0 ? `${result.stdout}` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_loop.txt`).then((result) => {
-		loopField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		loopField.value = result.errno === 0 ? `${result.stdout}` : ''
 	})
 
 	// Tabs and Scroll Sync
@@ -467,14 +463,10 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 				content = mapField.value
 				break
 			case 1:
-				file = 'custom_sus_mount.txt'
-				content = mountField.value
-				break
-			case 2:
 				file = 'custom_sus_path.txt'
 				content = pathField.value
 				break
-			case 3:
+			case 2:
 				file = 'custom_sus_path_loop.txt'
 				content = loopField.value
 				break
@@ -488,6 +480,38 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			} else {
 				content = content.replaceAll('/sdcard', '/storage/emulated/0')
 
+				exec(`
+cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
+${content}
+UNIQUE_EOF
+				`).then((result) => {
+					toast(result.errno === 0 ? 'Success' : result.stderr)
+				})
+			}
+		}
+	}
+})()
+
+// Manual Kernel Umount
+;(async () => {
+	const mountField = document.getElementById('custom_kernel_umount_text_field')
+	const applyButton = document.getElementById('kernel_umount_apply_button')
+
+	// Load all content
+	exec(`cat ${PERSISTENT_DIR}/custom_kernel_umount.txt`).then((result) => {
+		mountField.value = result.errno === 0 ? `${result.stdout}` : ''
+	})
+
+	applyButton.onclick = () => {
+		let file = 'custom_kernel_umount.txt'
+		let content = mountField.value
+
+		if (file) {
+			if (content === '') {
+				exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
+					toast(result.errno === 0 ? 'Success' : result.stderr)
+				})
+			} else {
 				exec(`
 cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
 ${content}
