@@ -31,7 +31,7 @@ body {
 md-switch {
 	flex-shrink: 0;
 	pointer-events: all;
-	scale: 1.36;
+	scale: 1.1;
 }
 
 .title {
