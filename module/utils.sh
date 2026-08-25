@@ -38,13 +38,13 @@ resetprop_n() {
 	resetprop -n "$1" "$2"
 }
 
-if_prop_value_exits_resetprop_n() {
+if_prop_exits_resetprop_n() {
 	local PROP_NAME=$1
-	local EXPECTED_VALUE=$2
+	local NEW_VALUE=$2
 	local CURRENT_VALUE
 	CURRENT_VALUE=$(resetprop "${PROP_NAME}")
 
-	[[ -z "${CURRENT_VALUE}" ]] || [[ "${CURRENT_VALUE}" == "${EXPECTED_VALUE}" ]] || resetprop -n "${PROP_NAME}" "${EXPECTED_VALUE}"
+	[[ -z "${CURRENT_VALUE}" ]] || [[ "${CURRENT_VALUE}" == "${NEW_VALUE}" ]] || resetprop_n "${PROP_NAME}" "${NEW_VALUE}"
 }
 
 # if_contains_resetprop_n() {
@@ -56,96 +56,101 @@ if_prop_value_exits_resetprop_n() {
 # }
 
 spoof_android_system_properties() {
-	resetprop_n "init.svc.adbd" "stopped"
-	resetprop_n "init.svc_debug_pid.adbd" ""
-	resetprop_n "persist.sys.usb.config" "mtp"
-	resetprop_n "ro.adb.secure" "1"
-	resetprop_n "ro.crypto.state" "encrypted"
-	resetprop_n "ro.debuggable" "0"
-	resetprop_n "ro.force.debuggable" "0"
-	resetprop_n "ro.secure" "1"
-	resetprop_n "ro.secureboot.lockstate" "locked"
-	resetprop_n "ro.is_ever_orange" "0"
-	resetprop_n "ro.bootmode" "normal"
-	resetprop_n "ro.bootimage.build.tags" "release-keys"
-	resetprop_n "ro.build.type" "user"
-	resetprop_n "ro.build.tags" "release-keys"
-	resetprop_n "vendor.boot.vbmeta.device_state" "locked"
-	resetprop_n "vendor.boot.verifiedbootstate" "green"
+	if_prop_exits_resetprop_n "ro.secure" "1"
+	if_prop_exits_resetprop_n "ro.debuggable" "0"
+	if_prop_exits_resetprop_n "ro.adb.secure" "1"
+	if_prop_exits_resetprop_n "persist.sys.usb.config" "mtp"
+	if_prop_exits_resetprop_n "ro.boot.verifiedbootstate" "green"
+	if_prop_exits_resetprop_n "ro.boot.flash.locked" "1"
+	if_prop_exits_resetprop_n "ro.boot.veritymode" "enforcing"
+	if_prop_exits_resetprop_n "ro.boot.vbmeta.device_state" "locked"
+	if_prop_exits_resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
+	if_prop_exits_resetprop_n "ro.boot.avb_version" "1.3"
+	if_prop_exits_resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
+	if_prop_exits_resetprop_n "ro.build.type" "user"
+	if_prop_exits_resetprop_n "ro.build.tags" "release-keys"
+	if_prop_exits_resetprop_n "ro.build.keys" "release-keys"
+	if_prop_exits_resetprop_n "ro.crypto.state" "encrypted"
+	if_prop_exits_resetprop_n "ro.allow.mock.location" "0"
+	if_prop_exits_resetprop_n "ro.boot.warranty_bit" "0"
+	if_prop_exits_resetprop_n "ro.warranty_bit" "0"
+	if_prop_exits_resetprop_n "ro.force.debuggable" "0"
+	if_prop_exits_resetprop_n "ro.secureboot.lockstate" "locked"
+	if_prop_exits_resetprop_n "ro.is_ever_orange" "0"
+	if_prop_exits_resetprop_n "ro.bootmode" "normal"
+	if_prop_exits_resetprop_n "vendor.boot.vbmeta.device_state" "locked"
+	if_prop_exits_resetprop_n "vendor.boot.verifiedbootstate" "green"
+	if_prop_exits_resetprop_n "ro.vendor.boot.warranty_bit" "0"
+	if_prop_exits_resetprop_n "ro.vendor.warranty_bit" "0"
+	if_prop_exits_resetprop_n "init.svc.adbd" "stopped"
+	if_prop_exits_resetprop_n "init.svc_debug_pid.adbd" ""
+	# if_prop_exits_resetprop_n "ro.oem_unlock_supported" "0"
 
-	resetprop_n "ro.boot.flash.locked" "1"
-	resetprop_n "ro.boot.realme.lockstate" "1"
-	resetprop_n "ro.boot.realmebootstate" "green"
-	resetprop_n "ro.boot.verifiedbooterror" ""
-	resetprop_n "ro.boot.verifiedbootstate" "green"
-	resetprop_n "ro.boot.veritymode" "enforcing"
-	resetprop_n "ro.boot.veritymode.managed" "yes"
-
-	resetprop_n "ro.boot.vbmeta.size" "4096"
-	resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
-	resetprop_n "ro.boot.vbmeta.avb_version" "1.3"
-	resetprop_n "ro.boot.vbmeta.device_state" "locked"
-	resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
-
-	if_prop_value_exits_resetprop_n "ro.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.vendor.boot.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.vendor.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.boot.warranty_bit" "0"
+	# Realme
+	if_prop_exits_resetprop_n "ro.boot.realme.lockstate" "1"
+	if_prop_exits_resetprop_n "ro.boot.realmebootstate" "green"
 
 	fingerprint_value=$(resetprop ro.build.fingerprint)
 	new_fingerprint_value="${fingerprint_value//userdebug/user}"
 	new_fingerprint_value="${new_fingerprint_value//evolution/}"
 	new_fingerprint_value="${new_fingerprint_value//crdroid/}"
 	new_fingerprint_value="${new_fingerprint_value//lineage/}"
-	resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
-	resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
 
-	new_date_value=$(resetprop ro.build.date)
-	resetprop_n "ro.bootimage.build.date" "${new_date_value}"
-	resetprop_n "ro.build.date" "${new_date_value}"
-	resetprop_n "ro.odm.build.date" "${new_date_value}"
-	resetprop_n "ro.odm_dlkm.build.date" "${new_date_value}"
-	resetprop_n "ro.product.build.date" "${new_date_value}"
-	resetprop_n "ro.system.build.date" "${new_date_value}"
-	resetprop_n "ro.system_dlkm.build.date" "${new_date_value}"
-	resetprop_n "ro.system_ext.build.date" "${new_date_value}"
-	resetprop_n "ro.vendor.build.date" "${new_date_value}"
-	resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
+	# fingerprint_value=$(resetprop ro.build.fingerprint)
+	# new_fingerprint_value="${fingerprint_value//userdebug/user}"
+	# new_fingerprint_value="${new_fingerprint_value//evolution/}"
+	# new_fingerprint_value="${new_fingerprint_value//crdroid/}"
+	# new_fingerprint_value="${new_fingerprint_value//lineage/}"
+	# resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
+	# resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
 
-	new_utc_value=$(resetprop ro.build.date.utc)
-	resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.odm_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.product.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
+	# new_date_value=$(resetprop ro.build.date)
+	# resetprop_n "ro.bootimage.build.date" "${new_date_value}"
+	# resetprop_n "ro.build.date" "${new_date_value}"
+	# resetprop_n "ro.odm.build.date" "${new_date_value}"
+	# resetprop_n "ro.odm_dlkm.build.date" "${new_date_value}"
+	# resetprop_n "ro.product.build.date" "${new_date_value}"
+	# resetprop_n "ro.system.build.date" "${new_date_value}"
+	# resetprop_n "ro.system_dlkm.build.date" "${new_date_value}"
+	# resetprop_n "ro.system_ext.build.date" "${new_date_value}"
+	# resetprop_n "ro.vendor.build.date" "${new_date_value}"
+	# resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
+
+	# new_utc_value=$(resetprop ro.build.date.utc)
+	# resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.odm_dlkm.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.product.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.system.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.system_dlkm.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
+	# resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
+	# resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"
 	resetprop -d "ro.boot.verifyerrorpart"
 	resetprop -d "crashrecovery.rescue_boot_count"
 
-	resetprop -d service.adb.root
-	resetprop -d service.adb.tcp.port
+	resetprop -d "service.adb.root"
+	resetprop -d "service.adb.tcp.port"
 
 	# https://android.googlesource.com/platform/frameworks/base/+/bab174bf0883cbc5039a2860a1af706a56fe6ca0%5E%21/
 	if [[ "$(resetprop ro.build.version.sdk)" -ge "36" ]]; then
-		resetprop -d sys.oem_unlock_allowed
+		resetprop -d "sys.oem_unlock_allowed"
 	else
-		resetprop_n "sys.oem_unlock_allowed" "0"
+		if_prop_exits_resetprop_n "sys.oem_unlock_allowed" "0"
 	fi
 
 	resetprop -c --force
