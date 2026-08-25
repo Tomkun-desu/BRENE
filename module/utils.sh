@@ -63,10 +63,7 @@ spoof_android_system_properties() {
 	if_prop_exits_resetprop_n "ro.boot.verifiedbootstate" "green"
 	if_prop_exits_resetprop_n "ro.boot.flash.locked" "1"
 	if_prop_exits_resetprop_n "ro.boot.veritymode" "enforcing"
-	if_prop_exits_resetprop_n "ro.boot.vbmeta.device_state" "locked"
-	if_prop_exits_resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
 	if_prop_exits_resetprop_n "ro.boot.avb_version" "1.3"
-	if_prop_exits_resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
 	if_prop_exits_resetprop_n "ro.build.type" "user"
 	if_prop_exits_resetprop_n "ro.build.tags" "release-keys"
 	if_prop_exits_resetprop_n "ro.build.keys" "release-keys"
@@ -78,7 +75,6 @@ spoof_android_system_properties() {
 	if_prop_exits_resetprop_n "ro.secureboot.lockstate" "locked"
 	if_prop_exits_resetprop_n "ro.is_ever_orange" "0"
 	if_prop_exits_resetprop_n "ro.bootmode" "normal"
-	if_prop_exits_resetprop_n "vendor.boot.vbmeta.device_state" "locked"
 	if_prop_exits_resetprop_n "vendor.boot.verifiedbootstate" "green"
 	if_prop_exits_resetprop_n "ro.vendor.boot.warranty_bit" "0"
 	if_prop_exits_resetprop_n "ro.vendor.warranty_bit" "0"
@@ -89,6 +85,13 @@ spoof_android_system_properties() {
 	# Realme
 	if_prop_exits_resetprop_n "ro.boot.realme.lockstate" "1"
 	if_prop_exits_resetprop_n "ro.boot.realmebootstate" "green"
+
+	resetprop_n "ro.boot.vbmeta.size" "$(blockdev --getsize64 "/dev/block/by-name/vbmeta$(resetprop ro.boot.slot_suffix)")"
+	resetprop_n "ro.boot.vbmeta.avb_version" "1.3"
+	resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
+	resetprop_n "ro.boot.vbmeta.device_state" "locked"
+	resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
+	resetprop_n "vendor.boot.vbmeta.device_state" "locked"
 
 	fingerprint_value=$(resetprop ro.build.fingerprint)
 	new_fingerprint_value="${fingerprint_value//userdebug/user}"
