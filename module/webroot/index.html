@@ -540,6 +540,19 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
+							<span class="card-row__title">Spoof /system/etc/hosts</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Native Detector:</span>
+							<span class="card-row__tag--code">- Detected modified Hosts file</span>
+							<span class="card-row__tag--code">Disclosure:</span>
+							<span class="card-row__tag--code">- CRIT Why is your hosts file so big?</span>
+						</div>
+						<md-switch icons id="spoof_hosts"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
 							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
 							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
 							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
@@ -604,7 +617,7 @@
 					</div>
 				</div>
 
-				<p class="section-label">Spoof Android Verified Boot Hash</p>
+				<p class="section-label">Spoof Android Verified Boot Hash Property</p>
 				<div class="card-group">
 					<div class="card-row">
 						<div class="field-stack">
@@ -672,9 +685,10 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Spoof /system/lib64/libstagefright.so</span>
-							<span class="card-row__sub">Custom ROMs use a custom libstagefright.so</span>
-							<!-- <span class="card-row__tag--code">Example of detections:</span> -->
-							<!-- <span class="card-row__tag--code"></span> -->
+							<span class="card-row__sub">Some Custom ROMs use a custom libstagefright.so</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Duck Detector:</span>
+							<span class="card-row__tag--code">- Native symbol trace</span>
 						</div>
 						<md-switch icons id="spoof_libstagefright"></md-switch>
 						<md-ripple></md-ripple>

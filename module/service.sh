@@ -6,6 +6,7 @@
 # SUSFS_BIN=/data/adb/ksu/bin/susfs
 # PERSISTENT_DIR=/data/adb/brene
 # DEST_BIN_DIR=/data/adb/ksu/bin
+# CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # # Load utils
 # [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"

@@ -8,6 +8,7 @@ config_paths_hiding__sdcard_android_data_media_obb=1
 config_selinux=1
 config_su_compat=1
 config_spoof_uname=1
+config_spoof_hosts=1
 config_selinux_hide=1
 config_kernel_umount=1
 config_hide_injections=1

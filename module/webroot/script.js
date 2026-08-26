@@ -58,6 +58,7 @@ const configs = [
 	{ id: 'brene_logs' },
 	{ id: 'enable_log' },
 	{ id: 'spoof_uname' },
+	{ id: 'spoof_hosts' },
 	{ id: 'hide_addon_d' },
 	{ id: 'hide_injections' },
 	{ id: 'custom_spoof_uname' },

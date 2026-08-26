@@ -275,6 +275,16 @@ if [[ "${config_hide_suspicious_pty}" == "1" ]]; then
 	done
 fi
 
+# Spoof /system/etc/hosts
+if [[ "${config_spoof_hosts}" == "1" ]]; then
+	path=/system/etc/hosts
+
+	# add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+	# ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
+	# Example: stat -c %i <path>
+	${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096'
+fi
+
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
 	spoof_android_system_properties
