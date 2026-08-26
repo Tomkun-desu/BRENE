@@ -233,57 +233,6 @@ if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	done
 fi
 
-# /storage/emulated/0/Android/[data | media | obb]
-if [[ "${config_paths_hiding__sdcard_android_data_media_obb}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################################"
-			echo "/storage/emulated/0/Android/[data | media | obb]"
-			echo "####################################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
-	packages="
-	io.github.muntashirakon.AppManager
-	com.github.capntrips.kernelflasher
-	com.machiav3lli.backup
-	"
-
-	for i in ${packages}; do
-		path1=/storage/emulated/0/Android
-		full_path1="${path1}/data/${i}"
-		full_path2="${path1}/media/${i}"
-		full_path3="${path1}/obb/${i}"
-		[[ -e "${full_path1}" ]] && brene_sus_path "${full_path1}"
-		[[ -e "${full_path2}" ]] && brene_sus_path "${full_path2}"
-		[[ -e "${full_path3}" ]] && brene_sus_path "${full_path3}"
-	done
-
-	# path1=/storage/emulated/0/Android/data
-	# path2=/storage/emulated/0/Android/media
-	# path3=/storage/emulated/0/Android/obb
-	# for i in $(pm list packages -3 | cut -d':' -f2); do
-	# 	full_path1="${path1}/${i}"
-	# 	full_path2="${path2}/${i}"
-	# 	full_path3="${path3}/${i}"
-	# 	[[ -e "${full_path1}" ]] && brene_sus_path "${full_path1}"
-	# 	[[ -e "${full_path2}" ]] && brene_sus_path "${full_path2}"
-	# 	[[ -e "${full_path3}" ]] && brene_sus_path "${full_path3}"
-	# done
-fi
-
-## For paths that are read-only all the time, add them via 'add_sus_path' ##
-if [[ "${config_brene_logs}" == "1" ]]; then
-	{
-		echo ""
-		echo "#############################"
-		echo "Other Suspicious Paths Hiding"
-		echo "#############################"
-	} >> "${PERSISTENT_DIR}/logs.txt"
-fi
-# brene_sus_path "/sys/block/loop0"
-
 # Load custom_sus_map.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]]; then
 	while IFS= read -r i; do

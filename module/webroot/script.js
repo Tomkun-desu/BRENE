@@ -79,7 +79,6 @@ const configs = [
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
 	{ id: 'paths_hiding__data_local_tmp' },
-	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
 ]
 
 // Open URLs
