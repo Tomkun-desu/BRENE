@@ -345,30 +345,6 @@ fi
 ## Hide some zygisk modules ##
 # brene_sus_map /data/adb/modules/my_module/zygisk/arm64-v8a.so
 
-# Injections Hiding
-if [[ "${config_hide_injections}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "#################"
-			echo "Injections Hiding"
-			echo "#################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
-	for i in /data/adb/modules/*; do
-		if [[ -e "${i}/system" ]]; then
-			for x in $(find "${i}/system" -type f); do
-				brene_sus_map "${x}"
-			done
-		fi
-	done
-
-	for i in $(find /data/adb/modules -name "*.so"); do
-		brene_sus_map "${i}"
-	done
-fi
-
 #### Adding sus mounts to umount list via built-in KernelSU kernel umount (not via add_try_umount from old susfs) ####
 # cat <<EOF >/dev/null
 # ## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
@@ -401,7 +377,7 @@ if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	done
 fi
 
-# Spoof Android Verified Boot Hash
+# Spoof Android Verified Boot Hash Property
 if [[ "${config_spoof_verified_boot_hash}" != '' ]]; then
 	resetprop_n "ro.boot.vbmeta.digest" "${config_spoof_verified_boot_hash}"
 fi
