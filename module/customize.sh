@@ -37,15 +37,19 @@ chmod 755 "${DEST_BIN_DIR}/susfs"
 ln -sf "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus"       # For development
 ln -sf "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" # For compatibility
 
-susfs_ver=$(${SUSFS_BIN} show version)
-if [[ "${susfs_ver}" == "v2"* ]]; then
-	echo "[✅] Detected SuSFS version: ${susfs_ver}"
+susfs_version=$(${SUSFS_BIN} show version)
+if [[ "${susfs_version}" == "v2"* ]]; then
+	echo "[✅] Detected SuSFS version: ${susfs_version}"
 else
-	abort "[❌] Not supported SuSFS version ${susfs_ver}!"
+	abort "[❌] Not supported SuSFS version ${susfs_version}!"
 fi
 
 # Reset module description
-${KSU_BIN} module config set override.description "[SuSFS: ⏱️] A SuSFS/KernelSU module for SuSFS patched kernels"
+susfs_variant=$(${SUSFS_BIN} show variant)
+susfs_features_number=$(${SUSFS_BIN} show enabled_features | wc -l)
+description="A SuSFS/KernelSU module for SuSFS patched kernels"
+status="Waiting reboot ⏱️"
+${KSU_BIN} module config set override.description "[Status: ${status} | SuSFS: ${susfs_version} (${susfs_variant}) | SuSFS Features: ${susfs_features_number} enabled] ${description}"
 
 # Disable other SuSFS modules
 [[ -e "${KSU_MODULES_DIR}/susfs4ksu" ]] && {
