@@ -9,6 +9,15 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 # Load utils
 [[ -e "${MODPATH}/utils.sh" ]] && source "${MODPATH}/utils.sh"
 
+echo ""
+echo "██████╗ ██████╗ ███████╗███╗   ██╗███████╗"
+echo "██╔══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝"
+echo "██████╔╝██████╔╝█████╗  ██╔██╗ ██║█████╗  "
+echo "██╔══██╗██╔══██╗██╔══╝  ██║╚██╗██║██╔══╝  "
+echo "██████╔╝██║  ██║███████╗██║ ╚████║███████╗"
+echo "╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚══════╝"
+echo ""
+
 # Hot Install Support
 export MODULE_HOT_INSTALL_REQUEST="true"
 
