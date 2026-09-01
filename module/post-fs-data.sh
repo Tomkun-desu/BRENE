@@ -286,30 +286,6 @@ if [[ "${config_spoof_hosts}" == "1" ]]; then
 	${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096'
 fi
 
-# Hide Suspicious Injections
-if [[ "${config_hide_injections}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "##########################"
-			echo "Hide Suspicious Injections"
-			echo "##########################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
-	for module in /data/adb/modules/*; do
-		if [[ -e "${module}/system" ]]; then
-			find "${module}/system" -type f | while read -r file; do
-				brene_sus_map "${file}"
-			done
-		fi
-	done
-
-	find /data/adb/modules -name "*.so" | while read -r file; do
-		brene_sus_map "${file}"
-	done
-fi
-
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
 	spoof_android_system_properties

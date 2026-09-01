@@ -349,6 +349,34 @@ if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
 	${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '4096'
 fi
 
+# Hide Suspicious Injections
+if [[ "${config_hide_injections}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "##########################"
+			echo "Hide Suspicious Injections"
+			echo "##########################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	overlayfs="/data/adb/modules/meta-overlayfs/mnt"
+	magic_mount="/data/adb/modules"
+	[[ -e "${overlayfs}" ]] && path="${overlayfs}" || path="${magic_mount}"
+
+	for module in "${path}"/*; do
+		if [[ -e "${module}/system" ]]; then
+			find "${module}/system" -type f | while read -r file; do
+				brene_sus_map "${file}"
+			done
+		fi
+	done
+
+	find /data/adb/modules -name "*.so" | while read -r file; do
+		brene_sus_map "${file}"
+	done
+fi
+
 resetprop -c --force
 
 if [[ "${config_brene_logs}" == "1" ]]; then
