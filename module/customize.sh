@@ -108,10 +108,6 @@ fi
 # zygisk-assistant
 # zygisk-maphide
 # zygisk_nohello
-# playintegrity
-# integritybox
-# IntegrityBox
-# Integrity-Box
 # safetynet-fix
 # MagiskHidePropsConf
 # tsupport
@@ -125,3 +121,7 @@ ReSuSFS
 for module in ${modules}; do
 	[[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
 done
+
+if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
+	touch "/data/adb/modules/playintegrityfix/remove"
+fi

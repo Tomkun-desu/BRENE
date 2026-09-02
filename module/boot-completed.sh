@@ -21,6 +21,12 @@ for module in ${modules}; do
 	[[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
 done
 
+if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
+	touch "/data/adb/modules/playintegrityfix/remove"
+	reboot
+fi
+[[ -e "/data/adb/modules/ReSuSFS" ]] && reboot
+
 # Update Description
 susfs_version=$(${SUSFS_BIN} show version)
 susfs_variant=$(${SUSFS_BIN} show variant)
