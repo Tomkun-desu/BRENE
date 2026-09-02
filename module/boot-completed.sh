@@ -13,6 +13,14 @@ CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
 
+# Drop useless modules
+modules="
+ReSuSFS
+"
+for module in ${modules}; do
+	[[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
+done
+
 # Update Description
 susfs_version=$(${SUSFS_BIN} show version)
 susfs_variant=$(${SUSFS_BIN} show variant)

@@ -104,9 +104,6 @@ fi
 # Remove fake_files folder
 [[ -d "${PERSISTENT_DIR}/fake_files" ]] && rm -rf "${PERSISTENT_DIR}/fake_files"
 
-# Disable outdated modules
-# echo "[✅] Disabling outdated modules"
-# modules="
 # zygisk_shamiko
 # zygisk-assistant
 # zygisk-maphide
@@ -120,7 +117,11 @@ fi
 # tsupport
 # tsupport-advance
 # BetterKnownInstalled
-# "
-# for i in ${modules}; do
-# 	[[ -e "/data/adb/modules/${i}" ]] && touch "/data/adb/modules/${i}/remove"
-# done
+
+# Drop useless modules
+modules="
+ReSuSFS
+"
+for module in ${modules}; do
+	[[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
+done
