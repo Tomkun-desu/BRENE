@@ -443,128 +443,7 @@
 						<md-switch icons id="selinux"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
-				</div>
-
-				<p class="section-label">Manual Mode</p>
-				<div class="card-group">
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Important Notes:</span>
-							<span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
-
-							<!-- SUS MAP -->
-							<span class="card-row__title">SUS MAP</span>
-							<span class="card-row__sub">Added real file path which gets mmapped will be hidden from /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap]</span>
-							<span class="card-row__sub">Important Notes:</span>
-							<span class="card-row__sub">- It does NOT support hiding for anon memory.</span>
-							<span class="card-row__sub">- It does NOT hide any inline hooks or plt hooks cause by the injected library itself</span>
-							<span class="card-row__sub">- It may not be able to evade detections by apps that implement a good injection detection</span>
-							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/system/fonts/Roboto-Regular.ttf</span>
-							<span class="card-row__tag--code">/data/adb/modules/my_module/zygisk/arm64-v8a.so</span>
-							<!-- SUS MAP -->
-
-							<!-- SUS MOUNT -->
-							<span class="card-row__title">SUS MOUNT</span>
-							<span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
-							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/system/etc/hosts</span>
-							<!-- SUS MOUNT -->
-
-							<!-- SUS PATH -->
-							<span class="card-row__title">SUS PATH</span>
-							<span class="card-row__sub">Added path and all its sub-paths will be hidden for umounted app process from several syscalls</span>
-							<span class="card-row__sub"
-								>Please be reminded that if the target path has upper mounts then make sure the proper layer is added, otherwise it may not be effective for the target
-								process</span
-							>
-							<span class="card-row__sub">For paths that are read-only all the time, add them via 'add_sus_path'</span>
-							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/system/addon.d</span>
-							<span class="card-row__tag--code">/system/bin/install-recovery.sh</span>
-							<!-- SUS PATH -->
-
-							<!-- SUS PATH LOOP -->
-							<span class="card-row__title">SUS PATH LOOP</span>
-							<span class="card-row__sub"
-								>The only difference to add_sus_path is that the added sus_path via this cli will be flagged as SUS_PATH again for the app process when it is being spawned by
-								zygote and marked umounted</span
-							>
-							<span class="card-row__sub">Also it does not check if the path is existed or not, instead it checks for empty string only, so be careful what to add</span>
-							<span class="card-row__sub">For paths that are frequently modified, we can add them via 'add_sus_path_loop'</span>
-							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/sdcard/TWRP</span>
-							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
-							<!-- SUS PATH LOOP -->
-						</div>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-group sus-card">
-						<md-tabs id="sus_tabs">
-							<md-primary-tab id="tab_sus_map" aria-controls="panel_sus_map">MAP</md-primary-tab>
-							<md-primary-tab id="tab_sus_mount" aria-controls="panel_sus_mount">MOUNT</md-primary-tab>
-							<md-primary-tab id="tab_sus_path" aria-controls="panel_sus_path">PATH</md-primary-tab>
-							<md-primary-tab id="tab_sus_path_loop" aria-controls="panel_sus_path_loop">PATH LOOP</md-primary-tab>
-							<md-primary-tab id="tab_sus_kstat" aria-controls="panel_sus_kstat">KSTAT</md-primary-tab>
-						</md-tabs>
-
-						<div class="snap-container" id="horizontal_scroll_container">
-							<div class="snap-item">
-								<md-filled-text-field class="content" id="custom_sus_map_text_field" type="textarea" rows="12" label="SUS MAP"></md-filled-text-field>
-							</div>
-
-							<div class="snap-item">
-								<md-filled-text-field class="content" id="custom_sus_mount_text_field" type="textarea" rows="12" label="SUS MOUNT"></md-filled-text-field>
-							</div>
-
-							<div class="snap-item">
-								<md-filled-text-field class="content" id="custom_sus_path_text_field" type="textarea" rows="12" label="SUS PATH"></md-filled-text-field>
-							</div>
-
-							<div class="snap-item">
-								<md-filled-text-field class="content" id="custom_sus_path_loop_text_field" type="textarea" rows="12" label="SUS PATH LOOP"></md-filled-text-field>
-							</div>
-
-							<div class="snap-item">
-								<div id="kstat_entries_container" style="display:flex;flex-direction:column;gap:12px;"></div>
-								<md-filled-button id="add_kstat_entry_button" style="margin-top:12px;">+ ADD ENTRY</md-filled-button>
-
-								<div style="border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; margin-top:16px;">
-									<md-filled-text-field class="content" id="kstat_log_display" type="textarea" rows="6" label="KSTAT LOG" readonly></md-filled-text-field>
-								</div>
-							</div>
-						</div>
-
-						<div class="sus-footer">
-							<md-filled-button id="unified_apply_button">APPLY</md-filled-button>
-						</div>
-
-                                                </div>
-
-                                                <div class="card-row">
-                                                        <div class="card-row__body">
-                                                                <span class="card-row__title">Important Notes:</span>
-                                                                <span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
-                                                                <span class="card-row__title">Kernel Umount</span>
-                                                                <span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
-                                                                <span class="card-row__tag--code">Example:</span>
-                                                                <span class="card-row__tag--code">/system/etc/hosts</span>
-                                                        </div>
-                                                        <md-ripple></md-ripple>
-                                                </div>
-
-                                                <div class="card-group sus-card">
-                                                        <div class="snap-item">
-                                                                <md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
-                                                        </div>
-
-                                                        <div class="sus-footer">
-                                                                <md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
-                                                        </div>
-                                                </div>
-					</div>
-			</section>
+				</section>
 
 			<section class="tab-panel" data-panel="spoofing">
 				<p class="section-label">Spoofing Features</p>
@@ -872,6 +751,127 @@
 						<md-ripple></md-ripple>
 					</div>
 				</div>
+
+				<p class="section-label">Manual Mode</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Important Notes:</span>
+							<span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
+
+							<!-- SUS MAP -->
+							<span class="card-row__title">SUS MAP</span>
+							<span class="card-row__sub">Added real file path which gets mmapped will be hidden from /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap]</span>
+							<span class="card-row__sub">Important Notes:</span>
+							<span class="card-row__sub">- It does NOT support hiding for anon memory.</span>
+							<span class="card-row__sub">- It does NOT hide any inline hooks or plt hooks cause by the injected library itself</span>
+							<span class="card-row__sub">- It may not be able to evade detections by apps that implement a good injection detection</span>
+							<span class="card-row__tag--code">Example:</span>
+							<span class="card-row__tag--code">/system/fonts/Roboto-Regular.ttf</span>
+							<span class="card-row__tag--code">/data/adb/modules/my_module/zygisk/arm64-v8a.so</span>
+							<!-- SUS MAP -->
+
+							<!-- SUS MOUNT -->
+							<span class="card-row__title">SUS MOUNT</span>
+							<span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
+							<span class="card-row__tag--code">Example:</span>
+							<span class="card-row__tag--code">/system/etc/hosts</span>
+							<!-- SUS MOUNT -->
+
+							<!-- SUS PATH -->
+							<span class="card-row__title">SUS PATH</span>
+							<span class="card-row__sub">Added path and all its sub-paths will be hidden for umounted app process from several syscalls</span>
+							<span class="card-row__sub"
+								>Please be reminded that if the target path has upper mounts then make sure the proper layer is added, otherwise it may not be effective for the target
+								process</span
+							>
+							<span class="card-row__sub">For paths that are read-only all the time, add them via 'add_sus_path'</span>
+							<span class="card-row__tag--code">Example:</span>
+							<span class="card-row__tag--code">/system/addon.d</span>
+							<span class="card-row__tag--code">/system/bin/install-recovery.sh</span>
+							<!-- SUS PATH -->
+
+							<!-- SUS PATH LOOP -->
+							<span class="card-row__title">SUS PATH LOOP</span>
+							<span class="card-row__sub"
+								>The only difference to add_sus_path is that the added sus_path via this cli will be flagged as SUS_PATH again for the app process when it is being spawned by
+								zygote and marked umounted</span
+							>
+							<span class="card-row__sub">Also it does not check if the path is existed or not, instead it checks for empty string only, so be careful what to add</span>
+							<span class="card-row__sub">For paths that are frequently modified, we can add them via 'add_sus_path_loop'</span>
+							<span class="card-row__tag--code">Example:</span>
+							<span class="card-row__tag--code">/sdcard/TWRP</span>
+							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
+							<!-- SUS PATH LOOP -->
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-group sus-card">
+						<md-tabs id="sus_tabs">
+							<md-primary-tab id="tab_sus_map" aria-controls="panel_sus_map">MAP</md-primary-tab>
+							<md-primary-tab id="tab_sus_mount" aria-controls="panel_sus_mount">MOUNT</md-primary-tab>
+							<md-primary-tab id="tab_sus_path" aria-controls="panel_sus_path">PATH</md-primary-tab>
+							<md-primary-tab id="tab_sus_path_loop" aria-controls="panel_sus_path_loop">PATH LOOP</md-primary-tab>
+							<md-primary-tab id="tab_sus_kstat" aria-controls="panel_sus_kstat">KSTAT</md-primary-tab>
+						</md-tabs>
+
+						<div class="snap-container" id="horizontal_scroll_container">
+							<div class="snap-item">
+								<md-filled-text-field class="content" id="custom_sus_map_text_field" type="textarea" rows="12" label="SUS MAP"></md-filled-text-field>
+							</div>
+
+							<div class="snap-item">
+								<md-filled-text-field class="content" id="custom_sus_mount_text_field" type="textarea" rows="12" label="SUS MOUNT"></md-filled-text-field>
+							</div>
+
+							<div class="snap-item">
+								<md-filled-text-field class="content" id="custom_sus_path_text_field" type="textarea" rows="12" label="SUS PATH"></md-filled-text-field>
+							</div>
+
+							<div class="snap-item">
+								<md-filled-text-field class="content" id="custom_sus_path_loop_text_field" type="textarea" rows="12" label="SUS PATH LOOP"></md-filled-text-field>
+							</div>
+
+							<div class="snap-item">
+								<div id="kstat_entries_container" style="display:flex;flex-direction:column;gap:12px;"></div>
+								<md-filled-button id="add_kstat_entry_button" style="margin-top:12px;">+ ADD ENTRY</md-filled-button>
+
+								<div style="border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; margin-top:16px;">
+									<md-filled-text-field class="content" id="kstat_log_display" type="textarea" rows="6" label="KSTAT LOG" readonly></md-filled-text-field>
+								</div>
+							</div>
+						</div>
+
+						<div class="sus-footer">
+							<md-filled-button id="unified_apply_button">APPLY</md-filled-button>
+						</div>
+
+                                                </div>
+
+                                                <div class="card-row">
+                                                        <div class="card-row__body">
+                                                                <span class="card-row__title">Important Notes:</span>
+                                                                <span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
+                                                                <span class="card-row__title">Kernel Umount</span>
+                                                                <span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
+                                                                <span class="card-row__tag--code">Example:</span>
+                                                                <span class="card-row__tag--code">/system/etc/hosts</span>
+                                                        </div>
+                                                        <md-ripple></md-ripple>
+                                                </div>
+
+                                                <div class="card-group sus-card">
+                                                        <div class="snap-item">
+                                                                <md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
+                                                        </div>
+
+                                                        <div class="sus-footer">
+                                                                <md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
+                                                        </div>
+                                                </div>
+					</div>
+
 
 				<p class="section-label">Module Control</p>
 				<div class="card-group">
