@@ -236,7 +236,7 @@ exec('susfs show enabled_features').then((result) => {
 		container.innerText = 'Failed to load enabled features'
 		return
 	}
-	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
+	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '').replaceAll('_', ' ')
 })
 
 // Load logs once
@@ -347,6 +347,70 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	})
 })
 
+// Reset Settings
+const resetDialog = document.getElementById('reset_settings_dialog')
+const resetButton = document.getElementById('reset_settings')
+
+if (resetDialog && resetButton) {
+        resetButton.addEventListener('click', () => {
+                resetDialog.show()
+        })
+
+        resetDialog.addEventListener('close', () => {
+                if (resetDialog.returnValue !== 'confirm') return
+
+                exec(`cp -f ${MODDIR}/config.sh ${PERSISTENT_DIR}`).then((result) => {
+                        if (result.errno !== 0) {
+                                toast(result.stderr)
+                                return
+                        }
+
+                        exec(`cat ${PERSISTENT_DIR}/config.sh`).then((configResult) => {
+                                if (configResult.errno !== 0) {
+                                        toast('Failed to reload config')
+                                        return
+                                }
+
+                                const freshConfigValues = Object.fromEntries(
+                                        configResult.stdout
+                                                .split('\n')
+                                                .filter((line) => line.includes('='))
+                                                .map((line) => {
+                                                        const [key, ...val] = line.split('=')
+                                                        return [
+                                                                key.trim(),
+                                                                val
+                                                                        .join('=')
+                                                                        .trim()
+                                                                        .replace(/^['"](.*)['"]$/, '$1'),
+                                                        ]
+                                                }),
+                                )
+
+                                configs.forEach((config) => {
+                                        const configId = `config_${config.id}`
+                                        const element = document.getElementById(config.id)
+                                        if (!element) return
+
+                                        const value = freshConfigValues[configId]
+                                        if (value !== undefined) {
+                                                element.selected = parseInt(value) === 1
+                                        }
+                                })
+
+                                document.getElementById('custom_uname_release').value =
+                                        freshConfigValues['config_custom_uname_kernel_release']
+                                document.getElementById('custom_uname_version').value =
+                                        freshConfigValues['config_custom_uname_kernel_version']
+                                document.getElementById('verified_boot_hash_text_field').value =
+                                        freshConfigValues['config_verified_boot_hash']
+
+                                toast('Success')
+                        })
+                })
+        })
+}
+
 // KSU Modules toggles
 ;(async () => {
 	const enableSwitch = document.getElementById('enable_ksu_modules')
@@ -432,8 +496,15 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	const button = document.getElementById('verified_boot_hash_button')
 
 	button.addEventListener('click', () => {
-		updateConfig2('config_verified_boot_hash', textField.value)
-		toast('Success')
+                updateConfig2('config_verified_boot_hash', textField.value)
+
+                exec(`resetprop -n ro.boot.vbmeta.digest ${textField.value}`).then((result) => {
+                        if (result.errno === 0) {
+                                toast('No need to reboot')
+                        } else {
+                                toast('Failed to update prop')
+                        }
+                })
 	})
 })()
 

@@ -13,6 +13,20 @@ CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
 
+# Drop useless modules
+modules="
+ReSuSFS
+"
+for module in ${modules}; do
+        [[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
+done
+
+if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
+        touch "/data/adb/modules/playintegrityfix/remove"
+        reboot
+fi
+[[ -e "/data/adb/modules/ReSuSFS" ]] && reboot
+
 # Update Description
 susfs_ver=$(${SUSFS_BIN} show version)
 description="A SuSFS/KernelSU module for SuSFS patched kernels"

@@ -778,8 +778,27 @@
 						<md-switch icons id="enable_log"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+                                    <div class="card-row">
+                                            <div class="card-row__body">
+                                                    <span class="card-row__title">Reset Settings</span>
+                                                    <span class="card-row__sub">Restore all BRENE settings to their default values</span>
+                                            </div>
+                                            <md-filled-button id="reset_settings">Reset</md-filled-button>
+                                            <md-ripple></md-ripple>
+                                    </div>
+
 				</div>
 			</section>
+
+                        <md-dialog id="reset_settings_dialog">
+                                <div slot="headline">Confirm action</div>
+                                <form slot="content" id="reset_settings_form" method="dialog">Are you sure?</form>
+                                <div slot="actions">
+                                        <md-text-button form="reset_settings_form" value="cancel">No</md-text-button>
+                                        <md-text-button form="reset_settings_form" value="confirm">Yes</md-text-button>
+                                </div>
+                        </md-dialog>
 
 			<section class="tab-panel" data-panel="ksu">
 				<p class="section-label">KernelSU Features</p>

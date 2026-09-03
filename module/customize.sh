@@ -121,3 +121,16 @@ fi
 # for i in ${modules}; do
 # 	[[ -e "/data/adb/modules/${i}" ]] && touch "/data/adb/modules/${i}/remove"
 # done
+
+# Drop useless modules
+modules="
+ReSuSFS
+"
+for module in ${modules}; do
+        [[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
+done
+
+# Remove old Integrity-Box based Play Integrity Fix
+if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
+        touch "/data/adb/modules/playintegrityfix/remove"
+fi
