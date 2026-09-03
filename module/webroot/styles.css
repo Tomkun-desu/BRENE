@@ -347,3 +347,9 @@ md-tabs {
 	overflow-wrap: break-word;
 	word-break: break-word;
 }
+
+/* Rounded corners for Additional Hiding */
+.additional-hiding-group {
+    border-radius: 16px;
+    overflow: hidden;
+}
