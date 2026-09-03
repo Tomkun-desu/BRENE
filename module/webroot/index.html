@@ -327,15 +327,21 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Hide Custom Recovery Folders</span>
-							<span class="card-row__sub">Hide leftover TWRP/OrangeFox cache folders</span>
-							<span class="card-row__tag--code">Example of detections: /cache/recovery</span>
-						</div>
-						<md-switch icons id="hide_custom_recovery_folders"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
+                                       <div class="card-row">
+                                               <div class="card-row__body">
+                                                       <span class="card-row__title">Hide Custom Recovery Paths</span>
+                                                       <span class="card-row__sub">Hide leftover TWRP/OrangeFox recovery paths and install-recovery scripts</span>
+                                                       <span class="card-row__tag--code">/storage/emulated/0/Fox</span>
+                                                       <span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
+                                                       <span class="card-row__tag--code">/data/recovery</span>
+                                                       <span class="card-row__tag--code">/cache/recovery</span>
+                                                       <span class="card-row__tag--code">/data/cache/recovery</span>
+                                                       <span class="card-row__tag--code">/vendor/bin/install-recovery.sh</span>
+                                                       <span class="card-row__tag--code">/system/bin/install-recovery.sh</span>
+                                               </div>
+                                               <md-switch icons id="hide_custom_recovery"></md-switch>
+                                               <md-ripple></md-ripple>
+                                       </div>
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -346,6 +352,16 @@
 						<md-switch icons id="paths_hiding__data_local_tmp"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+                                        <div class="card-row">
+                                                <div class="card-row__body">
+                                                        <span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
+                                                        <span class="card-row__sub">Fix ownership, permissions, SELinux context and KSTAT inconsistencies in /data/local/tmp</span>
+                                                        <span class="card-row__tag--code">/data/local/tmp</span>
+                                                </div>
+                                                <md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
+                                                <md-ripple></md-ripple>
+                                        </div>
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -587,6 +603,16 @@
 						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+                                       <div class="card-row">
+                                               <div class="card-row__body">
+                                                       <span class="card-row__title">Spoof /system/etc/hosts</span>
+                                                       <span class="card-row__sub">Hide the original hosts file from detection by spoofing its metadata</span>
+                                                       <span class="card-row__tag--code">/system/etc/hosts</span>
+                                               </div>
+                                               <md-switch icons id="spoof_hosts"></md-switch>
+                                               <md-ripple></md-ripple>
+                                       </div>
 
 					<div class="card-row">
 						<div class="card-row__body">

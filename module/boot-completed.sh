@@ -227,6 +227,8 @@ if [[ "${config_hide_custom_recovery}" == "1" ]]; then
         [[ -e "/storage/emulated/0/Fox" ]] && brene_sus_path_loop "/storage/emulated/0/Fox"
         [[ -e "/storage/emulated/0/TWRP" ]] && brene_sus_path_loop "/storage/emulated/0/TWRP"
         [[ -e "/data/recovery" ]] && brene_sus_path_loop "/data/recovery"
+        [[ -e "/cache/recovery" ]] && brene_sus_path_loop "/cache/recovery"
+        [[ -e "/data/cache/recovery" ]] && brene_sus_path_loop "/data/cache/recovery"
         [[ -e "/vendor/bin/install-recovery.sh" ]] && brene_sus_path_loop "/vendor/bin/install-recovery.sh"
         [[ -e "/system/bin/install-recovery.sh" ]] && brene_sus_path_loop "/system/bin/install-recovery.sh"
 fi
@@ -332,8 +334,6 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 	} >> "${PERSISTENT_DIR}/logs.txt"
 fi
 # brene_sus_path "/sys/block/loop0"
-brene_sus_path "/vendor/bin/install-recovery.sh"
-brene_sus_path "/system/bin/install-recovery.sh"
 
 # Load custom_sus_map.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]]; then

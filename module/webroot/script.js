@@ -75,13 +75,15 @@ const configs = [
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'spoof_cmdline_or_bootconfig' },
+     { id: 'spoof_hosts' },
 	{ id: 'spoof_system_properties' },
 	{ id: 'spoof_system_properties_repeat' },
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
-	{ id: 'hide_custom_recovery_folders' },
+	{ id: 'hide_custom_recovery' },
 	{ id: 'paths_hiding__data_local_tmp' },
+     { id: 'fix_data_local_tmp_inconsistencies' },
 	{
 		id: 'paths_hiding__user_ca_certs',
 		action: (enabled) => {
