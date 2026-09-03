@@ -1,3 +1,32 @@
+## v0.0.65-custom.4 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added support for hiding suspicious injections.
+* Added support for hiding user CA certificates.
+* Added support for hiding /sdcard/Android/[data | media | obb] paths.
+* Added support for fixing /data/local/tmp inconsistencies.
+* Added support for spoofing Android verified boot hash property.
+* Added support for custom uname spoofing.
+* Added support for syncing device props across all partitions.
+* Updated the configuration to include new features and options.
+* Updated the module description and name.
+* Updated the update JSON URL.
+* Removed the outdated modules.
+* Removed the old Integrity-Box based Play Integrity Fix.
+* Updated the custom_sus_map.txt, custom_sus_mount.txt, and custom_sus_kstat.txt files.
+* Updated the post-fs-data.sh script to include new features and options.
+* Updated the resetprop command to use the correct path.
+* Updated the brene_set_uname function to handle custom uname spoofing.
+* Updated the brene_clone_perm function to handle fake files.
+* Updated the brene_sus_map and brene_sus_path_loop functions to handle new paths.
+* Updated the brene_sus_path function to handle new paths.
+* Updated the brene_kernel_um
+
 ## v0.0.65-custom.3 - 2026-09-03
 
 ### Synced from upstream BRENE
