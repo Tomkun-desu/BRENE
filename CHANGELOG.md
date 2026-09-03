@@ -1,3 +1,28 @@
+## v0.0.65-custom.2 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in plain, simple bullet points:
+
+* The module has been renamed from ".BRENE - SuSFS" to ".BRENE - Custom AI".
+* The version code has been reset to 1.
+* The author list has been updated to include "simonpunk & KOWX712 + Community".
+* The update JSON URL has been updated to a new repository.
+* The module description now includes "[Module Status: ⏱️ | SuSFS Patches: ⏱️]".
+* The config file has been updated with new options:
+	+ `config_paths_hiding__sdcard_android_data_media_obb=1`
+	+ `config_paths_hiding__user_ca_certs=1`
+	+ `config_uname_spoofing=1`
+	+ `config_hide_suspicious_ptys=1`
+	+ `config_umount_suspicious_mounts=1`
+	+ `config_spoof_cmdline_or_bootconfig=1`
+	+ `config_sync_device_props=0`
+	+ `config_custom_uname_spoofing=0`
+	+ `config_spoof_libstagefright=0`
+	+ `config_verified_boot_hash=''
+
 ## v0.0.65-custom.1 - 2026-09-03
 
 ### Synced from upstream BRENE
