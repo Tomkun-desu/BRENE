@@ -43,6 +43,14 @@ const configs = [
 		id: 'saturation',
 		action: (enabled) => setFeature(`service call SurfaceFlinger 1022 f ${enabled ? 2.0 : 1.0}`),
 	},
+    {
+            id: 'show_refresh_rate',
+            action: (enabled) => setFeature(`service call SurfaceFlinger 1034 i32 ${enabled ? 1 : 0}`),
+    },
+     {
+             id: 'disable_child_process_restrictions',
+             action: (enabled) => setFeature(`resetprop -n persist.sys.fflag.override.settings_enable_monitor_phantom_procs ${enabled ? false : true}`),
+     },
 	{ id: 'pif_props' },
 	{ id: 'rom_props' },
 	{ id: 'brene_logs' },
@@ -60,12 +68,13 @@ const configs = [
 	{ id: 'hide_suspicious_ptys' },
 	{ id: 'hide_lineage_strings' },
 	{ id: 'hide_custom_rom_paths' },
+	{ id: 'hide_custom_rom_paths_2' },
 	{ id: 'custom_uname_spoofing' },
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'spoof_libstagefright' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
-	{ id: 'proc_cmdline_bootconfig_spoofing' },
+	{ id: 'spoof_cmdline_or_bootconfig' },
 	{ id: 'spoof_system_properties' },
 	{ id: 'spoof_system_properties_repeat' },
 
@@ -99,7 +108,9 @@ exec('resetprop ro.build.version.release && resetprop ro.build.version.sdk').the
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout.replace('\n', ' | SDK ')
+	const results = result.stdout.replaceAll('\n', ' ')
+	const splits = results.split(' ')
+	container.innerText = `${splits[0]} (API ${splits[1]}) | SDK ${splits[1]}`
 })
 
 // Load SuSFS Variant
@@ -125,14 +136,25 @@ exec("cat /proc/version | awk '{print $3}' && uname -r").then((result) => {
 })
 
 // Load Device Model Status
-exec('resetprop ro.product.manufacturer && resetprop ro.product.model && resetprop ro.build.product').then((result) => {
+exec('resetprop ro.product.manufacturer && resetprop ro.product.model && resetprop ro.product.device').then((result) => {
 	const container = document.querySelector('#device-model .card-row__sub')
 
 	if (result.errno !== 0) {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = result.stdout.replace('\n', ' ').replace('\n', ' | ')
+	let model
+const splits = result.stdout.split('\n')
+
+exec('resetprop ro.product.marketname')
+        .then((result) => {
+                if (result.errno !== 0) return
+                model = result.stdout
+        })
+        .then(() => {
+                model = model || splits[1]
+                container.innerText = `${splits[0]} ${model} | ${splits[2]}`
+        })
 })
 
 // Load Custom ROM Status
@@ -200,7 +222,7 @@ exec('ksud module list').then((result) => {
 		const statusSpan = row.querySelector('.status-text')
 
 		if (moduleIds.includes(moduleKey)) {
-			statusSpan.innerText = 'Status: Installed ❌'
+			statusSpan.innerText = 'Status: Installed'
 			statusSpan.style.color = '#ff0000be'
 		}
 	})
@@ -217,33 +239,26 @@ exec('susfs show enabled_features').then((result) => {
 	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
 })
 
-// Load logs
-window.refreshBreneLogs = async () => {
-	const container = document.getElementById('logs')
-	container.textContent = ''
+// Load logs once
+;(async () => {
+        const container = document.getElementById('logs')
+        container.textContent = ''
 
-	const r1 = await exec(`cat ${PERSISTENT_DIR}/log.txt`)
-	if (r1.errno !== 0) {
-		container.textContent += 'Failed to load logs'
-		return
-	}
-	container.textContent += r1.stdout
-	container.textContent += '\n'
+        const r1 = await exec(`cat ${PERSISTENT_DIR}/log.txt`)
+        if (r1.errno !== 0) {
+                container.textContent += 'Failed to load logs'
+                return
+        }
+        container.textContent += r1.stdout
+        container.textContent += '\n'
 
-	const r2 = await exec(`cat ${PERSISTENT_DIR}/logs.txt`)
-	if (r2.errno !== 0) {
-		container.textContent += 'Failed to load logs'
-		return
-	}
-	container.textContent += r2.stdout
-}
-window.refreshBreneLogs()
-
-// Helper: log a live (no-reboot) action and refresh the log panel
-window.breneLiveLog = async (label, detail) => {
-	await exec(`grep -q '^config_brene_logs=1' ${PERSISTENT_DIR}/config.sh && echo "[${label}]: ${detail}" >> ${PERSISTENT_DIR}/logs.txt; true`)
-	if (window.refreshBreneLogs) window.refreshBreneLogs()
-}
+        const r2 = await exec(`cat ${PERSISTENT_DIR}/logs.txt`)
+        if (r2.errno !== 0) {
+                container.textContent += 'Failed to load logs'
+                return
+        }
+        container.textContent += r2.stdout
+})()
 
 // Load brene version
 exec(`grep "^version=" ${MODDIR}/module.prop | cut -d'=' -f2`).then((result) => {
@@ -273,10 +288,9 @@ function updateConfig2(config, value) {
 }
 
 // Helper function to set config immedialtely that no need to reboot
-function setFeature(cmd, label) {
+function setFeature(cmd) {
 	return exec(cmd).then((result) => {
 		toast(result.errno === 0 ? 'No need to reboot' : result.stderr)
-		if (result.errno === 0 && label) window.breneLiveLog(label, 'applied')
 		return result
 	})
 }
@@ -327,10 +341,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			const newConfigValue = +enabled
 			updateConfig(configId, newConfigValue)
 			if (config.action) {
-				const featResult = await config.action(enabled)
-				if (featResult && featResult.errno === 0) {
-					window.breneLiveLog(config.id, enabled ? 'enabled' : 'disabled')
-				}
+				await config.action(enabled)
 			}
 		})
 	})
@@ -359,16 +370,29 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	const unameRelease = document.getElementById('custom_uname_release')
 	const unameVersion = document.getElementById('custom_uname_version')
 
-	const computeAutoUname = async () => {
-		const kv = await exec("cat /proc/version | awk '{print \$3}' | cut -d'-' -f1")
-		const kmi = await exec("/data/adb/ksud boot-info current-kmi | cut -d'-' -f1")
-		const bd = await exec("resetprop ro.build.date | tr -s ' '")
-		const release = `${(kv.stdout || '').trim()}-${(kmi.stdout || '').trim()}-9-g690101101069`
-		const version = `#1 SMP PREEMPT ${(bd.stdout || '').trim()}`
-		return { release, version }
-	}
+        const computeAutoUname = async () => {
+                const kv = await exec("cat /proc/version | awk '{print \$3}' | grep -oE '^[0-9]+\\.[0-9]+\\.[0-9]+'")
+                const variant = await exec("/data/adb/ksu/bin/susfs show variant")
+                const bd = await exec("resetprop ro.build.date | tr -s ' '")
 
-	const setUnameFields = (release, version) => {
+                const kernelVersion = (kv.stdout || '').trim()
+                const susfsVariant = (variant.stdout || '').trim()
+                const version = `#1 SMP PREEMPT ${(bd.stdout || '').trim()}`
+                const randomGit = Math.floor(10000000 + Math.random() * 90000000)
+
+                let release
+
+                if (susfsVariant === 'GKI') {
+                        const kmi = await exec("/data/adb/ksud boot-info current-kmi | cut -d'-' -f1")
+                        release = `${kernelVersion}-${(kmi.stdout || '').trim()}-9-g${randomGit}`
+                } else {
+                        release = `${kernelVersion}-g${randomGit}`
+                }
+
+                return { release, version }
+        }
+
+        const setUnameFields = (release, version) => {
 		const finalVersion = version.trim() === '' ? 'default' : version
 		updateConfig2('config_custom_uname_kernel_release', release)
 		updateConfig2('config_custom_uname_kernel_version', finalVersion)
@@ -391,7 +415,6 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		const esc = (s) => s.replace(/'/g, "'\\''")
 		exec(`/data/adb/ksu/bin/susfs set_uname '${esc(liveRelease)}' '${esc(liveVersion)}'`).then((result) => {
 			toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
-			if (result.errno === 0) window.breneLiveLog('set_uname', `${liveRelease} ${liveVersion}`)
 		})
 	}
 
@@ -565,13 +588,20 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		}
 
 		if (file) {
-			exec(`
+		        if (content === '') {
+		                exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
+		                        toast(result.errno === 0 ? 'Success' : result.stderr)
+		                })
+		        } else {
+		                exec(`
 cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
 ${content}
 UNIQUE_EOF
-			`).then((result) => {
-				toast(result.errno === 0 ? 'Success' : result.stderr)
-			})
+                `).then((result) => {
+		                        toast(result.errno === 0 ? 'Success' : result.stderr)
+		                })
+		        }
+
 		}
 	}
 })()
@@ -615,15 +645,15 @@ UNIQUE_EOF
 	let touchStartX = 0
 	let touchStartY = 0
 
-	const updateUI = (index) => {
-		buttons[index].scrollIntoView({
-			behavior: 'smooth',
-			block: 'nearest',
-			inline: 'center',
-		})
+        const updateUI = (index) => {
+                buttons[index].click()
 
-		buttons[index].click()
-	}
+                buttons[index].scrollIntoView({
+                        behavior: 'auto',
+                        block: 'nearest',
+                        inline: 'center',
+                })
+        }
 
 	const changeTab = (index) => {
 		if (index >= 0 && index < buttons.length) {
@@ -651,7 +681,10 @@ UNIQUE_EOF
 				const diffX = touchStartX - touchEndX
 				const diffY = touchStartY - touchEndY
 
-				if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > Math.abs(diffY)) {
+				const isHorizontalSwipe = Math.abs(diffX) > SWIPE_THRESHOLD
+                                const isDominantX = Math.abs(diffX) > Math.abs(diffY) * 3
+
+                                if (isHorizontalSwipe && isDominantX) {
 					if (diffX > 0) {
 						changeTab(currentIndex + 1)
 					} else {

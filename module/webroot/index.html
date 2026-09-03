@@ -92,7 +92,17 @@
 					</div>
 				</div>
 
-				<p class="section-label">Recommendations</p>
+				<p class="section-label">Enabled Features In Kernel</p>
+                                <div class="card-group">
+                                        <div class="card-row">
+                                                <div class="card-row__body">
+                                                        <span class="card-row__tag--code" id="kernel-features-container"></span>
+                                                </div>
+                                                <md-ripple></md-ripple>
+                                        </div>
+                                </div>
+
+                                <p class="section-label">Recommendations</p>
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
@@ -145,11 +155,9 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row" data-module="tricky_store">
+					<div class="card-row" data-module="teesim">
 						<div class="card-row__body">
 							<span class="card-row__title">
-								<a href="https://github.com/Enginex0/TEESimulator-RS">TEESimulator-RS</a>
-								or
 								<a href="https://github.com/JingMatrix/TEESimulator">TEESimulator</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
@@ -157,15 +165,6 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row" data-module="specter">
-						<div class="card-row__body">
-							<span class="card-row__title">
-								<a href="https://github.com/dpejoh/specter">Specter</a>
-							</span>
-							<span class="card-row__sub status-text">Status: Not installed</span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
 
 					<div class="card-row" data-module="tricky_addon">
 						<div class="card-row__body">
@@ -196,6 +195,13 @@
 						</div>
 						<md-ripple></md-ripple>
 					</div>
+                                        <div class="card-row" data-module="rod">
+                                                <div class="card-row__body">
+                                                        <span class="card-row__title">ROD-Manager</span>
+                                                        <span class="card-row__sub status-text">Status: Not installed</span>
+                                                </div>
+                                                <md-ripple></md-ripple>
+                                        </div>
 				</div>
 
 				<p class="section-label">Incompatible Modules</p>
@@ -215,6 +221,14 @@
 						</div>
 						<md-ripple></md-ripple>
 					</div>
+                                        <div class="card-row" data-module="ReSuSFS">
+                                                <div class="card-row__body">
+                                                        <span class="card-row__title">ReSuSFS</span>
+                                                        <span class="card-row__sub status-text">Status: Not installed</span>
+                                                </div>
+                                                <md-ripple></md-ripple>
+                                        </div>
+
 				</div>
 			</section>
 
@@ -249,6 +263,15 @@
 					</div>
 
 					<div class="card-row">
+                                                <div class="card-row__body">
+                                                        <span class="card-row__title">Disable Child Process Restrictions</span>
+                                                        <span class="card-row__sub">Enable or disable child process restrictions</span>
+                                                </div>
+                                                <md-switch icons id="disable_child_process_restrictions"></md-switch>
+                                                <md-ripple></md-ripple>
+                                        </div>
+
+                                        <div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Max Saturation</span>
 							<span class="card-row__sub">Enable or disable max saturation</span>
@@ -257,6 +280,14 @@
 						<md-ripple></md-ripple>
 					</div>
 				</div>
+                                  <div class="card-row">
+                                          <div class="card-row__body">
+                                                  <span class="card-row__title">Show Refresh Rate</span>
+                                                  <span class="card-row__sub">Show the current display refresh rate</span>
+                                          </div>
+                                          <md-switch icons id="show_refresh_rate"></md-switch>
+                                          <md-ripple></md-ripple>
+                                  </div>
 			</section>
 
 			<section class="tab-panel" data-panel="hiding">
@@ -553,7 +584,7 @@
 							<span class="card-row__tag--code">androidboot.warranty_bit = "1"</span>
 							<span class="card-row__tag--code">androidboot.verifiedbootstate = "orange"</span>
 						</div>
-						<md-switch icons id="proc_cmdline_bootconfig_spoofing"></md-switch>
+						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
@@ -611,7 +642,7 @@
 					</div>
 					<div class="card-row">
 						<div class="field-stack">
-							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12-9-g690101101069" id="custom_uname_release"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12-9-g12345678" id="custom_uname_release"></md-outlined-text-field>
 							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2069" id="custom_uname_version"></md-outlined-text-field>
 							<div class="btn-row">
 								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
@@ -655,6 +686,17 @@
 						<md-switch icons id="hide_custom_rom_paths"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+                                        <div class="card-row">
+                                                <div class="card-row__body">
+                                                        <span class="card-row__title">Hide Custom ROM Paths (Extreme)</span>
+                                                        <span class="card-row__sub">Important Notes:</span>
+                                                        <span class="card-row__sub">Disable umount for your app if it does not work</span>
+                                                </div>
+                                                <md-switch icons id="hide_custom_rom_paths_2"></md-switch>
+                                                <md-ripple></md-ripple>
+                                        </div>
+
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -784,11 +826,6 @@
 			</section>
 
 			<section class="tab-panel" data-panel="info">
-				<p class="section-label">Enabled Features In Kernel</p>
-				<div class="card-group">
-					<div class="mono-block enabled-config" id="kernel-features-container"></div>
-				</div>
-
 				<p class="section-label">BRENE Logs</p>
 				<div class="card-group">
 					<div class="mono-block enabled-config" id="logs"></div>

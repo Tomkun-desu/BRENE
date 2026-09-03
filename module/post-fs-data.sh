@@ -6,6 +6,7 @@ KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
+SUSFS_VARIANT=$(${SUSFS_BIN} show variant)
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # Load utils
@@ -27,7 +28,7 @@ true > "${PERSISTENT_DIR}/logs.txt"
 ##  - It is stronly suggested to use dynamically if the target path will be mounted
 # cat <<EOF >/dev/null
 # # First, clone the permission before adding to sus_kstat
-# susfs_clone_perm "$MODDIR/hosts" /system/etc/hosts
+# brene_clone_perm "$MODDIR/hosts" /system/etc/hosts
 
 # # Second, before bind mount your file/directory, use 'add_sus_kstat' to add the path #
 # ${SUSFS_BIN} add_sus_kstat '/system/etc/hosts'
@@ -58,24 +59,27 @@ true > "${PERSISTENT_DIR}/logs.txt"
 # 1. Both target_pathname and redirected_pathname must be existed before they can be added to kernel.
 # 2. Users have to take care of the selinux permission for both target_pathname and redirected_pathname by themselves first.
 ## Set the permission of the redirected path first ##
-# susfs_clone_perm '/data/local/tmp/my_hosts' '/system/etc/hosts'
+# brene_clone_perm '/data/local/tmp/my_hosts' '/system/etc/hosts'
 ## Now add the target path and redirected path with pre-defined uid scheme to kernel ##
 ## *Run 'ksu_susfs add_open_redirect' for more details of <uid_scheme> ##
 # ${SUSFS_BIN} add_open_redirect '/system/etc/hosts' '/data/local/tmp/my_hosts' '0'
 
+
+
 # Spoof /system/lib64/libstagefright.so
 if [[ "${config_spoof_libstagefright}" == "1" ]]; then
-	path=/system/lib64/libstagefright.so
-	file_name=$(basename "${path}")
-	fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+        path=/system/lib64/libstagefright.so
+        file_name=$(basename "${path}")
+        fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
 
-	[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-	[[ ! -f "${fake_file_path}" ]] && {
-		touch "${fake_file_path}"
-		susfs_clone_perm "${fake_file_path}" "${path}"
-	}
+        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+        [[ ! -f "${fake_file_path}" ]] && {
+                touch "${fake_file_path}"
+        }
 
-	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+        brene_clone_perm "${fake_file_path}" "${path}"
+
+        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
 fi
 
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
@@ -101,7 +105,7 @@ fi
 # ${SUSFS_BIN} set_cmdline_or_bootconfig ${FAKE_PROC_CMDLINE_FILE}
 # EOF
 
-if [[ "${config_proc_cmdline_bootconfig_spoofing}" == "1" ]]; then
+if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 	susfs_variant=$(${SUSFS_BIN} show variant)
 
 	if [[ "${susfs_variant}" == "GKI" ]]; then
@@ -137,8 +141,6 @@ fi
 #ksu_susfs enable_avc_log_spoofing 0
 if [[ "${config_enable_avc_log_spoofing}" == "1" ]]; then
 	${SUSFS_BIN} enable_avc_log_spoofing 1
-elif [[ "${config_enable_avc_log_spoofing}" == "0" ]]; then
-	${SUSFS_BIN} enable_avc_log_spoofing 0
 fi
 
 #### Hide all sus mounts for NON-SU processes in this stage just to prevent zygote from caching them in memory ####
@@ -146,53 +148,68 @@ fi
 ## Or it is up to you to keep it enabled since su process can still see the mounts ##
 if [[ "${config_hide_sus_mnts_for_non_su_procs}" == "1" ]]; then
 	${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 1
-elif [[ "${config_hide_sus_mnts_for_non_su_procs}" == "0" ]]; then
-	${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 0
 fi
 
 # Uname Spoofing
 #### Spoof the uname, effective for all processes ####
-# you can get your uname args by running 'uname {-r|-v}' on your stock ROM #
-# pass 'default' to tell susfs to use the default value by uname #
+# You can get your uname args by running 'uname {-r|-v}' on your stock ROM.
+# pass 'default' to tell susfs to use the default value by uname.
 # ${SUSFS_BIN} set_uname 'default' 'default'
+
+# Custom Uname has priority over Automatic Uname.
 if [[ "${config_custom_uname_spoofing}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "#####################"
-			echo "Custom Uname Spoofing"
-			echo "#####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
+
+if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "#####################"
+                        echo "Custom Uname Spoofing"
+                        echo "#####################"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
 
         final_uname_release="${config_custom_uname_kernel_release}"
         final_uname_version="${config_custom_uname_kernel_version}"
+
+        # Preserve BRENE's custom 'default' fallback behavior.
         if [[ "${final_uname_release}" == "default" || "${final_uname_version}" == "default" ]]; then
-                auto_kernel_version=$(cat /proc/version | awk '{print $3}' | cut -d'-' -f1)
-                auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-                auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g690101101069"
+                auto_kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
                 auto_uname_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
+
+                if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
+                        auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g$(shuf -i 10000000-99999999 -n 1)"
+                else
+                        auto_uname_release="${auto_kernel_version}-g$(shuf -i 10000000-99999999 -n 1)"
+                fi
+
                 [[ "${final_uname_release}" == "default" ]] && final_uname_release="${auto_uname_release}"
                 [[ "${final_uname_version}" == "default" ]] && final_uname_version="${auto_uname_version}"
         fi
 
         brene_set_uname "${final_uname_release}" "${final_uname_version}"
+
 elif [[ "${config_uname_spoofing}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "##############"
-			echo "Uname Spoofing"
-			echo "##############"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "##############"
+                        echo "Uname Spoofing"
+                        echo "##############"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
 
-	kernel_version=$(cat /proc/version | awk '{print $3}' | cut -d'-' -f1)
-	kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-	uname_kernel_release="${kernel_version}-${kmi}-9-g690101101069"
-	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
+        kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
+        uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
-	brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
+        if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
+                kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+                uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1)"
+        else
+                uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1)"
+        fi
+
+        brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
 fi
 
 ## Disable susfs kernel log ##
@@ -204,7 +221,8 @@ fi
 
 # Hide /system/addon.d Path
 if [[ "${config_hide_addon_d}" == "1" ]]; then
-	brene_sus_path "/system/addon.d"
+	brene_sus_map "/system/addon.d"
+    brene_sus_path_loop "/system/addon.d"
 fi
 
 # Hide Custom ROM Paths
@@ -221,6 +239,15 @@ if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	done
 fi
 
+# Hide Custom ROM Paths (Extreme)
+if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
+        for i in ${CUSTOM_ROM_NAMES//|/ }; do
+                find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" | while read -r path; do
+                        brene_sus_map "${path}"
+                        brene_sus_path_loop "${path}"
+                done
+        done
+fi
 # Hide LineageOS Strings
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) | while read -r path; do
@@ -228,11 +255,12 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 		fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
 
 		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-		[[ ! -f "${fake_file_path}" ]] && {
-			touch "${fake_file_path}"
-			susfs_clone_perm "${fake_file_path}" "${path}"
-		}
+                if [[ ! -f "${fake_file_path}" ]]; then
+                        cp "${path}" "${fake_file_path}"
+                        sed -i "s/lineage//g" "${fake_file_path}"
+                fi
 
+                brene_clone_perm "${fake_file_path}" "${path}"
 		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
 	done
 fi
@@ -256,6 +284,9 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
     if [[ -n "${RESETPROP}" ]]; then
         MAIN_FP=$(getprop ro.build.fingerprint)
         MAIN_FP="${MAIN_FP//userdebug/user}"
+        MAIN_FP="${MAIN_FP//evolution/}"
+        MAIN_FP="${MAIN_FP//crdroid/}"
+        MAIN_FP="${MAIN_FP//lineage/}"
         MAIN_ID=$(getprop ro.build.id)
         MAIN_RELEASE=$(getprop ro.build.version.release)
         MAIN_SDK=$(getprop ro.build.version.sdk)
@@ -377,4 +408,43 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                         echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
+
+fi
+
+# Hide LineageOS Strings in RC files
+if [[ "${config_hide_lineage_strings}" == "1" ]]; then
+        find /system /system_ext /vendor /product -iname "*.rc" | while read -r path; do
+                if grep -iq "lineage" "${path}"; then
+                        file_name=$(basename "${path}")
+                        fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+
+                        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+                        [[ ! -f "${fake_file_path}" ]] && touch "${fake_file_path}"
+
+                        brene_clone_perm "${fake_file_path}" "${path}"
+                        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+                fi
+        done
+fi
+
+# Spoof /system/etc/hosts
+if [[ "${config_spoof_hosts}" == "1" ]]; then
+    path=/system/etc/hosts
+    ${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096'
+fi
+
+# Hide Suspicious PTYs
+if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "####################"
+			echo "Hide Suspicious PTYs"
+			echo "####################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	for i in $(seq 0 9); do
+		brene_sus_path_loop "/dev/pts/${i}"
+	done
 fi

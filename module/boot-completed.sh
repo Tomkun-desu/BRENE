@@ -60,6 +60,11 @@ elif [[ "${config_wireless_debugging}" == "0" ]]; then
 	settings put global adb_wifi_enabled 0
 fi
 
+# Disable Child Process Restrictions
+if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
+        resetprop_n persist.sys.fflag.override.settings_enable_monitor_phantom_procs false
+fi
+
 # SELinux Enforcing
 if [[ "${config_selinux}" == "1" ]]; then
 	[[ "$(getenforce)" != "Enforcing" ]] && setenforce 1
@@ -85,10 +90,33 @@ fi
 if [[ "${config_saturation}" == "1" ]]; then
 	service call SurfaceFlinger 1022 f 2.0
 fi
+# Show Refresh Rate
+if [[ "${config_show_refresh_rate}" == "1" ]]; then
+    service call SurfaceFlinger 1034 i32 1
+fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+   spoof_android_system_properties
+fi
+
 ## First we need to wait until files are accessible in /sdcard ##
 _wait_count=0; until [[ -e "/sdcard/Android" ]] || [[ "${_wait_count}" -ge 10 ]]; do sleep 1; _wait_count=$((_wait_count + 1)); done
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+   spoof_android_system_properties
+fi
+
+# Spoof Android System Properties Every Minute
+if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
+   while true; do
+           sleep 60
+           spoof_android_system_properties
+   done &
+fi
+
+
 
 ## Remove the '..5.u.S' leftover ##
 ## THe reason why this sus file is created is because users have grant the MANAGE_EXTERNAL_STORAGE permission for the apps that detecting sus files in /sdcard, or in /sdcard/Android/data where the apps are exploiting the unicode bugs to create files arbitrary.
@@ -171,20 +199,22 @@ if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
 	done
 fi
 
-# Hide custom recovery (TWRP/OrangeFox) leftover folders
-if [[ "${config_hide_custom_recovery_folders}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "################################"
-			echo "Hide Custom Recovery Folders"
-			echo "################################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
+# Hide Custom Recovery Paths
+if [[ "${config_hide_custom_recovery}" == "1" ]]; then
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "########################"
+                        echo "Hide Custom Recovery Paths"
+                        echo "########################"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
 
-	for recovery_path in /cache/recovery /data/cache/recovery /data/recovery; do
-		[[ -e "${recovery_path}" ]] && brene_sus_path_loop "${recovery_path}"
-	done
+        [[ -e "/storage/emulated/0/Fox" ]] && brene_sus_path_loop "/storage/emulated/0/Fox"
+        [[ -e "/storage/emulated/0/TWRP" ]] && brene_sus_path_loop "/storage/emulated/0/TWRP"
+        [[ -e "/data/recovery" ]] && brene_sus_path_loop "/data/recovery"
+        [[ -e "/vendor/bin/install-recovery.sh" ]] && brene_sus_path_loop "/vendor/bin/install-recovery.sh"
+        [[ -e "/system/bin/install-recovery.sh" ]] && brene_sus_path_loop "/system/bin/install-recovery.sh"
 fi
 
 # /data/local/tmp
@@ -201,6 +231,20 @@ if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	for i in /data/local/tmp/*; do
 		brene_sus_path_loop "${i}"
 	done
+fi
+
+# Fix /data/local/tmp Inconsistencies
+if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
+        target_folder="/data/local/tmp"
+
+        mkdir -p "${target_folder}"
+        chmod 0771 "${target_folder}"
+        chown shell:shell "${target_folder}"
+        chcon u:object_r:shell_data_file:s0 "${target_folder}"
+        # add_sus_kstat_statically </path/of/file_or_directory> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+        # ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
+        # Example: stat -c %i <path>
+        ${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '4096'
 fi
 
 # Manually-installed User CA Certificates
@@ -317,6 +361,16 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_mount.txt" ]]; then
 	done < "${PERSISTENT_DIR}/custom_sus_mount.txt"
 fi
 
+# Load custom_kernel_umount.txt
+if [[ -e "${PERSISTENT_DIR}/custom_kernel_umount.txt" ]]; then
+        while IFS= read -r i; do
+                # Skip empty lines or comments
+                [[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
+
+                brene_kernel_umount "${i}"
+        done < "${PERSISTENT_DIR}/custom_kernel_umount.txt"
+fi
+
 #### Hide the mmapped real file from various maps in /proc/self/, effective only for processes that are marked umounted with uid >= 10000 ####
 ## - *Please note that it is better to do it in boot-completed starge
 ##   Since some target path may be mounted by ksu, and make sure the
@@ -340,26 +394,30 @@ fi
 
 # Injections Hiding
 if [[ "${config_hide_injections}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "#################"
-			echo "Injections Hiding"
-			echo "#################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "#################"
+                        echo "Injections Hiding"
+                        echo "#################"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
 
-	for i in /data/adb/modules/*; do
-		if [[ -e "${i}/system" ]]; then
-			for x in $(find "${i}/system" -type f); do
-				brene_sus_map "${x}"
-			done
-		fi
-	done
+        overlayfs="/data/adb/modules/meta-overlayfs/mnt"
+        magic_mount="/data/adb/modules"
+        [[ -e "${overlayfs}" ]] && path="${overlayfs}" || path="${magic_mount}"
 
-	for i in $(find /data/adb/modules -name "*.so"); do
-		brene_sus_map "${i}"
-	done
+        for module in "${path}"/*; do
+                if [[ -e "${module}/system" ]]; then
+                        find "${module}/system" -type f | while read -r file; do
+                                brene_sus_map "${file}"
+                        done
+                fi
+        done
+
+        find /data/adb/modules -name "*.so" | while read -r file; do
+                brene_sus_map "${file}"
+        done
 fi
 
 #### Adding sus mounts to umount list via built-in KernelSU kernel umount (not via add_try_umount from old susfs) ####
@@ -378,26 +436,12 @@ fi
 
 if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
-	${KSU_BIN} kernel notify-module-mounted
+	${KSU_BIN} feature set kernel_umount 1
+
+        ${KSU_BIN} kernel notify-module-mounted
 
 	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r mount; do
 		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
-	done
-fi
-
-# Hide Suspicious PTYs
-if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################"
-			echo "Hide Suspicious PTYs"
-			echo "####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
-	for i in $(seq 0 9); do
-		brene_sus_path_loop "/dev/pts/${i}"
 	done
 fi
 
@@ -408,77 +452,7 @@ if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	done
 fi
 
-spoof_android_system_properties() {
-	resetprop_n "init.svc.adbd" "stopped"
-	resetprop_n "init.svc_debug_pid.adbd" ""
-	resetprop_n "persist.sys.usb.config" "mtp"
-	resetprop_n "ro.adb.secure" "1"
-	resetprop_n "ro.crypto.state" "encrypted"
-	resetprop_n "ro.debuggable" "0"
-	resetprop_n "ro.force.debuggable" "0"
-	resetprop_n "ro.kernel.qemu" ""
-	resetprop_n "ro.secure" "1"
-	resetprop_n "ro.build.selinux" "1"
-	resetprop_n "ro.build.selinux.enforce" "1"
-	resetprop_n "ro.secureboot.lockstate" "locked"
-	resetprop_n "ro.is_ever_orange" "0"
-	resetprop_n "ro.bootmode" "normal"
-	resetprop_n "ro.bootimage.build.tags" "release-keys"
-	resetprop_n "ro.build.type" "user"
-	resetprop_n "ro.build.tags" "release-keys"
-	resetprop_n "vendor.boot.vbmeta.device_state" "locked"
-	resetprop_n "vendor.boot.verifiedbootstate" "green"
 
-	resetprop_n "ro.boot.flash.locked" "1"
-	resetprop_n "ro.boot.realme.lockstate" "1"
-	resetprop_n "ro.boot.realmebootstate" "green"
-	resetprop_n "ro.boot.verifiedbooterror" ""
-	resetprop_n "ro.boot.verifiedbootstate" "green"
-	resetprop_n "ro.boot.veritymode" "enforcing"
-	resetprop_n "ro.boot.veritymode.managed" "yes"
-
-	resetprop_n "ro.boot.vbmeta.size" "4096"
-	resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
-	resetprop_n "ro.boot.vbmeta.avb_version" "1.3"
-	resetprop_n "ro.boot.vbmeta.device_state" "locked"
-	resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
-
-	if_prop_value_exits_resetprop_n "ro.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.vendor.boot.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.vendor.warranty_bit" "0"
-	if_prop_value_exits_resetprop_n "ro.boot.warranty_bit" "0"
-
-	# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)
-
-	## Delete some prop names for newer pixel device ##
-	resetprop -d "ro.boot.verifiedbooterror"
-	resetprop -d "ro.boot.verifyerrorpart"
-	resetprop -d "crashrecovery.rescue_boot_count"
-
-	resetprop -d service.adb.root
-	resetprop -d service.adb.tcp.port
-
-	if [[ "$(resetprop ro.build.version.sdk)" -ge "36" ]]; then
-		resetprop -d sys.oem_unlock_allowed
-	else
-		resetprop_n "sys.oem_unlock_allowed" "0"
-	fi
-
-	resetprop -c --force
-}
-
-# Spoof Android System Properties
-if [[ "${config_spoof_system_properties}" == "1" ]]; then
-	spoof_android_system_properties
-fi
-
-# Spoof Android System Properties Every Minute
-if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
-	while true; do
-		sleep 60
-		spoof_android_system_properties
-	done &
-fi
 
 # Android Verified Boot Hash Spoofing
 if [[ "${config_verified_boot_hash}" != '' ]]; then

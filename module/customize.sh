@@ -9,6 +9,15 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 # Load utils
 [[ -e "${MODPATH}/utils.sh" ]] && source "${MODPATH}/utils.sh"
 
+echo ""
+echo "██████╗ ██████╗ ███████╗███╗   ██╗███████╗"
+echo "██╔══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝"
+echo "██████╔╝██████╔╝█████╗  ██╔██╗ ██║█████╗  "
+echo "██╔══██╗██╔══██╗██╔══╝  ██║╚██╗██║██╔══╝  "
+echo "██████╔╝██║  ██║███████╗██║ ╚████║███████╗"
+echo "╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚══════╝"
+echo ""
+
 # Hot Install Support
 export MODULE_HOT_INSTALL_REQUEST="true"
 
@@ -37,16 +46,12 @@ chmod 755 "${DEST_BIN_DIR}/susfs"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
 
-# susfs_ver=$(${SUSFS_BIN} show version 2> /dev/null)
-# if [[ -n "${susfs_ver}" ]]; then
-# 	if [[ "${susfs_ver}" == "v2.0.0" || "${susfs_ver}" == "v2.1.0" ]]; then
-# 		abort "[❌] Not supported SuSFS version ${susfs_ver}!"
-# 	else
-# 		echo "[✅] Detected SuSFS version: ${susfs_ver}"
-# 	fi
-# else
-# 	abort "[❌] Not detected SuSFS version!"
-# fi
+susfs_ver=$(${SUSFS_BIN} show version)
+if [[ "${susfs_ver}" == "v2"* ]]; then
+        echo "[✅] Detected SuSFS version: ${susfs_ver}"
+else
+        abort "[❌] Not supported SuSFS version ${susfs_ver}!"
+fi
 
 # Reset module description
 ${KSU_BIN} module config set override.description "[Module Status: ⏱️ | SuSFS Patches: ⏱️] A SuSFS/KernelSU module for SuSFS patched kernels"
