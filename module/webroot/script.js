@@ -226,7 +226,7 @@ exec('susfs show enabled_features').then((result) => {
 		container.innerText = 'Failed to load enabled features'
 		return
 	}
-	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
+	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '').replaceAll('_', ' ')
 })
 
 // Load logs
@@ -406,8 +406,23 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 	button.addEventListener('click', () => {
 		updateConfig2('config_spoof_verified_boot_hash', textField.value)
-		toast('Reboot to take effect')
+
+		exec(`resetprop -n ro.boot.vbmeta.digest ${textField.value}`).then((result) => {
+			if (result.errno === 0) {
+				toast('No need to reboot')
+			} else {
+				toast('Failed to update prop')
+			}
+		})
 	})
+
+	// textField.addEventListener('focus', () => {
+	// 	setTimeout(() => {
+	// 		window.scrollTo({
+	// 			top: Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
+	// 		})
+	// 	}, 500)
+	// })
 })()
 
 //
