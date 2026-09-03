@@ -1,3 +1,19 @@
+## v0.0.65-custom.7 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes summarized in simple bullet points:
+
+* Added new config options: `config_paths_hiding__sdcard_android_data_media_obb`, `config_paths_hiding__user_ca_certs`, `config_umount_suspicious_mounts`, `config_spoof_hosts`, `config_hide_suspicious_ptys`, `config_spoof_cmdline_or_bootconfig`, `config_sync_device_props`, `config_uname_spoofing`, `config_custom_uname_spoofing`, `config_spoof_libstagefright`, and `config_verified_boot_hash`.
+* Removed `config_spoof_uname` and `config_spoof_hosts`.
+* Renamed `config_spoof_uname` to `config_uname_spoofing`.
+* Renamed `config_spoof_hosts` to `config_spoof_hosts` (but it's now enabled by default).
+* Renamed `config_fix_data_local_tmp_inconsistencies` to `config_fix_data_local_tmp_inconsistencies` (no change).
+* Renamed `config_spoof_libstagefright` to `config_spoof_libstagefright` (no change).
+* Renamed `config_disable_child_process_restrictions` to
+
 ## v0.0.65-custom.6 - 2026-09-03
 
 ### Synced from upstream BRENE
