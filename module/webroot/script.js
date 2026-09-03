@@ -308,7 +308,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 	// custom uname
 	document.getElementById('custom_uname_release').value = configValues['config_custom_uname_kernel_release']
-	// document.getElementById('custom_uname_version').value = configValues['config_custom_uname_kernel_version']
+	document.getElementById('custom_uname_version').value = configValues['config_custom_uname_kernel_version']
 
 	// Verified Boot Hash
 	document.getElementById('vbh_text_field').value = configValues['config_spoof_verified_boot_hash']
@@ -382,20 +382,26 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 // Custom Uname buttons
 ;(async () => {
 	const unameRelease = document.getElementById('custom_uname_release')
-	// const unameVersion = document.getElementById('custom_uname_version')
-	const updateUname = (release) => {
+	const unameVersion = document.getElementById('custom_uname_version')
+
+	const updateUname = (release, version) => {
 		updateConfig2('config_custom_uname_kernel_release', release)
-		// updateConfig2('config_custom_uname_kernel_version', version.trim() === '' ? 'default' : version)
-		// setFeature(`susfs set_uname "${release}" "${version}"`)
-		unameRelease.value = release
-		// unameVersion.value = version.trim() === '' ? 'default' : version
+		updateConfig2('config_custom_uname_kernel_version', version)
+		setFeature(`susfs set_uname "${release}" "${version}"`)
 	}
 
-	document.getElementById(`button_custom_uname_reset`).onclick = () => {
-		updateUname('default')
-	}
+	// Apply
 	document.getElementById(`button_custom_uname_apply`).onclick = () => {
-		if (unameRelease.value !== '') updateUname(unameRelease.value)
+		if (unameRelease.value !== '' && unameVersion.value !== '') {
+			updateUname(unameRelease.value, unameVersion.value)
+		}
+	}
+
+	// Reset
+	document.getElementById(`button_custom_uname_reset`).onclick = () => {
+		updateUname('default', 'default')
+		unameRelease.value = 'default'
+		unameVersion.value = 'default'
 	}
 })()
 

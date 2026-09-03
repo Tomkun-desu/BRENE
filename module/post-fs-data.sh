@@ -187,8 +187,7 @@ if [[ "${config_custom_spoof_uname}" == "1" ]]; then
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
-	uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
-	brene_set_uname "${config_custom_uname_kernel_release}" "${uname_kernel_version}"
+	brene_set_uname "${config_custom_uname_kernel_release}" "${config_custom_uname_kernel_version}"
 fi
 
 ## Disable susfs kernel log ##
