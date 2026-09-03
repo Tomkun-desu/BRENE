@@ -1,3 +1,31 @@
+## v0.0.65-custom.6 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the code diffs in plain, simple bullet points:
+
+* The customized KernelSU/SuSFS module fork has added the following features:
+	+ Paths hiding for /sdcard/Android/[data | media | obb]
+	+ User CA certificates hiding
+	+ Fix /data/local/tmp inconsistencies
+	+ Android Verified Boot Hash spoofing
+	+ Injections hiding
+	+ Uname spoofing with custom kernel version and release
+	+ Build props spoofing across all partitions
+* The customized KernelSU/SuSFS module fork has changed the following settings:
+	+ Added config_paths_hiding__sdcard_android_data_media_obb=1
+	+ Added config_paths_hiding__user_ca_certs=1
+	+ Added config_paths_hiding__sdcard_android_data_media_obb=1
+	+ Changed config_paths_hiding__non_standard_sdcard_android=1
+	+ Changed config_paths_hiding__data_local_tmp=1
+	+ Changed config_fix_data_local_tmp_inconsistencies=1
+	+ Changed config_hide_injections=1
+	+ Changed config_umount_suspicious_mounts=1
+	+ Changed config_spoof_hosts=1
+	+ Changed config
+
 ## v0.0.65-custom.5 - 2026-09-03
 
 ### Synced from upstream BRENE
