@@ -1,3 +1,28 @@
+## v0.0.65-custom.8 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in plain, simple bullet points:
+
+* Added a new config option: `config_paths_hiding__sdcard_android_data_media_obb`
+* Added a new config option: `config_paths_hiding__user_ca_certs`
+* Added a new config option: `config_paths_hiding__sdcard_android_data_media_obb`
+* Added a new config option: `config_umount_suspicious_mounts`
+* Added a new config option: `config_spoof_hosts`
+* Added a new config option: `config_hide_custom_recovery`
+* Added a new config option: `config_fix_data_local_tmp_inconsistencies`
+* Added a new config option: `config_show_refresh_rate`
+* Added a new config option: `config_disable_child_process_restrictions`
+* Added a new config option: `config_hide_custom_rom_paths_2`
+* Added a new config option: `config_custom_uname_spoofing`
+* Added a new config option: `config_spoof_libstagefright`
+* Added a new config option: `config_verified_boot_hash`
+* Added a new config option: `config_sync_device_props`
+* Added a new config option: `config_hide_injections`
+* Added a
+
 ## v0.0.65-custom.7 - 2026-09-03
 
 ### Synced from upstream BRENE
