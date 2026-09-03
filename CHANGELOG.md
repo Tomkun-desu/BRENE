@@ -1,3 +1,31 @@
+## v0.0.65-custom.1 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+* Added support for customizing the SuSFS/KernelSU module for SuSFS patched kernels.
+* Changed the way the module's status is displayed in the description.
+* Added support for spoofing the Android Verified Boot Hash property.
+* Added support for fixing inconsistencies in /data/local/tmp.
+* Added support for hiding suspicious injections.
+* Added support for hiding custom recovery paths.
+* Added support for hiding non-standard /sdcard paths.
+* Added support for hiding user CA certificates.
+* Added support for hiding /sdcard/Android/[data | media | obb] paths.
+* Added support for manually-installed user CA certificates.
+* Added support for fully synchronizing build-related props across all partitions.
+* Added support for customizing the uname spoofing.
+* Added support for customizing the uname kernel release and version.
+* Changed the way the uname spoofing is handled.
+* Added support for hiding lineage strings.
+* Added support for hiding custom ROM paths (extreme).
+* Added support for hiding custom ROM paths (extreme) in /data/misc, /data/dalvik-cache, and /data/resource-cache.
+* Changed the way the module's logs are handled.
+* Added support
+
 ## v0.0.58-custom.10 - 2026-08-10
 
 ### Synced from upstream BRENE
