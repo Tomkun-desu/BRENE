@@ -848,30 +848,31 @@
 					</div>
 				</div>
 
-				<div class="card-row">
-                                                        <div class="card-row__body">
-                                                                <span class="card-row__title">Important Notes:</span>
-                                                                <span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
-                                                                <span class="card-row__title">Kernel Umount</span>
-                                                                <span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
-                                                                <span class="card-row__tag--code">Example:</span>
-                                                                <span class="card-row__tag--code">/system/etc/hosts</span>
-                                                        </div>
-                                                        <md-ripple></md-ripple>
-                                                </div>
+                                <p class="section-label">Manual Mode</p>
+                                <div class="card-row">
+                                        <div class="card-row__body">
+                                                <span class="card-row__title">Important Notes:</span>
+                                                <span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
+                                                <span class="card-row__title">Kernel Umount</span>
+                                                <span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
+                                                <span class="card-row__tag--code">Example:</span>
+                                                <span class="card-row__tag--code">/system/etc/hosts</span>
+                                        </div>
+                                        <md-ripple></md-ripple>
+                                </div>
 
-                                                <div class="card-group sus-card">
-                                                        <div class="snap-item">
-                                                                <md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
-                                                        </div>
-
-                                                        <div class="sus-footer">
-                                                                <md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
-                                                        </div>
-                                                </div>
+                                <div class="card-group sus-card">
+                                        <div class="snap-item">
+                                                <md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
                                         </div>
 
-<p class="section-label">Module Control</p>
+                                        <div class="sus-footer">
+                                                <md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
+                                        </div>
+                                </div>
+                        </div>
+
+                                <p class="section-label">Module Control</p>
 				<div class="card-group">
 					<div class="field-stack">
 						<div class="btn-row">
