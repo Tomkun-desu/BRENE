@@ -92,22 +92,22 @@
 					</div>
 				</div>
 
-				<p class="section-label">Enabled Features In Kernel</p>
-                                <div class="card-group">
-                                        <div class="card-row">
-                                                <div class="card-row__body">
-                                                        <span class="card-row__tag--code" id="kernel-features-container"></span>
-                                                </div>
-                                                <md-ripple></md-ripple>
-                                        </div>
-                                </div>
-
-                                <p class="section-label">Recommendations</p>
+				<p class="section-label">Recommendations</p>
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__tag--code">- Global Umount modules enabled</span>
 							<span class="card-row__tag--code">- Use a file manager with root access or not umounted</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+				</div>
+
+				<p class="section-label">Enabled Features In Kernel</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__tag--code" id="kernel-features-container"></span>
 						</div>
 						<md-ripple></md-ripple>
 					</div>
@@ -165,7 +165,6 @@
 						<md-ripple></md-ripple>
 					</div>
 
-
 					<div class="card-row" data-module="tricky_addon">
 						<div class="card-row__body">
 							<span class="card-row__title">
@@ -186,22 +185,15 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row" data-module="magic_mount_rs">
+					<div class="card-row" data-module="meta-overlayfs">
 						<div class="card-row__body">
 							<span class="card-row__title">
-								<a href="https://github.com/Tools-cx-app/meta-magic_mount-rs">Magic Mount-rs</a>
+								<a href="https://github.com/KernelSU-Modules-Repo/meta-overlayfs">OverlayFS MetaModule</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
 						<md-ripple></md-ripple>
 					</div>
-                                        <div class="card-row" data-module="rod">
-                                                <div class="card-row__body">
-                                                        <span class="card-row__title">ROD-Manager</span>
-                                                        <span class="card-row__sub status-text">Status: Not installed</span>
-                                                </div>
-                                                <md-ripple></md-ripple>
-                                        </div>
 				</div>
 
 				<p class="section-label">Incompatible Modules</p>
@@ -221,14 +213,22 @@
 						</div>
 						<md-ripple></md-ripple>
 					</div>
-                                        <div class="card-row" data-module="ReSuSFS">
-                                                <div class="card-row__body">
-                                                        <span class="card-row__title">ReSuSFS</span>
-                                                        <span class="card-row__sub status-text">Status: Not installed</span>
-                                                </div>
-                                                <md-ripple></md-ripple>
-                                        </div>
 
+					<div class="card-row" data-module="rod">
+						<div class="card-row__body">
+							<span class="card-row__title">ROD-Manager</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row" data-module="ReSuSFS">
+						<div class="card-row__body">
+							<span class="card-row__title">ReSuSFS</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
 				</div>
 			</section>
 
@@ -263,15 +263,15 @@
 					</div>
 
 					<div class="card-row">
-                                                <div class="card-row__body">
-                                                        <span class="card-row__title">Disable Child Process Restrictions</span>
-                                                        <span class="card-row__sub">Enable or disable child process restrictions</span>
-                                                </div>
-                                                <md-switch icons id="disable_child_process_restrictions"></md-switch>
-                                                <md-ripple></md-ripple>
-                                        </div>
+						<div class="card-row__body">
+							<span class="card-row__title">Disable Child Process Restrictions</span>
+							<span class="card-row__sub">Enable or disable child process restrictions</span>
+						</div>
+						<md-switch icons id="disable_child_process_restrictions"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
 
-                                        <div class="card-row">
+					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Max Saturation</span>
 							<span class="card-row__sub">Enable or disable max saturation</span>
@@ -279,15 +279,16 @@
 						<md-switch icons id="saturation"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Show Refresh Rate</span>
+							<span class="card-row__sub">Show the current display refresh rate</span>
+						</div>
+						<md-switch icons id="show_refresh_rate"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
 				</div>
-                                  <div class="card-row">
-                                          <div class="card-row__body">
-                                                  <span class="card-row__title">Show Refresh Rate</span>
-                                                  <span class="card-row__sub">Show the current display refresh rate</span>
-                                          </div>
-                                          <md-switch icons id="show_refresh_rate"></md-switch>
-                                          <md-ripple></md-ripple>
-                                  </div>
 			</section>
 
 			<section class="tab-panel" data-panel="hiding">
@@ -303,13 +304,25 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Non-standard /sdcard Paths</span>
+							<span class="card-row__title">Hide Custom Recovery Paths</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Fox</span>
+							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
+							<span class="card-row__tag--code">/data/recovery</span>
+						</div>
+						<md-switch icons id="hide_custom_recovery"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide Non-standard /storage/emulated/0 Paths</span>
 							<span class="card-row__sub">Standard Paths:</span>
 							<span class="card-row__sub">
 								Alarms, Android, Audiobooks, DCIM, Documents, Download, Movies, Music, Notifications, Pictures, Podcasts, Recordings, Ringtones, (MIUI)
 							</span>
 							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/TWRP</span>
+							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 						</div>
 						<md-switch icons id="paths_hiding__non_standard_sdcard"></md-switch>
 						<md-ripple></md-ripple>
@@ -317,74 +330,36 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Non-standard /sdcard/Android Paths</span>
+							<span class="card-row__title">Hide Non-standard /storage/emulated/0/Android Paths</span>
 							<span class="card-row__sub"> Standard Paths: </span>
 							<span class="card-row__sub">data, media, obb</span>
 							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/Android/fas-rs</span>
+							<span class="card-row__tag--code">/storage/emulated/0/Android/fas-rs</span>
 						</div>
 						<md-switch icons id="paths_hiding__non_standard_sdcard_android"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
-                                       <div class="card-row">
-                                               <div class="card-row__body">
-                                                       <span class="card-row__title">Hide Custom Recovery Paths</span>
-                                                       <span class="card-row__sub">Hide leftover TWRP/OrangeFox recovery paths and install-recovery scripts</span>
-                                                       <span class="card-row__tag--code">/storage/emulated/0/Fox</span>
-                                                       <span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
-                                                       <span class="card-row__tag--code">/data/recovery</span>
-                                                       <span class="card-row__tag--code">/cache/recovery</span>
-                                                       <span class="card-row__tag--code">/data/cache/recovery</span>
-                                                       <span class="card-row__tag--code">/vendor/bin/install-recovery.sh</span>
-                                                       <span class="card-row__tag--code">/system/bin/install-recovery.sh</span>
-                                               </div>
-                                               <md-switch icons id="hide_custom_recovery"></md-switch>
-                                               <md-ripple></md-ripple>
-                                       </div>
-
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">/data/local/tmp Paths</span>
+							<span class="card-row__title">Hide /data/local/tmp Paths</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">/data/local/tmp/DebugAssistant.log</span>
 						</div>
 						<md-switch icons id="paths_hiding__data_local_tmp"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
-
                                         <div class="card-row">
                                                 <div class="card-row__body">
-                                                        <span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
-                                                        <span class="card-row__sub">Fix ownership, permissions, SELinux context and KSTAT inconsistencies in /data/local/tmp</span>
-                                                        <span class="card-row__tag--code">/data/local/tmp</span>
+                                                        <span class="card-row__title">User CA Certificates</span>
+                                                        <span class="card-row__tag--code">Hides manually-installed (user) CA certificates from detection</span>
+                                                        <span class="card-row__tag--code">/data/misc/user/*/cacerts-added/</span>
                                                 </div>
-                                                <md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
+                                                <md-switch icons id="paths_hiding__user_ca_certs"></md-switch>
                                                 <md-ripple></md-ripple>
                                         </div>
 
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">User CA Certificates</span>
-							<span class="card-row__tag--code">Hides manually-installed (user) CA certificates from detection</span>
-							<span class="card-row__tag--code">/data/misc/user/*/cacerts-added/</span>
-						</div>
-						<md-switch icons id="paths_hiding__user_ca_certs"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">/sdcard/Android/[data | media | obb] Paths</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/sdcard/Android/data/ io.github.muntashirakon.AppManager</span>
-							<span class="card-row__tag--code">/sdcard/Android/media/ io.github.muntashirakon.AppManager</span>
-							<span class="card-row__tag--code">/sdcard/Android/obb/ io.github.muntashirakon.AppManager</span>
-						</div>
-						<md-switch icons id="paths_hiding__sdcard_android_data_media_obb"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-				</div>
+                                </div>
 
 				<p class="section-label">Mounts Hiding</p>
 				<div class="card-group">
@@ -564,8 +539,31 @@
 						<div class="sus-footer">
 							<md-filled-button id="unified_apply_button">APPLY</md-filled-button>
 						</div>
+
+                                                </div>
+
+                                                <div class="card-row">
+                                                        <div class="card-row__body">
+                                                                <span class="card-row__title">Important Notes:</span>
+                                                                <span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
+                                                                <span class="card-row__title">Kernel Umount</span>
+                                                                <span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
+                                                                <span class="card-row__tag--code">Example:</span>
+                                                                <span class="card-row__tag--code">/system/etc/hosts</span>
+                                                        </div>
+                                                        <md-ripple></md-ripple>
+                                                </div>
+
+                                                <div class="card-group sus-card">
+                                                        <div class="snap-item">
+                                                                <md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
+                                                        </div>
+
+                                                        <div class="sus-footer">
+                                                                <md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
+                                                        </div>
+                                                </div>
 					</div>
-				</div>
 			</section>
 
 			<section class="tab-panel" data-panel="spoofing">
@@ -804,6 +802,22 @@
 						<md-switch icons id="enable_log"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
+                                    <div class="card-row">
+                                            <div class="card-row__body">
+                                                    <span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
+                                                    <span class="card-row__tag--code">Example of detections:</span>
+                                                    <span class="card-row__tag--code">Duck Detector:</span>
+                                                    <span class="card-row__tag--code">- Expected mode 0771 for /data/local/tmp, but found 0777.</span>
+                                                    <span class="card-row__tag--code">- Expected shell:shell (2000:2000) for /data/local/tmp, but found 3000:3000.</span>
+                                                    <span class="card-row__tag--code">
+                                                            - The inode for /data/local/tmp is 137011, above the heuristic review threshold 10000. This is weaker than owner/mode drift and can also reflect deletion or
+                                                            recreation history.</span
+                                                    >
+                                            </div>
+                                            <md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
+                                            <md-ripple></md-ripple>
+                                    </div>
 
                                     <div class="card-row">
                                             <div class="card-row__body">
