@@ -1,3 +1,24 @@
+## v0.0.65-custom.5 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the code diffs in plain, simple bullet points for non-technical readers:
+
+* The module's description and version have been updated.
+* The module now supports spoofing the Android Verified Boot Hash property.
+* The module's configuration options have been updated to include new features such as hiding custom recovery paths and spoofing the Uname.
+* The module now includes a new feature to hide suspicious injections.
+* The module's log output has been updated to include more information about the actions being taken.
+* The module now includes a new feature to sync device properties across all partitions.
+* The module's configuration options have been updated to include new features such as hiding user CA certificates and spoofing the Uname.
+* The module's post-fs-data script has been updated to include new features such as spoofing the Uname and hiding custom ROM paths.
+* The module's configuration options have been updated to include new features such as hiding custom recovery paths and spoofing the Uname.
+* The module's customize script has been updated to include new features such as dropping useless modules and removing old Integrity-Box based Play Integrity Fix.
+* The module's module.prop file has been updated to include new information about the module's author and description.
+* The module's config
+
 ## v0.0.65-custom.4 - 2026-09-03
 
 ### Synced from upstream BRENE
