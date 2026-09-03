@@ -1,3 +1,27 @@
+## v0.0.65-custom.3 - 2026-09-03
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in plain, simple bullet points:
+
+* The module's name has been changed to ".BRENE - Custom AI".
+* The module's version has been updated to v0.0.65-custom.2.
+* The module's author has been updated to include "simonpunk & KOWX712 + Community".
+* The module's update JSON URL has been updated to a new GitHub repository.
+* The `config_spoof_uname` and `config_spoof_hosts` options have been removed.
+* The `config_spoof_verified_boot_hash` option has been added.
+* The `config_fix_data_local_tmp_inconsistencies` option has been added.
+* The `config_show_refresh_rate` option has been added.
+* The `config_disable_child_process_restrictions` option has been added.
+* The `config_hide_custom_rom_paths_2` option has been added.
+* The `config_custom_uname_spoofing` option has been added.
+* The `config_uname_spoofing` option has been added.
+* The `config_spoof_hosts` option has been restored.
+* The `config_hide_custom_recovery` option has been restored.
+* The `config_sync_device_props
+
 ## v0.0.65-custom.2 - 2026-09-03
 
 ### Synced from upstream BRENE
