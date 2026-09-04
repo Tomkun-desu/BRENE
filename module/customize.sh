@@ -18,9 +18,6 @@ echo "██████╔╝██║  ██║███████╗██
 echo "╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚══════╝"
 echo ""
 
-# Hot Install Support
-export MODULE_HOT_INSTALL_REQUEST="true"
-
 # Check Compatibility
 if [[ -z "${KSU}" ]]; then
 	abort '[❌] SuSFS is only for KernelSU or forks!'
