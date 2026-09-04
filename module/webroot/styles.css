@@ -353,3 +353,12 @@ md-tabs {
     border-radius: 16px;
     overflow: hidden;
 }
+
+/* Round Additional Hiding outer card corners */
+.additional-hiding-group > .card-row:first-child {
+    border-radius: 16px 16px 0 0;
+}
+
+.additional-hiding-group > .card-row:last-child {
+    border-radius: 0 0 16px 16px;
+}
