@@ -1,3 +1,18 @@
+## v0.0.66-custom.1 - 2026-09-04
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in simple bullet points:
+
+* Added support for hot install.
+* Added new config options: `config_paths_hiding__sdcard_android_data_media_obb`, `config_paths_hiding__user_ca_certs`, `config_paths_hiding__sdcard_android_data_media_obb`, `config_uname_spoofing`, `config_hide_suspicious_ptys`, `config_umount_suspicious_mounts`, `config_spoof_hosts`, `config_hide_custom_recovery`, `config_fix_data_local_tmp_inconsistencies`, `config_show_refresh_rate`, `config_disable_child_process_restrictions`, `config_hide_custom_rom_paths_2`, `config_spoof_libstagefright`, `config_verified_boot_hash`, `config_spoof_cmdline_or_bootconfig`, `config_sync_device_props`, `config_custom_uname_spoofing`.
+* Changed the behavior of some config options: `config_spoof_uname`, `config_spoof_hosts`, `config_hide_custom_rom_paths`, `config_hide_custom_rom_paths_2`, `config_hide_lineage_strings`.
+* Removed some code related to old Integrity-Box based Play Integrity Fix.
+* Removed some code related to outdated modules.
+* Changed the
+
 ## v0.0.65-custom.8 - 2026-09-03
 
 ### Synced from upstream BRENE
