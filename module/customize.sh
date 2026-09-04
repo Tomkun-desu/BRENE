@@ -18,9 +18,6 @@ echo "██████╔╝██║  ██║███████╗██
 echo "╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚══════╝"
 echo ""
 
-# Hot Install Support
-export MODULE_HOT_INSTALL_REQUEST="true"
-
 # Check Compatibility
 if [[ -z "${KSU}" ]]; then
 	abort '[❌] SuSFS is only for KernelSU or forks!'
@@ -57,7 +54,7 @@ fi
 susfs_variant=$(${SUSFS_BIN} show variant)
 susfs_features_number=$(${SUSFS_BIN} show enabled_features | wc -l)
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
-status="Waiting reboot ⏱️"
+status="Waiting for reboot ⏱️"
 ${KSU_BIN} module config set override.description "[Status: ${status} | SuSFS: ${susfs_version} (${susfs_variant}) | SuSFS Features: ${susfs_features_number} enabled] ${description}"
 
 # Disable other SuSFS modules
@@ -125,3 +122,21 @@ done
 if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
 	touch "/data/adb/modules/playintegrityfix/remove"
 fi
+
+# Enable WebUI without reboot
+MODDIR="/data/adb/modules/brene"
+MODULES_PATH="/data/adb/modules"
+
+rm -rf "${MODDIR}"
+mv "${MODPATH}" "${MODULES_PATH}"
+
+mkdir -p "${MODPATH}"
+cp "${MODDIR}/module.prop" "${MODPATH}"
+
+(
+	sleep 3
+	rm -rf "${MODPATH}"
+	rm "${MODDIR}/update"
+) & # fork in background
+
+echo '[✅] WebUI is ready!'
