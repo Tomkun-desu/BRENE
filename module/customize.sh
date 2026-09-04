@@ -134,3 +134,21 @@ done
 if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
         touch "/data/adb/modules/playintegrityfix/remove"
 fi
+
+# Enable WebUI without reboot
+MODDIR="/data/adb/modules/brene"
+MODULES_PATH="/data/adb/modules"
+
+rm -rf "${MODDIR}"
+mv "${MODPATH}" "${MODULES_PATH}"
+
+mkdir -p "${MODPATH}"
+cp "${MODDIR}/module.prop" "${MODPATH}"
+
+(
+        sleep 3
+        rm -rf "${MODPATH}"
+        rm "${MODDIR}/update"
+) & # fork in background
+
+echo '[✅] WebUI is ready!'
