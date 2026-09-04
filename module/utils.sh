@@ -61,10 +61,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.crypto.state" "encrypted"
 	resetprop_n "ro.debuggable" "0"
 	resetprop_n "ro.force.debuggable" "0"
-	resetprop_n "ro.kernel.qemu" ""
 	resetprop_n "ro.secure" "1"
-	resetprop_n "ro.build.selinux" "1"
-	resetprop_n "ro.build.selinux.enforce" "1"
 	resetprop_n "ro.secureboot.lockstate" "locked"
 	resetprop_n "ro.is_ever_orange" "0"
 	resetprop_n "ro.bootmode" "normal"
@@ -82,7 +79,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.boot.veritymode" "enforcing"
 	resetprop_n "ro.boot.veritymode.managed" "yes"
 
-	resetprop_n "ro.boot.vbmeta.size" "4096"
+	resetprop_n "ro.boot.vbmeta.size" "$(blockdev --getsize64 "/dev/block/by-name/vbmeta$(resetprop ro.boot.slot_suffix)")"
 	resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
 	resetprop_n "ro.boot.vbmeta.avb_version" "1.3"
 	resetprop_n "ro.boot.vbmeta.device_state" "locked"
@@ -118,7 +115,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop -n -p "persist.vendor.build.date.utc" "${new_utc_value}"
+	resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"

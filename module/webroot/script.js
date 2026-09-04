@@ -779,7 +779,7 @@ UNIQUE_EOF
 	bodyContent.addEventListener(
 		'touchend',
 		(e) => {
-			if (e.target.closest('.tab-bar') === null && e.target.closest('.app-header') === null) {
+			if (e.target.closest('.tab-bar') === null) {
 				const touchEndX = e.changedTouches[0].clientX
 				const touchEndY = e.changedTouches[0].clientY
 

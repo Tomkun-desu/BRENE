@@ -106,7 +106,6 @@ fi
 # EOF
 
 if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
-	susfs_variant=$(${SUSFS_BIN} show variant)
 
 	if [[ "${susfs_variant}" == "GKI" ]]; then
 		FAKE_BOOTCONFIG="${PERSISTENT_DIR}/fake_bootconfig"
@@ -431,6 +430,11 @@ fi
 if [[ "${config_spoof_hosts}" == "1" ]]; then
     path=/system/etc/hosts
     ${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096'
+fi
+
+# Spoof Android System Properties
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
+   spoof_android_system_properties
 fi
 
 # Hide Suspicious PTYs
