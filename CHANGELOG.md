@@ -1,3 +1,31 @@
+## v0.0.66-custom.2 - 2026-09-04
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes summarized in plain, simple bullet points:
+
+* The module's name has been changed from ".BRENE - SuSFS" to ".BRENE - Custom AI".
+* The module's version has been changed from "v0.0.66" to "v0.0.66-custom.1".
+* The module's author has been updated to include "KOWX712 + Community".
+* The module's update URL has been updated to a new GitHub repository.
+* The module now supports hot install.
+* The module now hides suspicious injections.
+* The module now hides custom recovery paths.
+* The module now hides non-standard /sdcard paths.
+* The module now hides user CA certificates.
+* The module now hides /sdcard/Android/[data | media | obb] paths.
+* The module now fixes /data/local/tmp inconsistencies.
+* The module now spoofs Android verified boot hash.
+* The module now spoofs uname.
+* The module now spoofs hosts file.
+* The module now spoofs libstagefright.
+* The module now hides framework res apk.
+* The module now hides custom ROM paths 2.
+* The module now hides lineage strings.
+* The module now fully syncs all build-related props
+
 ## v0.0.66-custom.1 - 2026-09-04
 
 ### Synced from upstream BRENE
