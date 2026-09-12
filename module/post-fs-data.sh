@@ -107,7 +107,7 @@ fi
 
 if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 
-	if [[ "${susfs_variant}" == "GKI" ]]; then
+	if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
 		FAKE_BOOTCONFIG="${PERSISTENT_DIR}/fake_bootconfig"
 
 		cat /proc/bootconfig > "${FAKE_BOOTCONFIG}"
@@ -177,9 +177,9 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 
                 if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
                         auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g$(shuf -i 10000000-99999999 -n 1)"
+                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
                 else
-                        auto_uname_release="${auto_kernel_version}-g$(shuf -i 10000000-99999999 -n 1)"
+                        auto_uname_release="${auto_kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
                 fi
 
                 [[ "${final_uname_release}" == "default" ]] && final_uname_release="${auto_uname_release}"
@@ -203,9 +203,9 @@ elif [[ "${config_uname_spoofing}" == "1" ]]; then
 
         if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
                 kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-                uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1)"
+                uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
         else
-                uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1)"
+                uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
         fi
 
         brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
@@ -264,9 +264,6 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	done
 fi
 
-if [[ "${config_brene_logs}" == "1" ]]; then
-	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
-fi
 
 #### Fully sync all build-related props (fingerprint + sub-fields) across all partitions ####
 ## Fully device-agnostic + fail-safe: never blocks boot even if resetprop errors ##
@@ -389,6 +386,7 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                         echo "########################"
                 } >> "${PERSISTENT_DIR}/logs.txt"
         fi
+        set -f
         while IFS= read -r i; do
                 # Skip empty lines or comments
                 [[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
@@ -407,6 +405,7 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                         echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
+        set +f
 
 fi
 
@@ -451,4 +450,8 @@ if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
 	for i in $(seq 0 9); do
 		brene_sus_path_loop "/dev/pts/${i}"
 	done
+fi
+
+if [[ "${config_brene_logs}" == "1" ]]; then
+	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi

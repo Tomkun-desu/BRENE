@@ -98,7 +98,10 @@ const configs = [
 document.querySelectorAll('a[href]').forEach((element) => {
 	element.addEventListener('click', (event) => {
 		event.preventDefault()
-		exec(`am start -a android.intent.action.VIEW -d ${element.href}`)
+		const url = element.href
+		if (!/^https:\/\/(github\.com|gitlab\.com|raw\.githubusercontent\.com)\//.test(url)) return
+		const safeUrl = `'${url.replace(/'/g, "'\\''")}'`
+		exec(`am start -a android.intent.action.VIEW -d ${safeUrl}`)
 	})
 })
 
@@ -275,8 +278,26 @@ exec('susfs show version').then((result) => {
 })
 
 // Helper function to update config
+function sedReplacementEscape(s) {
+	return String(s).replace(/\\/g, '\\\\').replace(/\//g, '\\/').replace(/&/g, '\\&').replace(/'/g, "'\\''")
+}
+function isValidConfigValue(config, value) {
+	const v = String(value)
+	if (config.indexOf('config_custom_uname') === 0) {
+		return /^[A-Za-z0-9._+][A-Za-z0-9._+ -]{0,127}$/.test(v)
+	}
+	if (config.indexOf('verified_boot_hash') !== -1) {
+		return /^[0-9a-fA-F]{64}$/.test(v.trim())
+	}
+	return true
+}
 function updateConfig(config, value) {
-	exec(`sed -i "s/^${config}=.*/${config}=${value}/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
+	if (!isValidConfigValue(config, value)) {
+		toast('Invalid config value')
+		return
+	}
+	const safeValue = sedReplacementEscape(value)
+	exec(`sed -i "s/^${config}=.*/${config}=${safeValue}/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		if (result.errno !== 0) toast('Failed to update config')
 	})
 }
@@ -284,7 +305,12 @@ function updateConfig(config, value) {
 // TEMP
 // Helper function to update config
 function updateConfig2(config, value) {
-	exec(`sed -i "s/^${config}=.*/${config}='${value}'/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
+	if (!isValidConfigValue(config, value)) {
+		toast('Invalid config value')
+		return
+	}
+	const safeValue = sedReplacementEscape(value)
+	exec(`sed -i "s/^${config}=.*/${config}='${safeValue}'/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
 		if (result.errno !== 0) toast('Failed to update config')
 	})
 }
@@ -369,10 +395,16 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 					toast(result.errno === 0 ? 'Success' : result.stderr)
 				})
 			} else {
+				const eofRand = window.crypto && crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
+				const eof = 'EOF_' + Date.now().toString(36) + Math.floor(eofRand / 1000).toString(36)
+				if (content.split('\n').some((line) => line === eof)) {
+					toast('Refusing to write: content contains delimiter')
+					return
+				}
 				exec(`
-cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
+cat <<'${eof}' > ${PERSISTENT_DIR}/${file}
 ${content}
-UNIQUE_EOF
+${eof}
 				`).then((result) => {
 					toast(result.errno === 0 ? 'Success' : result.stderr)
 				})
@@ -530,9 +562,19 @@ if (resetDialog && resetButton) {
 	const button = document.getElementById('verified_boot_hash_button')
 
 	button.addEventListener('click', () => {
-                updateConfig2('config_verified_boot_hash', textField.value)
+		const digest = textField.value.trim()
+		updateConfig2('config_verified_boot_hash', digest)
 
-                exec(`resetprop -n ro.boot.vbmeta.digest ${textField.value}`).then((result) => {
+		if (digest === '') {
+			toast('Missing verified boot hash')
+			return
+		}
+		if (!/^[0-9a-fA-F]{64}$/.test(digest)) {
+			toast('Invalid verified boot hash')
+			return
+		}
+		const safeDigest = `'${digest.replace(/'/g, "'\\''")}'`
+		exec(`resetprop -n ro.boot.vbmeta.digest ${safeDigest}`).then((result) => {
                         if (result.errno === 0) {
                                 toast('No need to reboot')
                         } else {
@@ -698,10 +740,16 @@ if (resetDialog && resetButton) {
 		                        toast(result.errno === 0 ? 'Success' : result.stderr)
 		                })
 		        } else {
+		                const eofRand = window.crypto && crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
+		                const eof = 'EOF_' + Date.now().toString(36) + Math.floor(eofRand / 1000).toString(36)
+		                if (content.split('\n').some((line) => line === eof)) {
+		                        toast('Refusing to write: content contains delimiter')
+		                        return
+		                }
 		                exec(`
-cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
+cat <<'${eof}' > ${PERSISTENT_DIR}/${file}
 ${content}
-UNIQUE_EOF
+${eof}
                 `).then((result) => {
 		                        toast(result.errno === 0 ? 'Success' : result.stderr)
 		                })

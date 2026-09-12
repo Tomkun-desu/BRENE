@@ -6,4 +6,7 @@ TARGET1="/storage/emulated/0/${TARGET}"
 TARGET2="/storage/emulated/0/Android/data/${TARGET}"
 TARGET3="/storage/emulated/0/Android/media/${TARGET}"
 TARGET4="/storage/emulated/0/Android/obb/${TARGET}"
-rm -rf "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"
+for t in "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"; do
+	if [[ -L "$t" ]]; then rm -f -- "$t"; continue; fi
+	rm -rf -- "$t"
+done

@@ -250,7 +250,7 @@ jobs:
         if: steps.merge.outputs.conflict == 'false' && steps.diff.outputs.count != '0'
         run: |
           python3 << 'PYEOF'
-          path = "module/boot-completed.sh"
+          path = "module/utils.sh"
           with open(path) as f:
               content = f.read()
 
@@ -282,20 +282,21 @@ jobs:
               "\tresetprop_n \"ro.system_ext.build.date.utc\" \"${new_utc_value}\"\n"
               "\tresetprop_n \"ro.vendor.build.date.utc\" \"${new_utc_value}\"\n"
               "\tresetprop_n \"ro.vendor_dlkm.build.date.utc\" \"${new_utc_value}\"\n"
+              "\tresetprop_n \"persist.vendor.build.date.utc\" \"${new_utc_value}\"\n"
           )
           new_block_utc = ""
 
           removed_any = False
           if old_fingerprint in content:
               content = content.replace(old_fingerprint, new_block_fingerprint, 1)
-              print("Removed redundant upstream fingerprint block from boot-completed.sh")
+              print("Removed redundant upstream fingerprint block from utils.sh")
               removed_any = True
           else:
               print("Fingerprint block not found (already clean or upstream changed it) -- nothing to do")
 
           if old_utc in content:
               content = content.replace(old_utc, new_block_utc, 1)
-              print("Removed redundant upstream UTC date block from boot-completed.sh (already covered by sync_device_props)")
+              print("Removed redundant upstream UTC date block from utils.sh (already covered by sync_device_props)")
               removed_any = True
           else:
               print("UTC block not found (already clean or upstream changed it) -- nothing to do")
@@ -356,7 +357,8 @@ jobs:
 
           LAST_VER=$(cat LAST_UPSTREAM_VERSION 2>/dev/null || echo "")
           if [[ "$UPSTREAM_VER" != "$LAST_VER" ]]; then
-            RUN_NUM=1
+            PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
+            RUN_NUM=$((PREV_NUM + 1))
           else
             PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
             RUN_NUM=$((PREV_NUM + 1))

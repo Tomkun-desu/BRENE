@@ -40,9 +40,9 @@ if [[ ! -d "${DEST_BIN_DIR}" ]]; then
 	abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
 fi
 
-cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}"
+cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}" || abort "[❌] Failed to copy susfs binary!"
 chmod +x "${MODPATH}/inotify.sh"
-chmod 755 "${DEST_BIN_DIR}/susfs"
+chmod 755 "${DEST_BIN_DIR}/susfs" || abort "[❌] Failed to chmod susfs binary!"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
 
@@ -66,6 +66,7 @@ ${KSU_BIN} module config set override.description "[Module Status: ⏱️ | SuSF
 
 echo '[✅] Preparing brene persistent directory (/data/adb/brene)'
 mkdir -p "${PERSISTENT_DIR}"
+chmod 700 "${PERSISTENT_DIR}" || true
 
 files="
 custom_sus_map.txt
@@ -73,6 +74,7 @@ custom_sus_mount.txt
 custom_sus_path.txt
 custom_sus_path_loop.txt
 custom_sus_kstat.txt
+custom_kernel_umount.txt
 "
 for file in ${files}; do
 	if [[ ! -f "${PERSISTENT_DIR}/${file}" ]]; then
@@ -88,7 +90,7 @@ else
 		# Skip empty lines or comments
 		[[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
 
-		if grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh"; then
+		if grep -qF -- "${key}=" "${PERSISTENT_DIR}/config.sh"; then
 			:
 		else
 			echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
@@ -131,7 +133,7 @@ for module in ${modules}; do
 done
 
 # Remove old Integrity-Box based Play Integrity Fix
-if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
+if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -qF -- "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
         touch "/data/adb/modules/playintegrityfix/remove"
 fi
 

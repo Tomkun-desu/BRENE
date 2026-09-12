@@ -1,3 +1,6 @@
 BRENE.zip
 node_modules
 pnpm-lock.yaml
+BRENE-Custom-AI-*.zip
+/tmp/
+.env*

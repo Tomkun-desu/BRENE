@@ -79,7 +79,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.boot.veritymode" "enforcing"
 	resetprop_n "ro.boot.veritymode.managed" "yes"
 
-	resetprop_n "ro.boot.vbmeta.size" "$(blockdev --getsize64 "/dev/block/by-name/vbmeta$(resetprop ro.boot.slot_suffix)")"
+	size=$(blockdev --getsize64 "/dev/block/by-name/vbmeta$(resetprop ro.boot.slot_suffix)" 2>/dev/null); [[ -n "$size" ]] && resetprop_n "ro.boot.vbmeta.size" "$size"
 	resetprop_n "ro.boot.vbmeta.hash_alg" "sha256"
 	resetprop_n "ro.boot.vbmeta.avb_version" "1.3"
 	resetprop_n "ro.boot.vbmeta.device_state" "locked"

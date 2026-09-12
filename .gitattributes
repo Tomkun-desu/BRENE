@@ -1,2 +1,4 @@
 * text eol=lf
 *.jpg binary
+module/tools/susfs binary
+*.zip binary

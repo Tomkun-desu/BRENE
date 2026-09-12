@@ -21,11 +21,11 @@ for module in ${modules}; do
         [[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
 done
 
-if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -q "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
+if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -qF -- "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
         touch "/data/adb/modules/playintegrityfix/remove"
-        reboot
+        echo "reboot recommended: conflicting module flagged for removal" >> "${PERSISTENT_DIR}/log.txt"
 fi
-[[ -e "/data/adb/modules/ReSuSFS" ]] && reboot
+[[ -e "/data/adb/modules/ReSuSFS" ]] && echo "reboot recommended: conflicting module flagged for removal" >> "${PERSISTENT_DIR}/log.txt"
 
 # Update Description
 susfs_ver=$(${SUSFS_BIN} show version)
@@ -146,7 +146,10 @@ TARGET1="/sdcard/${TARGET}"
 TARGET2="/sdcard/Android/data/${TARGET}"
 TARGET3="/sdcard/Android/media/${TARGET}"
 TARGET4="/sdcard/Android/obb/${TARGET}"
-rm -rf "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"
+for t in "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"; do
+	if [[ -L "$t" ]]; then rm -f -- "$t"; continue; fi
+	rm -rf -- "$t"
+done
 inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
@@ -172,6 +175,7 @@ if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
 	fi
 
 	for i in /sdcard/*; do
+		[[ -e "${i}" ]] || continue
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/${x}" == "${i}" ]]; then
@@ -199,6 +203,7 @@ if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
 
 	standard_paths="data media obb"
 	for i in /sdcard/Android/*; do
+		[[ -e "${i}" ]] || continue
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/Android/${x}" == "${i}" ]]; then
@@ -245,6 +250,7 @@ if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	fi
 
 	for i in /data/local/tmp/*; do
+		[[ -e "${i}" ]] || continue
 		brene_sus_path_loop "${i}"
 	done
 fi
