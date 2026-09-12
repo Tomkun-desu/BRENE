@@ -104,7 +104,6 @@
 					</div>
 				</div>
 
-
 				<p class="section-label">Recommended Modules</p>
 				<div class="card-group" id="recommended-modules">
 					<div class="card-row" data-module="rezygisk">
@@ -315,8 +314,7 @@
                                                 <md-switch icons id="paths_hiding__user_ca_certs"></md-switch>
                                                 <md-ripple></md-ripple>
                                         </div>
-
-                                </div>
+				</div>
 
 				<p class="section-label">Mounts Hiding</p>
 				<div class="card-group">
@@ -327,7 +325,6 @@
 						</div>
 						<md-ripple></md-ripple>
 					</div>
-
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -344,7 +341,7 @@
 				</div>
 
 				<p class="section-label">Additional Hiding</p>
-				<div class="card-group additional-hiding-group">
+				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Important Notes:</span>
@@ -386,7 +383,6 @@
 						<md-ripple></md-ripple>
 					</div>
 				</div>
-
 			</section>
 
 			<section class="tab-panel" data-panel="spoofing">
@@ -414,7 +410,20 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">/proc/cmdline or /proc/bootconfig Spoofing</span>
+							<span class="card-row__title">Spoof /system/etc/hosts</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Native Detector:</span>
+							<span class="card-row__tag--code">- Detected modified Hosts file</span>
+							<span class="card-row__tag--code">Disclosure:</span>
+							<span class="card-row__tag--code">- CRIT Why is your hosts file so big?</span>
+						</div>
+						<md-switch icons id="spoof_hosts"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
 							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
 							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
 							<span class="card-row__tag--code">Example of detections:</span>
@@ -424,17 +433,6 @@
 						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
-
-                                       <div class="card-row">
-                                               <div class="card-row__body">
-                                                       <span class="card-row__title">Spoof /system/etc/hosts</span>
-                                                       <span class="card-row__sub">Hide the original hosts file from detection by spoofing its metadata</span>
-                                                       <span class="card-row__tag--code">/system/etc/hosts</span>
-                                               </div>
-                                               <md-switch icons id="spoof_hosts"></md-switch>
-                                               <md-ripple></md-ripple>
-                                       </div>
-
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -455,7 +453,6 @@
 						<md-switch icons id="uname_spoofing"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
-
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Device Identity Sync</span>
@@ -477,8 +474,8 @@
 					</div>
 					<div class="card-row">
 						<div class="field-stack">
-							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12-9-g12345678" id="custom_uname_release"></md-outlined-text-field>
-							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2069" id="custom_uname_version"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 6.1.145-android14-9-g00000000" id="custom_uname_release"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2025" id="custom_uname_version"></md-outlined-text-field>
 							<div class="btn-row">
 								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
 								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
@@ -487,7 +484,7 @@
 					</div>
 				</div>
 
-				<p class="section-label">Android Verified Boot Hash Spoofing</p>
+				<p class="section-label">Spoof Android Verified Boot Hash Property</p>
 				<div class="card-group">
 					<div class="card-row">
 						<div class="field-stack">
@@ -534,6 +531,7 @@
 						<md-switch icons id="hide_sus_mnts_for_non_su_procs"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">AVC Log Spoofing</span>
@@ -546,6 +544,7 @@
 						<md-switch icons id="enable_avc_log_spoofing"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
+
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">SuSFS Logs</span>
@@ -575,13 +574,6 @@
 							<span class="card-row__tag--code">/data/adb/modules/my_module/zygisk/arm64-v8a.so</span>
 							<!-- SUS MAP -->
 
-							<!-- SUS MOUNT -->
-							<span class="card-row__title">SUS MOUNT</span>
-							<span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
-							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/system/etc/hosts</span>
-							<!-- SUS MOUNT -->
-
 							<!-- SUS PATH -->
 							<span class="card-row__title">SUS PATH</span>
 							<span class="card-row__sub">Added path and all its sub-paths will be hidden for umounted app process from several syscalls</span>
@@ -604,7 +596,7 @@
 							<span class="card-row__sub">Also it does not check if the path is existed or not, instead it checks for empty string only, so be careful what to add</span>
 							<span class="card-row__sub">For paths that are frequently modified, we can add them via 'add_sus_path_loop'</span>
 							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/sdcard/TWRP</span>
+							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
 							<!-- SUS PATH LOOP -->
 						</div>
@@ -624,7 +616,6 @@
 							<div class="snap-item">
 								<md-filled-text-field class="content" id="custom_sus_map_text_field" type="textarea" rows="12" label="SUS MAP"></md-filled-text-field>
 							</div>
-
 							<div class="snap-item">
 								<md-filled-text-field class="content" id="custom_sus_mount_text_field" type="textarea" rows="12" label="SUS MOUNT"></md-filled-text-field>
 							</div>
@@ -636,7 +627,6 @@
 							<div class="snap-item">
 								<md-filled-text-field class="content" id="custom_sus_path_loop_text_field" type="textarea" rows="12" label="SUS PATH LOOP"></md-filled-text-field>
 							</div>
-
 							<div class="snap-item">
 								<div id="kstat_entries_container" style="display:flex;flex-direction:column;gap:12px;"></div>
 								<md-filled-button id="add_kstat_entry_button" style="margin-top:12px;">+ ADD ENTRY</md-filled-button>
@@ -670,16 +660,15 @@
 						<md-ripple></md-ripple>
 					</div>
 
-                                        <div class="card-row">
-                                                <div class="card-row__body">
-                                                        <span class="card-row__title">Hide Custom ROM Paths (Extreme)</span>
-                                                        <span class="card-row__sub">Important Notes:</span>
-                                                        <span class="card-row__sub">Disable umount for your app if it does not work</span>
-                                                </div>
-                                                <md-switch icons id="hide_custom_rom_paths_2"></md-switch>
-                                                <md-ripple></md-ripple>
-                                        </div>
-
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide Custom ROM Paths (Extreme)</span>
+							<span class="card-row__sub">Important Notes:</span>
+							<span class="card-row__sub">Disable umount for your app if it does not work</span>
+						</div>
+						<md-switch icons id="hide_custom_rom_paths_2"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -704,9 +693,10 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Spoof /system/lib64/libstagefright.so</span>
-							<span class="card-row__sub">Custom ROMs use a custom libstagefright.so</span>
-							<!-- <span class="card-row__tag--code">Example of detections:</span> -->
-							<!-- <span class="card-row__tag--code"></span> -->
+							<span class="card-row__sub">Some Custom ROMs use a custom libstagefright.so</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Duck Detector:</span>
+							<span class="card-row__tag--code">- Native symbol trace</span>
 						</div>
 						<md-switch icons id="spoof_libstagefright"></md-switch>
 						<md-ripple></md-ripple>
@@ -753,22 +743,21 @@
 						<md-ripple></md-ripple>
 					</div>
 
-
-                                    <div class="card-row">
-                                            <div class="card-row__body">
-                                                    <span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
-                                                    <span class="card-row__tag--code">Example of detections:</span>
-                                                    <span class="card-row__tag--code">Duck Detector:</span>
-                                                    <span class="card-row__tag--code">- Expected mode 0771 for /data/local/tmp, but found 0777.</span>
-                                                    <span class="card-row__tag--code">- Expected shell:shell (2000:2000) for /data/local/tmp, but found 3000:3000.</span>
-                                                    <span class="card-row__tag--code">
-                                                            - The inode for /data/local/tmp is 137011, above the heuristic review threshold 10000. This is weaker than owner/mode drift and can also reflect deletion or
-                                                            recreation history.</span
-                                                    >
-                                            </div>
-                                            <md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
-                                            <md-ripple></md-ripple>
-                                    </div>
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Duck Detector:</span>
+							<span class="card-row__tag--code">- Expected mode 0771 for /data/local/tmp, but found 0777.</span>
+							<span class="card-row__tag--code">- Expected shell:shell (2000:2000) for /data/local/tmp, but found 3000:3000.</span>
+							<span class="card-row__tag--code">
+								- The inode for /data/local/tmp is 137011, above the heuristic review threshold 10000. This is weaker than owner/mode drift and can also reflect deletion or
+								recreation history.</span
+							>
+						</div>
+						<md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
 
                                     <div class="card-row">
                                             <div class="card-row__body">
@@ -778,10 +767,6 @@
                                             <md-filled-button id="reset_settings">Reset</md-filled-button>
                                             <md-ripple></md-ripple>
                                     </div>
-
-				</div>
-			</section>
-
                         <md-dialog id="reset_settings_dialog">
                                 <div slot="headline">Confirm action</div>
                                 <form slot="content" id="reset_settings_form" method="dialog">Are you sure?</form>
@@ -790,6 +775,8 @@
                                         <md-text-button form="reset_settings_form" value="confirm">Yes</md-text-button>
                                 </div>
                         </md-dialog>
+				</div>
+			</section>
 
 			<section class="tab-panel" data-panel="ksu">
 				<p class="section-label">Module Control</p>
@@ -817,8 +804,6 @@
 						<div class="card-row__body">
 							<span class="card-row__title">Kernel Umount</span>
 							<span class="card-row__sub">Kernel Umount - controls whether kernel automatically unmounts modules when not needed</span>
-							<span class="card-row__sub card-row__tag--warn">WARNING:</span>
-							<span class="card-row__sub card-row__tag--warn">- Umount Suspicious Mounts need this option enabled to work</span>
 						</div>
 						<md-switch icons id="kernel_umount"></md-switch>
 						<md-ripple></md-ripple>
@@ -834,30 +819,30 @@
 					</div>
 				</div>
 
-                                <p class="section-label">Manual Mode</p>
-                                <div class="card-group">
-                                        <div class="card-row">
-                                                <div class="card-row__body">
-                                                        <span class="card-row__title">Important Notes:</span>
-                                                        <span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
-                                                        <span class="card-row__title">Kernel Umount</span>
-                                                        <span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
-                                                        <span class="card-row__tag--code">Example:</span>
-                                                        <span class="card-row__tag--code">/system/etc/hosts</span>
-                                                </div>
-                                                <md-ripple></md-ripple>
-                                        </div>
+				<p class="section-label">Manual Mode</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Important Notes:</span>
+							<span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
+							<span class="card-row__title">Kernel Umount</span>
+							<span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
+							<span class="card-row__tag--code">Example:</span>
+							<span class="card-row__tag--code">/system/etc/hosts</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
 
-                                        <div class="card-group sus-card">
-                                                <div class="snap-item">
-                                                        <md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
-                                                </div>
+					<div class="card-group sus-card">
+						<div class="snap-item">
+							<md-filled-text-field id="custom_kernel_umount_text_field" class="content" type="textarea" rows="12" label="MOUNTS"></md-filled-text-field>
+						</div>
 
-                                                <div class="sus-footer">
-                                                        <md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
-                                                </div>
-                                        </div>
-                                </div>
+						<div class="sus-footer">
+							<md-filled-button id="kernel_umount_apply_button">APPLY</md-filled-button>
+						</div>
+					</div>
+				</div>
 			</section>
 
 			<section class="tab-panel" data-panel="info">
