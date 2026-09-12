@@ -159,20 +159,35 @@ brene_sus_map() {
 # Only absolute paths are accepted (never flags). No auto SELinux fix:
 # fix the redirected path context yourself, e.g. brene_clone_perm "$DST" "$SRC".
 brene_open_redirect() {
-	local SRC=$1 DST=$2 UID_SCHEME=${3:-3}
-	_or_bad=""
-	[[ -z "${SRC}" || -z "${DST}" ]] && _or_bad="empty path"
-	[[ -z "${_or_bad}" && ("${SRC}" != /* || "${DST}" != /*) ]] && _or_bad="not absolute"
-	[[ -z "${_or_bad}" ]] && [[ ! "${UID_SCHEME}" =~ ^[0-4]$ ]] && _or_bad="bad uid_scheme '${UID_SCHEME}'"
-	[[ -z "${_or_bad}" ]] && [[ "${SRC}" == "${DST}" ]] && _or_bad="src==dst"
-	[[ -z "${_or_bad}" ]] && [[ ! -e "${SRC}" || ! -e "${DST}" ]] && _or_bad="missing file"
-	if [[ -n "${_or_bad}" ]]; then
-		[[ "${config_brene_logs}" == "1" ]] && echo "[open_redirect] SKIPPED (${_or_bad}): ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
+	local SRC=$1
+	local DST=$2
+	local UID_SCHEME=${3:-3}
+	local _or_bad=""
+	[ -z "${SRC}" ] && _or_bad="empty path"
+	[ -z "${DST}" ] && _or_bad="empty path"
+	if [ -z "${_or_bad}" ]; then
+		case "${SRC}" in /*) ;; *) _or_bad="not absolute";; esac
+	fi
+	if [ -z "${_or_bad}" ]; then
+		case "${DST}" in /*) ;; *) _or_bad="not absolute";; esac
+	fi
+	if [ -z "${_or_bad}" ]; then
+		case "${UID_SCHEME}" in [0-4]) ;; *) _or_bad="bad uid_scheme '${UID_SCHEME}'";; esac
+	fi
+	if [ -z "${_or_bad}" ]; then
+		[ "${SRC}" = "${DST}" ] && _or_bad="src==dst"
+	fi
+	if [ -z "${_or_bad}" ]; then
+		[ -e "${SRC}" ] || _or_bad="missing src"
+		[ -e "${DST}" ] || _or_bad="missing dst"
+	fi
+	if [ -n "${_or_bad}" ]; then
+		[ "${config_brene_logs}" = "1" ] && echo "[open_redirect] SKIPPED (${_or_bad}): ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
 		return 1
 	fi
 	_or_err=$(${SUSFS_BIN} add_open_redirect "${SRC}" "${DST}" "${UID_SCHEME}" 2>&1); _or_rc=$?
-	if [[ ${_or_rc} -eq 0 ]]; then
-		[[ "${config_brene_logs}" == "1" ]] && echo "[open_redirect]: ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
+	if [ ${_or_rc} -eq 0 ]; then
+		[ "${config_brene_logs}" = "1" ] && echo "[open_redirect]: ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
 	else
 		echo "[open_redirect] FAILED rc=${_or_rc}: ${SRC} -> ${DST} (${UID_SCHEME}) :: ${_or_err}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi

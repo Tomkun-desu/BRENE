@@ -169,10 +169,17 @@ __brene_hide_nonstandard_sdcard_once() {
 		standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones MIUI"
 	fi
 
-	_hide_n=0
-	shopt -s nullglob; _entries=(/sdcard/*); shopt -u nullglob
-	for i in "${_entries[@]}"; do
-		[[ -e "${i}" ]] || { [[ "${config_brene_logs}" == "1" ]] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"; continue; }
+	local _hide_n=0 _seen=0
+	# POSIX nullglob emulation inside function scope (set -- is local to functions):
+	# an unmatched glob stays literal, so detect and drop it.
+	set -- /sdcard/*
+	if [ "$#" -eq 1 ] && [ ! -e "$1" ]; then set --; fi
+	_seen=$#
+	for i in "$@"; do
+		if [ ! -e "${i}" ]; then
+			[ "${config_brene_logs}" = "1" ] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+			continue
+		fi
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/${x}" == "${i}" ]]; then
@@ -185,8 +192,8 @@ __brene_hide_nonstandard_sdcard_once() {
 
 		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
-	if [[ "${_hide_n}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
-		echo "[skip] /sdcard pass added 0 entries (empty listing or all standard), entries_seen=${#_entries[@]}" >> "${PERSISTENT_DIR}/logs.txt"
+	if [ "${_hide_n}" -eq 0 ] && [ "${config_brene_logs}" = "1" ]; then
+		echo "[skip] /sdcard pass added 0 entries (empty listing or all standard), entries_seen=${_seen}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 }
 if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
@@ -208,10 +215,15 @@ fi
 # Non-standard /sdcard/Android
 __brene_hide_nonstandard_sdcard_android_once() {
 	standard_paths="data media obb"
-	_hide_n=0
-	shopt -s nullglob; _entries=(/sdcard/Android/*); shopt -u nullglob
-	for i in "${_entries[@]}"; do
-		[[ -e "${i}" ]] || { [[ "${config_brene_logs}" == "1" ]] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"; continue; }
+	local _hide_n=0 _seen=0
+	set -- /sdcard/Android/*
+	if [ "$#" -eq 1 ] && [ ! -e "$1" ]; then set --; fi
+	_seen=$#
+	for i in "$@"; do
+		if [ ! -e "${i}" ]; then
+			[ "${config_brene_logs}" = "1" ] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+			continue
+		fi
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/Android/${x}" == "${i}" ]]; then
@@ -224,8 +236,8 @@ __brene_hide_nonstandard_sdcard_android_once() {
 
 		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
-	if [[ "${_hide_n}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
-		echo "[skip] /sdcard/Android pass added 0 entries, entries_seen=${#_entries[@]}" >> "${PERSISTENT_DIR}/logs.txt"
+	if [ "${_hide_n}" -eq 0 ] && [ "${config_brene_logs}" = "1" ]; then
+		echo "[skip] /sdcard/Android pass added 0 entries, entries_seen=${_seen}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 }
 if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
