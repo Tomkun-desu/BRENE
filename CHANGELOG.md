@@ -1,3 +1,24 @@
+## v0.0.66-custom.3 - 2026-09-12
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here is a summary of the changes in simple bullet points:
+
+* The module's description has been updated to reflect its custom nature.
+* The script now checks the version of SuSFS and handles different versions accordingly.
+* The module now hides suspicious paths, including non-standard /sdcard paths, user CA certificates, and specific paths related to Android data, media, and obb.
+* The module now fixes inconsistencies in /data/local/tmp.
+* The module now hides custom recovery paths.
+* The module now hides injections, including those in /data/adb/modules and /data/adb/modules/meta-overlayfs/mnt.
+* The module now spoofs Android verified boot hash property.
+* The module now syncs device props across all partitions.
+* The module's config file has been updated to include new options, such as config_paths_hiding__sdcard_android_data_media_obb and config_paths_hiding__user_ca_certs.
+* The module's customize script now sets up the persistent directory and copies the SuSFS binary to the destination directory.
+* The module's post-fs-data script now spoofs /proc/cmdline or /proc/bootconfig, hides /system/addon.d path, and hides custom ROM paths.
+* The module's post-fs-data
+
 ## v0.0.66-custom.2 - 2026-09-04
 
 ### Synced from upstream BRENE
