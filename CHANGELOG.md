@@ -1,3 +1,23 @@
+## v0.0.66-custom.4 - 2026-09-12
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in bullet points:
+
+* The module boot-completed.sh was modified to source a config.sh file from the persistent directory.
+* The module boot-completed.sh was modified to update the description of the SuSFS/KernelSU module based on the version of SuSFS.
+* The module boot-completed.sh was modified to hide custom recovery paths and non-standard paths on the SD card.
+* The module boot-completed.sh was modified to wait for the SD card to be accessible before hiding paths.
+* The module boot-completed.sh was modified to add a helper function to wait for a directory to be non-empty.
+* The module boot-completed.sh was modified to hide suspicious paths on the SD card and Android/data directories.
+* The module boot-completed.sh was modified to hide custom recovery paths and non-standard paths on the SD card.
+* The module boot-completed.sh was modified to add a helper function to hide non-standard paths on the SD card.
+* The module boot-completed.sh was modified to hide custom recovery paths and non-standard paths on the SD card.
+* The module boot-completed.sh was modified to add a helper function to hide non-standard paths on the SD card.
+* The module boot-completed.sh was modified to hide custom
+
 ## v0.0.66-custom.3 - 2026-09-12
 
 ### Synced from upstream BRENE
