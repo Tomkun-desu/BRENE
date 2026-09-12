@@ -1,3 +1,26 @@
+## v0.0.66-custom.5 - 2026-09-12
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* The module now supports SuSFS version v2.
+* The module now checks for SuSFS version v2 and sets the status accordingly.
+* The module now checks for the existence of the custom_sus_mount.txt file and processes it.
+* The module now checks for the existence of the custom_kernel_umount.txt file and processes it.
+* The module now has a new configuration option, config_paths_hiding__sdcard_android_data_media_obb.
+* The module now has a new configuration option, config_paths_hiding__user_ca_certs.
+* The module now has a new configuration option, config_fix_data_local_tmp_inconsistencies.
+* The module now has a new configuration option, config_hide_injections.
+* The module now has a new configuration option, config_umount_suspicious_mounts.
+* The module now has a new configuration option, config_spoof_verified_boot_hash.
+* The module now has a new configuration option, config_uname_spoofing.
+* The module now has a new configuration option, config_custom_uname_spoofing.
+* The module now has a new configuration option, config_spoof_hosts.
+* The module now has a new configuration option
+
 ## v0.0.66-custom.4 - 2026-09-12
 
 ### Synced from upstream BRENE
