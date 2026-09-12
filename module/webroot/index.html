@@ -29,6 +29,7 @@
 			<button class="tab-btn" data-tab="android">Android</button>
 			<button class="tab-btn" data-tab="hiding">Hiding</button>
 			<button class="tab-btn" data-tab="spoofing">Spoofing</button>
+			<button class="tab-btn" data-tab="susfs">SuSFS</button>
 			<button class="tab-btn" data-tab="ksu">KSU</button>
 			<button class="tab-btn" data-tab="rom">ROM</button>
 			<button class="tab-btn" data-tab="advanced">Advanced</button>
@@ -103,15 +104,6 @@
 					</div>
 				</div>
 
-				<p class="section-label">Enabled Features In Kernel</p>
-				<div class="card-group">
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__tag--code" id="kernel-features-container"></span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
-				</div>
 
 				<p class="section-label">Recommended Modules</p>
 				<div class="card-group" id="recommended-modules">
@@ -190,41 +182,6 @@
 							<span class="card-row__title">
 								<a href="https://github.com/maxsteeel/nomount">NoMount</a>
 							</span>
-							<span class="card-row__sub status-text">Status: Not installed</span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
-				</div>
-
-				<p class="section-label">Incompatible Modules</p>
-				<div class="card-group" id="incompatible-modules">
-					<div class="card-row" data-module="susfs4ksu">
-						<div class="card-row__body">
-							<span class="card-row__title">susfs4ksu-module</span>
-							<span class="card-row__sub status-text">Status: Not installed</span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row" data-module="susfs_manager">
-						<div class="card-row__body">
-							<span class="card-row__title">SuSFS Manager</span>
-							<span class="card-row__sub status-text">Status: Not installed</span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row" data-module="rod">
-						<div class="card-row__body">
-							<span class="card-row__title">ROD-Manager</span>
-							<span class="card-row__sub status-text">Status: Not installed</span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row" data-module="ReSuSFS">
-						<div class="card-row__body">
-							<span class="card-row__title">ReSuSFS</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
 						<md-ripple></md-ripple>
@@ -371,21 +328,6 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Hide Suspicious Mounts For Non-su Processes</span>
-							<span class="card-row__sub"
-								>Prevent zygote from caching the sus mounts in memory, and to keep them hidden from /proc/self/[mounts|mountinfo|mountstat] for non-su processes</span
-							>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Holmes:</span>
-							<span class="card-row__tag--code">- Futile Trace Hide</span>
-							<span class="card-row__tag--code">Native Test:</span>
-							<span class="card-row__tag--code">- Futile Hide (08)</span>
-						</div>
-						<md-switch icons id="hide_sus_mnts_for_non_su_procs"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
 
 					<div class="card-row">
 						<div class="card-row__body">
@@ -445,7 +387,176 @@
 					</div>
 				</div>
 
-<p class="section-label">Manual Mode</p>
+			</section>
+
+			<section class="tab-panel" data-panel="spoofing">
+				<p class="section-label">Spoofing Features</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof Android System Properties</span>
+							<span class="card-row__sub">Spoof some android system properties</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">[ro.build.type]: [userdebug]</span>
+							<span class="card-row__tag--code">[ro.boot.flash.locked]: [0]</span>
+						</div>
+						<md-switch icons id="spoof_system_properties"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof Android System Properties Every Minute</span>
+						</div>
+						<md-switch icons id="spoof_system_properties_repeat"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">/proc/cmdline or /proc/bootconfig Spoofing</span>
+							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
+							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">androidboot.warranty_bit = "1"</span>
+							<span class="card-row__tag--code">androidboot.verifiedbootstate = "orange"</span>
+						</div>
+						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+                                       <div class="card-row">
+                                               <div class="card-row__body">
+                                                       <span class="card-row__title">Spoof /system/etc/hosts</span>
+                                                       <span class="card-row__sub">Hide the original hosts file from detection by spoofing its metadata</span>
+                                                       <span class="card-row__tag--code">/system/etc/hosts</span>
+                                               </div>
+                                               <md-switch icons id="spoof_hosts"></md-switch>
+                                               <md-ripple></md-ripple>
+                                       </div>
+
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Uname Spoofing</span>
+							<span class="card-row__sub">Spoof uname for all processes</span>
+							<span class="card-row__sub">Only 'release' and 'version' are spoofed as others are no longer needed</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Holmes:</span>
+							<span class="card-row__tag--code">- Abnormal Environment (03)</span>
+							<span class="card-row__tag--code">Native Detector:</span>
+							<span class="card-row__tag--code">- Detected Custom Kernel</span>
+							<span class="card-row__tag--code">Disclosure:</span>
+							<span class="card-row__tag--code">- Custom kernel detected (build date...)</span>
+							<span class="card-row__tag--code">Chunqiu Native Check:</span>
+							<span class="card-row__tag--code">- Tampered kernel</span>
+							<span class="card-row__tag--code">- Third-party kernel</span>
+						</div>
+						<md-switch icons id="uname_spoofing"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Device Identity Sync</span>
+                                                        <span class="card-row__sub">Sync product brand, device, manufacturer, model and name across partitions</span>
+                                                        <span class="card-row__tag--code">Example of detections:</span>
+                                                        <span class="card-row__tag--code">Build Field Coherence</span>
+						</div>
+						<md-switch icons id="sync_device_props"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Custom Uname Spoofing</span>
+							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
+						</div>
+						<md-switch icons id="custom_uname_spoofing"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row">
+						<div class="field-stack">
+							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12-9-g12345678" id="custom_uname_release"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2069" id="custom_uname_version"></md-outlined-text-field>
+							<div class="btn-row">
+								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
+								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<p class="section-label">Android Verified Boot Hash Spoofing</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="field-stack">
+							<md-outlined-text-field
+								id="verified_boot_hash_text_field"
+								type="textarea"
+								label="Verified Boot Hash"
+								rows="3"
+								placeholder="e.g. df2352c282aj56e1489a3e220305hb827e54ba65a1293ab7409f2d46a3666b5a (64 digits)"
+							></md-outlined-text-field>
+							<div class="btn-row">
+								<md-filled-button id="verified_boot_hash_button">APPLY</md-filled-button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="tab-panel" data-panel="susfs">
+				<p class="section-label">Enabled Features</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__tag--code" id="kernel-features-container"></span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+				</div>
+
+				<p class="section-label">Built-in Features</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide Suspicious Mounts For Non-su Processes</span>
+							<span class="card-row__sub"
+								>Prevent zygote from caching the sus mounts in memory, and to keep them hidden from /proc/self/[mounts|mountinfo|mountstat] for non-su processes</span
+							>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Holmes:</span>
+							<span class="card-row__tag--code">- Futile Trace Hide</span>
+							<span class="card-row__tag--code">Native Test:</span>
+							<span class="card-row__tag--code">- Futile Hide (08)</span>
+						</div>
+						<md-switch icons id="hide_sus_mnts_for_non_su_procs"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">AVC Log Spoofing</span>
+							<span class="card-row__sub">Spoof the sus tcontext 'su' with 'u:r:priv_app:s0:c512,c768' shown in avc log in kernel</span>
+							<span class="card-row__sub"
+								>Enabling this may sometimes make developers hard to identify the cause when they are debugging with some permission or selinux issues, so users are advised to
+								disable this when doing so</span
+							>
+						</div>
+						<md-switch icons id="enable_avc_log_spoofing"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">SuSFS Logs</span>
+							<span class="card-row__sub">Enable or disable SuSFS Logs in kernel</span>
+						</div>
+						<md-switch icons id="enable_log"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+				</div>
+
+				<p class="section-label">Manual Mode</p>
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
@@ -538,135 +649,6 @@
 
 						<div class="sus-footer">
 							<md-filled-button id="unified_apply_button">APPLY</md-filled-button>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<section class="tab-panel" data-panel="spoofing">
-				<p class="section-label">Spoofing Features</p>
-				<div class="card-group">
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Spoof Android System Properties</span>
-							<span class="card-row__sub">Spoof some android system properties</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">[ro.build.type]: [userdebug]</span>
-							<span class="card-row__tag--code">[ro.boot.flash.locked]: [0]</span>
-						</div>
-						<md-switch icons id="spoof_system_properties"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Spoof Android System Properties Every Minute</span>
-						</div>
-						<md-switch icons id="spoof_system_properties_repeat"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">/proc/cmdline or /proc/bootconfig Spoofing</span>
-							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
-							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">androidboot.warranty_bit = "1"</span>
-							<span class="card-row__tag--code">androidboot.verifiedbootstate = "orange"</span>
-						</div>
-						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-                                       <div class="card-row">
-                                               <div class="card-row__body">
-                                                       <span class="card-row__title">Spoof /system/etc/hosts</span>
-                                                       <span class="card-row__sub">Hide the original hosts file from detection by spoofing its metadata</span>
-                                                       <span class="card-row__tag--code">/system/etc/hosts</span>
-                                               </div>
-                                               <md-switch icons id="spoof_hosts"></md-switch>
-                                               <md-ripple></md-ripple>
-                                       </div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">AVC Log Spoofing</span>
-							<span class="card-row__sub">Spoof the sus tcontext 'su' with 'u:r:priv_app:s0:c512,c768' shown in avc log in kernel</span>
-							<span class="card-row__sub"
-								>Enabling this may sometimes make developers hard to identify the cause when they are debugging with some permission or selinux issues, so users are advised to
-								disable this when doing so</span
-							>
-						</div>
-						<md-switch icons id="enable_avc_log_spoofing"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Uname Spoofing</span>
-							<span class="card-row__sub">Spoof uname for all processes</span>
-							<span class="card-row__sub">Only 'release' and 'version' are spoofed as others are no longer needed</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Holmes:</span>
-							<span class="card-row__tag--code">- Abnormal Environment (03)</span>
-							<span class="card-row__tag--code">Native Detector:</span>
-							<span class="card-row__tag--code">- Detected Custom Kernel</span>
-							<span class="card-row__tag--code">Disclosure:</span>
-							<span class="card-row__tag--code">- Custom kernel detected (build date...)</span>
-							<span class="card-row__tag--code">Chunqiu Native Check:</span>
-							<span class="card-row__tag--code">- Tampered kernel</span>
-							<span class="card-row__tag--code">- Third-party kernel</span>
-						</div>
-						<md-switch icons id="uname_spoofing"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Device Identity Sync</span>
-                                                        <span class="card-row__sub">Sync product brand, device, manufacturer, model and name across partitions</span>
-                                                        <span class="card-row__tag--code">Example of detections:</span>
-                                                        <span class="card-row__tag--code">Build Field Coherence</span>
-						</div>
-						<md-switch icons id="sync_device_props"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Custom Uname Spoofing</span>
-							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
-						</div>
-						<md-switch icons id="custom_uname_spoofing"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-					<div class="card-row">
-						<div class="field-stack">
-							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 5.10.123-android12-9-g12345678" id="custom_uname_release"></md-outlined-text-field>
-							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2069" id="custom_uname_version"></md-outlined-text-field>
-							<div class="btn-row">
-								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
-								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<p class="section-label">Android Verified Boot Hash Spoofing</p>
-				<div class="card-group">
-					<div class="card-row">
-						<div class="field-stack">
-							<md-outlined-text-field
-								id="verified_boot_hash_text_field"
-								type="textarea"
-								label="Verified Boot Hash"
-								rows="3"
-								placeholder="e.g. df2352c282aj56e1489a3e220305hb827e54ba65a1293ab7409f2d46a3666b5a (64 digits)"
-							></md-outlined-text-field>
-							<div class="btn-row">
-								<md-filled-button id="verified_boot_hash_button">APPLY</md-filled-button>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -771,14 +753,6 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">SuSFS Logs</span>
-							<span class="card-row__sub">Enable or disable SuSFS Logs in kernel</span>
-						</div>
-						<md-switch icons id="enable_log"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
 
                                     <div class="card-row">
                                             <div class="card-row__body">
@@ -818,6 +792,16 @@
                         </md-dialog>
 
 			<section class="tab-panel" data-panel="ksu">
+				<p class="section-label">Module Control</p>
+				<div class="card-group">
+					<div class="field-stack">
+						<div class="btn-row">
+							<md-filled-button id="disable_ksu_modules">Disable Modules</md-filled-button>
+							<md-filled-button id="enable_ksu_modules">Enable Modules</md-filled-button>
+						</div>
+					</div>
+				</div>
+
 				<p class="section-label">KernelSU Features</p>
 				<div class="card-group">
 					<div class="card-row">
@@ -874,16 +858,6 @@
                                                 </div>
                                         </div>
                                 </div>
-
-                                <p class="section-label">Module Control</p>
-				<div class="card-group">
-					<div class="field-stack">
-						<div class="btn-row">
-							<md-filled-button id="disable_ksu_modules">Disable Modules</md-filled-button>
-							<md-filled-button id="enable_ksu_modules">Enable Modules</md-filled-button>
-						</div>
-					</div>
-				</div>
 			</section>
 
 			<section class="tab-panel" data-panel="info">

@@ -13,20 +13,6 @@ CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
 
-# Drop useless modules
-modules="
-ReSuSFS
-"
-for module in ${modules}; do
-        [[ -e "/data/adb/modules/${module}" ]] && touch "/data/adb/modules/${module}/remove"
-done
-
-if [[ -e "/data/adb/modules/playintegrityfix" ]] && grep -qF -- "Integrity-Box" "/data/adb/modules/playintegrityfix/module.prop"; then
-        touch "/data/adb/modules/playintegrityfix/remove"
-        echo "reboot recommended: conflicting module flagged for removal" >> "${PERSISTENT_DIR}/log.txt"
-fi
-[[ -e "/data/adb/modules/ReSuSFS" ]] && echo "reboot recommended: conflicting module flagged for removal" >> "${PERSISTENT_DIR}/log.txt"
-
 # Update Description
 susfs_ver=$(${SUSFS_BIN} show version)
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
@@ -39,16 +25,22 @@ fi
 # SU Compat
 if [[ "${config_su_compat}" == "1" ]]; then
 	${KSU_BIN} feature set su_compat 1
+elif [[ "${config_su_compat}" == "0" ]]; then
+	${KSU_BIN} feature set su_compat 0
 fi
 
 # Kernel Umount
 if [[ "${config_kernel_umount}" == "1" ]]; then
 	${KSU_BIN} feature set kernel_umount 1
+elif [[ "${config_kernel_umount}" == "0" ]]; then
+	${KSU_BIN} feature set kernel_umount 0
 fi
 
 # Hide SELinux modification
 if [[ "${config_selinux_hide}" == "1" ]]; then
 	${KSU_BIN} feature set selinux_hide 1
+elif [[ "${config_selinux_hide}" == "0" ]]; then
+	${KSU_BIN} feature set selinux_hide 0
 fi
 
 ${KSU_BIN} feature save
@@ -456,9 +448,7 @@ fi
 
 if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
-	${KSU_BIN} feature set kernel_umount 1
-
-        ${KSU_BIN} kernel notify-module-mounted
+	${KSU_BIN} kernel notify-module-mounted
 
 	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r mount; do
 		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
