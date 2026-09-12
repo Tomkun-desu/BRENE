@@ -88,7 +88,7 @@ const configs = [
 		id: 'paths_hiding__user_ca_certs',
 		action: (enabled) => {
 			if (!enabled) return
-			setFeature(`for i in /data/misc/user/*/cacerts-added/*; do [ -e "$i" ] && /data/adb/ksu/bin/susfs add_sus_path_loop "$i"; done; for d in /data/misc/user/*/cacerts-added; do [ -d "$d" ] || continue; s=$(stat -c "%i %d %h %s %b %o" "$d" 2>/dev/null); [ -z "$s" ] && continue; set -- $s; /data/adb/ksu/bin/susfs add_sus_kstat_statically "$d" "$1" "$2" "$3" "$4" default default default default default default "$5" "$6"; /data/adb/ksu/bin/susfs update_sus_kstat "$d"; done; echo done`)
+			setFeature(`for i in /data/misc/user/*/cacerts-added/*; do [ -e "$i" ] && /data/adb/ksu/bin/susfs add_sus_path_loop "$i"; done; for d in /data/misc/user/*/cacerts-added; do [ -d "$d" ] || continue; s=$(stat -c "%i %d %h %s %b %B" "$d" 2>/dev/null); [ -z "$s" ] && continue; set -- $s; /data/adb/ksu/bin/susfs add_sus_kstat_statically "$d" "$1" "$2" "$3" "$4" default default default default default default "$5" "$6"; /data/adb/ksu/bin/susfs update_sus_kstat "$d"; done; echo done`)
 		},
 	},
 	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
@@ -573,6 +573,8 @@ if (resetDialog && resetButton) {
 	const kstatContainer = document.getElementById('kstat_entries_container')
 	const addKstatButton = document.getElementById('add_kstat_entry_button')
 	const kstatFieldNames = ['ino', 'dev', 'nlink', 'size', 'atime', 'atime_nsec', 'mtime', 'mtime_nsec', 'ctime', 'ctime_nsec', 'blocks', 'blksize']
+	const openRedirectContainer = document.getElementById('open_redirect_entries_container')
+	const addOpenRedirectButton = document.getElementById('add_open_redirect_entry_button')
 
 	function createKstatEntry(values) {
 		values = values || {}
@@ -611,13 +613,19 @@ if (resetDialog && resetButton) {
 	function serializeKstatEntries() {
 		const entries = kstatContainer.querySelectorAll('.kstat-entry')
 		const outLines = []
+		const numRe = /^(default|[0-9]+)$/
 		entries.forEach((entry) => {
-			const path = entry.querySelector('.kstat-path').value.trim()
+			const rawPath = entry.querySelector('.kstat-path').value
+			if (/[\t\r\n]/.test(rawPath)) throw new Error('KSTAT path must not contain TAB/newline')
+			const path = rawPath.trim()
 			if (!path) return
 			const values = [path]
 			kstatFieldNames.forEach((name) => {
 				const v = entry.querySelector(`.kstat-${name}`).value.trim()
-				values.push(v === '' ? 'default' : v)
+				const nv = v === '' ? 'default' : v
+				if (!numRe.test(nv)) throw new Error(`KSTAT invalid ${name}: ${nv}`)
+				if (nv !== 'default' && name.endsWith('_nsec') && Number(nv) > 999999999) throw new Error(`KSTAT ${name} out of range`)
+				values.push(nv)
 			})
 			outLines.push(values.join('\t'))
 		})
@@ -626,19 +634,88 @@ if (resetDialog && resetButton) {
 
 	function loadKstatEntries(text) {
 		kstatContainer.innerHTML = ''
-		const rawLines = (text || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
+		const rawLines = (text || '').split('\n').map((l) => l.replace(/\r$/, '').trim()).filter((l) => l && !l.startsWith('#'))
+		let skipped = 0
 		rawLines.forEach((line) => {
-			const parts = line.split(/\s+/)
-			if (parts.length !== 13) return
+			// Canonical format is TAB-separated (serializeKstatEntries + post-fs-data.sh IFS=$'\t').
+			// Whitespace split is only a fallback for legacy hand-edited lines with no spaces in path.
+			const parts = line.includes('\t') ? line.split('\t').map((p) => p.trim()) : line.split(/\s+/)
+			if (parts.length !== 13 || !parts[0]) { skipped++; return }
 			const values = { path: parts[0] }
 			kstatFieldNames.forEach((name, i) => {
 				values[name] = parts[i + 1]
 			})
 			createKstatEntry(values)
 		})
+		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 13 TAB-separated fields`)
 	}
 
 	addKstatButton.onclick = () => createKstatEntry()
+
+	function createOpenRedirectEntry(values) {
+		values = values || {}
+		const entry = document.createElement('div')
+		entry.className = 'open-redirect-entry'
+		entry.style.cssText = 'border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;'
+
+		const src = document.createElement('md-outlined-text-field')
+		src.setAttribute('label', 'Source (target path)')
+		src.className = 'or-src'
+		src.value = values.src || ''
+		entry.appendChild(src)
+
+		const dst = document.createElement('md-outlined-text-field')
+		dst.setAttribute('label', 'Target (redirected path)')
+		dst.className = 'or-dst'
+		dst.value = values.dst || ''
+		entry.appendChild(dst)
+
+		const uid = document.createElement('md-outlined-text-field')
+		uid.setAttribute('label', 'uid_scheme (0-4, default 3)')
+		uid.setAttribute('placeholder', '3')
+		uid.className = 'or-uid'
+		if (values.uid) uid.value = values.uid
+		entry.appendChild(uid)
+
+		const removeBtn = document.createElement('md-filled-tonal-button')
+		removeBtn.textContent = 'REMOVE ENTRY'
+		removeBtn.onclick = () => entry.remove()
+		entry.appendChild(removeBtn)
+
+		openRedirectContainer.appendChild(entry)
+	}
+
+	function serializeOpenRedirectEntries() {
+		const entries = openRedirectContainer.querySelectorAll('.open-redirect-entry')
+		const outLines = []
+		for (const entry of entries) {
+			const s = entry.querySelector('.or-src').value.trim()
+			const d = entry.querySelector('.or-dst').value.trim()
+			const u = entry.querySelector('.or-uid').value.trim() || '3'
+			if (!s && !d) continue
+			if (!s || !d) { toast('REDIRECT: both source and target are required'); return null }
+			if (!s.startsWith('/') || !d.startsWith('/')) { toast('REDIRECT: paths must be absolute'); return null }
+			if (/[\t\r\n]/.test(s) || /[\t\r\n]/.test(d)) { toast('REDIRECT: paths must not contain TAB/newline'); return null }
+			if (!/^[0-4]$/.test(u)) { toast('REDIRECT: uid_scheme must be 0-4'); return null }
+			if (s === d) { toast('REDIRECT: source and target must differ'); return null }
+			outLines.push(`${s}\t${d}\t${u}`)
+		}
+		return outLines.join('\n')
+	}
+
+	function loadOpenRedirectEntries(text) {
+		openRedirectContainer.innerHTML = ''
+		const rawLines = (text || '').split('\n').map((l) => l.replace(/\r$/, '').trim()).filter((l) => l && !l.startsWith('#'))
+		let skipped = 0
+		rawLines.forEach((line) => {
+			const parts = line.split('\t')
+			if (parts.length !== 3 || !parts[0] || !parts[1]) { skipped++; return }
+			createOpenRedirectEntry({ src: parts[0].trim(), dst: parts[1].trim(), uid: (parts[2] || '3').trim() })
+		})
+		if (skipped) toast(`REDIRECT: skipped ${skipped} malformed line(s), need 3 TAB-separated fields`)
+	}
+
+	addOpenRedirectButton.onclick = () => createOpenRedirectEntry()
 	const applyButton = document.getElementById('unified_apply_button')
 	const tabs = document.getElementById('sus_tabs')
 	const scrollContainer = document.getElementById('horizontal_scroll_container')
@@ -662,6 +739,13 @@ if (resetDialog && resetButton) {
 	exec(`grep '^\\[custom_sus_kstat\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const kstatLog = document.getElementById('kstat_log_display')
 		kstatLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no kstat log entries yet)'
+	})
+	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
+		loadOpenRedirectEntries(result.errno === 0 ? result.stdout : '')
+	})
+	exec(`grep '^\\[custom_open_redirect\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
+		const openRedirectLog = document.getElementById('open_redirect_log_display')
+		openRedirectLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no open redirect log entries yet)'
 	})
 
 	// Tabs and Scroll Sync
@@ -710,7 +794,17 @@ if (resetDialog && resetButton) {
 				break
 			case 4:
 				file = 'custom_sus_kstat.txt'
-				content = serializeKstatEntries()
+				try {
+					content = serializeKstatEntries()
+				} catch (e) {
+					toast(e.message)
+					return
+				}
+				break
+			case 5:
+				file = 'custom_open_redirect.txt'
+				content = serializeOpenRedirectEntries()
+				if (content === null) return
 				break
 		}
 

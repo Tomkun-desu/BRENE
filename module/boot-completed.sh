@@ -109,6 +109,18 @@ fi
 
 ## First we need to wait until files are accessible in /sdcard ##
 _wait_count=0; until [[ -e "/sdcard/Android" ]] || [[ "${_wait_count}" -ge 10 ]]; do sleep 1; _wait_count=$((_wait_count + 1)); done
+# Helper: wait until DIR shows at least one entry (dent existence alone is not
+# enough — FUSE/vold can create the mountpoint before readdir returns entries).
+# Bounded only; never blocks boot. rc=0 when non-empty, 1 on timeout.
+brene_wait_for_nonempty_listing() {
+	local _bwf_dir="$1" _bwf_max="${2:-15}" _bwf_n=0 _bwf_cnt
+	while [[ "${_bwf_n}" -lt "${_bwf_max}" ]]; do
+		_bwf_cnt=$(ls -1 "${_bwf_dir}" 2>/dev/null | wc -l)
+		[[ "${_bwf_cnt}" -gt 0 ]] && return 0
+		sleep 2; _bwf_n=$((_bwf_n + 1))
+	done
+	return 1
+}
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
    spoof_android_system_properties
@@ -150,24 +162,17 @@ inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 # Suspicious Paths Hiding
 
 # Non-standard /sdcard
-if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
-	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################"
-			echo "Non-standard /sdcard"
-			echo "####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
-	fi
-
+__brene_hide_nonstandard_sdcard_once() {
 	if [[ -z "$(resetprop ro.miui.ui.version.name)" ]]; then
 		standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
 	else
 		standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones MIUI"
 	fi
 
-	for i in /sdcard/*; do
-		[[ -e "${i}" ]] || continue
+	_hide_n=0
+	shopt -s nullglob; _entries=(/sdcard/*); shopt -u nullglob
+	for i in "${_entries[@]}"; do
+		[[ -e "${i}" ]] || { [[ "${config_brene_logs}" == "1" ]] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"; continue; }
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/${x}" == "${i}" ]]; then
@@ -178,24 +183,35 @@ if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
 
 		[[ "${pass}" == "1" ]] && continue
 
-		brene_sus_path_loop "${i}"
+		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
-fi
-
-# Non-standard /sdcard/Android
-if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
+	if [[ "${_hide_n}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
+		echo "[skip] /sdcard pass added 0 entries (empty listing or all standard), entries_seen=${#_entries[@]}" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+}
+if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 		{
 			echo ""
-			echo "############################"
-			echo "Non-standard /sdcard/Android"
-			echo "############################"
+			echo "####################"
+			echo "Non-standard /sdcard"
+			echo "####################"
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
+	if ! brene_wait_for_nonempty_listing "/sdcard" 15 && [[ "${config_brene_logs}" == "1" ]]; then
+		echo "[wait] /sdcard listing still empty after ~30s, attempting once anyway" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+	__brene_hide_nonstandard_sdcard_once
+fi
+
+# Non-standard /sdcard/Android
+__brene_hide_nonstandard_sdcard_android_once() {
 	standard_paths="data media obb"
-	for i in /sdcard/Android/*; do
-		[[ -e "${i}" ]] || continue
+	_hide_n=0
+	shopt -s nullglob; _entries=(/sdcard/Android/*); shopt -u nullglob
+	for i in "${_entries[@]}"; do
+		[[ -e "${i}" ]] || { [[ "${config_brene_logs}" == "1" ]] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"; continue; }
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/Android/${x}" == "${i}" ]]; then
@@ -206,9 +222,35 @@ if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
 
 		[[ "${pass}" == "1" ]] && continue
 
-		brene_sus_path_loop "${i}"
+		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
+	if [[ "${_hide_n}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
+		echo "[skip] /sdcard/Android pass added 0 entries, entries_seen=${#_entries[@]}" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+}
+if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		{
+			echo ""
+			echo "############################"
+			echo "Non-standard /sdcard/Android"
+			echo "############################"
+		} >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+
+	if ! brene_wait_for_nonempty_listing "/sdcard/Android" 15 && [[ "${config_brene_logs}" == "1" ]]; then
+		echo "[wait] /sdcard/Android listing still empty after ~30s, attempting once anyway" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+	__brene_hide_nonstandard_sdcard_android_once
 fi
+
+# Late second pass: storage often populates after boot-completed. Same functions,
+# same allowlists — idempotent retry only. Backgrounded so boot is never blocked.
+( sleep 60
+  [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]] && __brene_hide_nonstandard_sdcard_once
+  [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]] && __brene_hide_nonstandard_sdcard_android_once
+  [[ "${config_brene_logs}" == "1" ]] && echo "[retry] late sdcard hide pass done" >> "${PERSISTENT_DIR}/logs.txt"
+) &
 
 # Hide Custom Recovery Paths
 if [[ "${config_hide_custom_recovery}" == "1" ]]; then

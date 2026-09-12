@@ -375,7 +375,7 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
 fi
 
 # Load custom_sus_kstat.txt
-# Format per line: <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+# Format per line (TAB-separated, 13 fields): <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
 # Use the literal word 'default' for any field to leave it as the real current value.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
@@ -387,9 +387,11 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                 } >> "${PERSISTENT_DIR}/logs.txt"
         fi
         set -f
-        while IFS= read -r i; do
-                # Skip empty lines or comments
-                [[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
+        while IFS= read -r i || [[ -n "${i}" ]]; do
+                # Strip CR; skip empty/whitespace-only lines or comments (leading space or TAB allowed)
+                i="${i%$'\r'}"
+                trimmed="$(printf '%s' "${i}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+                [[ -z "${trimmed}" || "${trimmed}" == "#"* ]] && continue
 
                 OLDIFS="${IFS}"
                 IFS=$'\t'
@@ -397,14 +399,56 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                 IFS="${OLDIFS}"
 
                 if [[ "$#" -eq 13 ]]; then
-                        ${SUSFS_BIN} add_sus_kstat_statically "$@"
-                        if [[ "${config_brene_logs}" == "1" ]]; then
-                                echo "[custom_sus_kstat]: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
+                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        else
+                                echo "[custom_sus_kstat] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                         fi
-                elif [[ "${config_brene_logs}" == "1" ]]; then
+                else
                         echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
+        set +f
+
+fi
+
+# Load custom_open_redirect.txt
+# Format per line (TAB-separated): <src><TAB><dst><TAB><uid_scheme>
+# Example: /system/etc/hosts<TAB>/data/adb/brene/fake_files/hosts<TAB>3
+# uid_scheme: 0 non-app (uid<10000), 1 non-su uid 0, 2 non-su,
+#             3 umounted uid>=10000 (default), 4 umounted
+# NOTE: dst is NOT auto-created and SELinux is NOT auto-fixed here;
+# both paths must already exist (see brene_open_redirect in utils.sh).
+if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "########################"
+                        echo "Custom OPEN REDIRECT"
+                        echo "########################"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
+        set -f
+        while IFS= read -r i || [[ -n "${i}" ]]; do
+                # Strip CR; skip empty/whitespace-only lines or comments (leading space or TAB allowed)
+                i="${i%$'\r'}"
+                trimmed="$(printf '%s' "${i}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+                [[ -z "${trimmed}" || "${trimmed}" == "#"* ]] && continue
+
+                OLDIFS="${IFS}"
+                IFS=$'\t'
+                set -- ${i}
+                IFS="${OLDIFS}"
+
+                if [[ "$#" -eq 3 ]]; then
+                        # brene_open_redirect logs FAILED itself; log success here like the kstat loader.
+                        if brene_open_redirect "$1" "$2" "$3"; then
+                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_open_redirect]: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        fi
+                else
+                        echo "[custom_open_redirect] SKIPPED (expected 3 TAB-separated fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                fi
+        done < "${PERSISTENT_DIR}/custom_open_redirect.txt"
         set +f
 
 fi

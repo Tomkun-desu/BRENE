@@ -75,6 +75,7 @@ custom_sus_path.txt
 custom_sus_path_loop.txt
 custom_sus_kstat.txt
 custom_kernel_umount.txt
+custom_open_redirect.txt
 "
 for file in ${files}; do
 	if [[ ! -f "${PERSISTENT_DIR}/${file}" ]]; then

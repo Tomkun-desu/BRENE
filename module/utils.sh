@@ -142,14 +142,41 @@ brene_sus_path() {
 	fi
 }
 brene_sus_path_loop() {
-	if ${SUSFS_BIN} add_sus_path_loop "$1" && [[ "${config_brene_logs}" == "1" ]]; then
-		echo "[sus_path_loop]: $1" >> "${PERSISTENT_DIR}/logs.txt"
+	_sus_err=$(${SUSFS_BIN} add_sus_path_loop "$1" 2>&1); _sus_rc=$?
+	if [[ ${_sus_rc} -eq 0 ]]; then
+		[[ "${config_brene_logs}" == "1" ]] && echo "[sus_path_loop]: $1" >> "${PERSISTENT_DIR}/logs.txt"
+	else
+		[[ "${config_brene_logs}" == "1" ]] && echo "[sus_path_loop] FAILED rc=${_sus_rc}: $1 :: ${_sus_err}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
+	return ${_sus_rc}
 }
 brene_sus_map() {
 	if ${SUSFS_BIN} add_sus_map "$1" && [[ "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_map]: $1" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
+}
+# add_open_redirect <src> <dst> <uid_scheme>: both must already exist.
+# Only absolute paths are accepted (never flags). No auto SELinux fix:
+# fix the redirected path context yourself, e.g. brene_clone_perm "$DST" "$SRC".
+brene_open_redirect() {
+	local SRC=$1 DST=$2 UID_SCHEME=${3:-3}
+	_or_bad=""
+	[[ -z "${SRC}" || -z "${DST}" ]] && _or_bad="empty path"
+	[[ -z "${_or_bad}" && ("${SRC}" != /* || "${DST}" != /*) ]] && _or_bad="not absolute"
+	[[ -z "${_or_bad}" ]] && [[ ! "${UID_SCHEME}" =~ ^[0-4]$ ]] && _or_bad="bad uid_scheme '${UID_SCHEME}'"
+	[[ -z "${_or_bad}" ]] && [[ "${SRC}" == "${DST}" ]] && _or_bad="src==dst"
+	[[ -z "${_or_bad}" ]] && [[ ! -e "${SRC}" || ! -e "${DST}" ]] && _or_bad="missing file"
+	if [[ -n "${_or_bad}" ]]; then
+		[[ "${config_brene_logs}" == "1" ]] && echo "[open_redirect] SKIPPED (${_or_bad}): ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
+		return 1
+	fi
+	_or_err=$(${SUSFS_BIN} add_open_redirect "${SRC}" "${DST}" "${UID_SCHEME}" 2>&1); _or_rc=$?
+	if [[ ${_or_rc} -eq 0 ]]; then
+		[[ "${config_brene_logs}" == "1" ]] && echo "[open_redirect]: ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
+	else
+		echo "[open_redirect] FAILED rc=${_or_rc}: ${SRC} -> ${DST} (${UID_SCHEME}) :: ${_or_err}" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+	return ${_or_rc}
 }
 brene_set_uname() {
 	if ${SUSFS_BIN} set_uname "$1" "$2" && [[ "${config_brene_logs}" == "1" ]]; then
@@ -166,13 +193,15 @@ brene_sus_mount() {
 	brene_kernel_umount "$1"
 }
 brene_sus_kstat_static() {
-	TARGET=$1
+	local TARGET=$1 STAT_OUT INO DEV NLINK SIZE BLOCKS BLKSIZE
 	[ -z "${TARGET}" ] && return
 	[ ! -e "${TARGET}" ] && return
 
-	STAT_OUT=$(stat -c "%i %d %h %s %b %o" "${TARGET}" 2>/dev/null)
+	STAT_OUT=$(stat -c "%i %d %h %s %b %B" "${TARGET}" 2>/dev/null)
 	[ -z "${STAT_OUT}" ] && return
+	set -f
 	set -- ${STAT_OUT}
+	set +f
 	INO=$1; DEV=$2; NLINK=$3; SIZE=$4; BLOCKS=$5; BLKSIZE=$6
 
 	if ${SUSFS_BIN} add_sus_kstat_statically "${TARGET}" "${INO}" "${DEV}" "${NLINK}" "${SIZE}" 'default' 'default' 'default' 'default' 'default' 'default' "${BLOCKS}" "${BLKSIZE}" && [[ "${config_brene_logs}" == "1" ]]; then
