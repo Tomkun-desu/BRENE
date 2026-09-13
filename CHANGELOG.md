@@ -1,3 +1,32 @@
+## v0.0.66-custom.6 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new feature to hide suspicious paths on the SD card.
+* Added a new feature to hide user CA certificates.
+* Added a new feature to hide suspicious paths on the SD card/Android directory.
+* Added a new feature to fix inconsistencies in the /data/local/tmp directory.
+* Added a new feature to spoof Android Verified Boot Hash Property.
+* Added a new feature to hide suspicious injections.
+* Added a new feature to hide custom recovery paths.
+* Added a new feature to hide custom ROM paths.
+* Added a new feature to hide custom ROM paths 2.
+* Added a new feature to hide framework res APK.
+* Added a new feature to hide lineage strings.
+* Added a new feature to sync device properties.
+* Added a new feature to spoof Uname.
+* Added a new feature to spoof Uname with custom values.
+* Added a new feature to spoof hosts.
+* Added a new feature to spoof libstagefright.
+* Added a new feature to spoof system properties.
+* Added a new feature to spoof system properties every minute.
+* Added a new feature to spoof system properties on boot.
+* Added a new feature to spoof system properties on boot with a delay.
+* Added a new feature to spoof system properties on boot with a custom delay.
+
+
 ## v0.0.66-custom.5 - 2026-09-12
 
 ### Synced from upstream BRENE
