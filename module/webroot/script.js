@@ -261,11 +261,18 @@ exec('susfs show version').then((result) => {
 function sedReplacementEscape(s) {
 	return String(s).replace(/\\/g, '\\\\').replace(/\//g, '\\/').replace(/&/g, '\\&').replace(/'/g, "'\\''")
 }
+function isValidUnameRelease(v) {
+	if (v === 'default') return true
+	return /^[A-Za-z0-9][A-Za-z0-9._+~\-]{0,127}$/.test(v)
+}
+function isValidUnameVersion(v) {
+	if (v === 'default') return true
+	return /^[A-Za-z0-9#][A-Za-z0-9 #(),.:+_~@\-]{0,255}$/.test(v)
+}
 function isValidConfigValue(config, value) {
 	const v = String(value)
-	if (config.indexOf('config_custom_uname') === 0) {
-		return /^[A-Za-z0-9._+][A-Za-z0-9._+ -]{0,127}$/.test(v)
-	}
+	if (config === 'config_custom_uname_kernel_release') return isValidUnameRelease(v)
+	if (config === 'config_custom_uname_kernel_version') return isValidUnameVersion(v)
 	if (config.indexOf('verified_boot_hash') !== -1) {
 		return /^[0-9a-fA-F]{64}$/.test(v.trim())
 	}
@@ -502,23 +509,37 @@ if (resetDialog && resetButton) {
                 return { release, version }
         }
 
-        const setUnameFields = (release, version) => {
-		const finalVersion = version.trim() === '' ? 'default' : version
-		updateConfig2('config_custom_uname_kernel_release', release)
+	const setUnameFields = (release, version) => {
+		const r = String(release ?? '').trim() === '' ? 'default' : String(release).trim()
+		const vRaw = String(version ?? '').trim()
+		const finalVersion = vRaw === '' ? 'default' : vRaw
+		if (!isValidUnameRelease(r)) {
+			toast(`Invalid Kernel Release: ${r}`)
+			return null
+		}
+		if (!isValidUnameVersion(finalVersion)) {
+			toast(`Invalid Kernel Version: ${finalVersion}`)
+			return null
+		}
+		updateConfig2('config_custom_uname_kernel_release', r)
 		updateConfig2('config_custom_uname_kernel_version', finalVersion)
-		unameRelease.value = release
+		unameRelease.value = r
 		unameVersion.value = finalVersion
 		return finalVersion
 	}
 
 	const updateUname = async (release, version) => {
-		const finalVersion = setUnameFields(release, version)
+		const r = String(release ?? '').trim() === '' ? 'default' : String(release).trim()
+		const vRaw = String(version ?? '').trim()
+		const vNorm = vRaw === '' ? 'default' : vRaw
+		const finalVersion = setUnameFields(r, vNorm)
+		if (finalVersion === null) return
 
-		let liveRelease = release
+		let liveRelease = r
 		let liveVersion = finalVersion
-		if (release === 'default' || finalVersion === 'default') {
+		if (r === 'default' || finalVersion === 'default') {
 			const auto = await computeAutoUname()
-			if (release === 'default') liveRelease = auto.release
+			if (r === 'default') liveRelease = auto.release
 			if (finalVersion === 'default') liveVersion = auto.version
 		}
 
@@ -529,10 +550,10 @@ if (resetDialog && resetButton) {
 	}
 
 	document.getElementById(`button_custom_uname_reset`).onclick = () => {
-		setUnameFields('default', 'default')
+		updateUname('default', 'default')
 	}
 	document.getElementById(`button_custom_uname_apply`).onclick = () => {
-		if (unameRelease.value !== '') updateUname(unameRelease.value, unameVersion.value)
+		updateUname(unameRelease.value, unameVersion.value)
 	}
 })()
 
@@ -576,11 +597,12 @@ if (resetDialog && resetButton) {
 	const openRedirectContainer = document.getElementById('open_redirect_entries_container')
 	const addOpenRedirectButton = document.getElementById('add_open_redirect_entry_button')
 
-	function createKstatEntry(values) {
+	function createKstatEntry(values, mode) {
 		values = values || {}
 		const entry = document.createElement('div')
 		entry.className = 'kstat-entry'
 		entry.style.cssText = 'border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;'
+		entry.dataset.mode = mode === 'dynamic' ? 'dynamic' : 'static'
 
 		const pathField = document.createElement('md-outlined-text-field')
 		pathField.setAttribute('label', 'Path')
@@ -588,8 +610,21 @@ if (resetDialog && resetButton) {
 		pathField.value = values.path || ''
 		entry.appendChild(pathField)
 
+		const modeRow = document.createElement('div')
+		modeRow.style.cssText = 'display:flex; gap:8px; align-items:center;'
+		const modeLabel = document.createElement('span')
+		modeLabel.textContent = 'Mode:'
+		modeLabel.style.cssText = 'font-size:13px; opacity:.8;'
+		modeRow.appendChild(modeLabel)
+		const modeSelect = document.createElement('md-outlined-select')
+		modeSelect.className = 'kstat-mode'
+		modeSelect.innerHTML = `<md-select-option value="static"${entry.dataset.mode === 'static' ? ' selected' : ''}><div slot="headline">static (spoof values)</div></md-select-option><md-select-option value="dynamic"${entry.dataset.mode === 'dynamic' ? ' selected' : ''}><div slot="headline">dynamic (current stat)</div></md-select-option>`
+		modeRow.appendChild(modeSelect)
+		entry.appendChild(modeRow)
+
 		const grid = document.createElement('div')
 		grid.style.cssText = 'display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;'
+		grid.className = 'kstat-grid'
 		kstatFieldNames.forEach((name) => {
 			const field = document.createElement('md-outlined-text-field')
 			field.setAttribute('label', name)
@@ -601,6 +636,21 @@ if (resetDialog && resetButton) {
 			grid.appendChild(field)
 		})
 		entry.appendChild(grid)
+
+		const applyMode = () => {
+			const isDyn = entry.dataset.mode === 'dynamic'
+			grid.querySelectorAll('md-outlined-text-field').forEach((f) => {
+				f.disabled = isDyn
+				f.style.opacity = isDyn ? 0.4 : 1
+			})
+		}
+		modeSelect.addEventListener('change', () => {
+			entry.dataset.mode = modeSelect.value === 'dynamic' ? 'dynamic' : 'static'
+			applyMode()
+		})
+		// md-outlined-select exposes .value once mwc is upgraded; fallback to selected option
+		setTimeout(applyMode, 0)
+		applyMode()
 
 		const removeBtn = document.createElement('md-filled-tonal-button')
 		removeBtn.textContent = 'REMOVE ENTRY'
@@ -619,6 +669,12 @@ if (resetDialog && resetButton) {
 			if (/[\t\r\n]/.test(rawPath)) throw new Error('KSTAT path must not contain TAB/newline')
 			const path = rawPath.trim()
 			if (!path) return
+			if (!path.startsWith('/')) throw new Error(`KSTAT path must be absolute: ${path}`)
+			const isDyn = entry.dataset.mode === 'dynamic'
+			if (isDyn) {
+				outLines.push(path)
+				return
+			}
 			const values = [path]
 			kstatFieldNames.forEach((name) => {
 				const v = entry.querySelector(`.kstat-${name}`).value.trim()
@@ -637,20 +693,34 @@ if (resetDialog && resetButton) {
 		const rawLines = (text || '').split('\n').map((l) => l.replace(/\r$/, '').trim()).filter((l) => l && !l.startsWith('#'))
 		let skipped = 0
 		rawLines.forEach((line) => {
+			// 1-field line (no TAB) = dynamic (add_sus_kstat <path>).
+			// 13-field TAB line = static (add_sus_kstat_statically).
+			if (!line.includes('\t')) {
+				const p = line.trim()
+				// Legacy fallback first: old hand-edited static lines used spaces instead of TABs.
+				const ws = p.split(/\s+/)
+				if (ws.length === 13 && ws[0].startsWith('/')) {
+					const values = { path: ws[0] }
+					kstatFieldNames.forEach((name, i) => { values[name] = ws[i + 1] })
+					createKstatEntry(values, 'static'); return
+				}
+				if (p && p.startsWith('/')) { createKstatEntry({ path: p }, 'dynamic'); return }
+				skipped++; return
+			}
 			// Canonical format is TAB-separated (serializeKstatEntries + post-fs-data.sh IFS=$'\t').
 			// Whitespace split is only a fallback for legacy hand-edited lines with no spaces in path.
-			const parts = line.includes('\t') ? line.split('\t').map((p) => p.trim()) : line.split(/\s+/)
-			if (parts.length !== 13 || !parts[0]) { skipped++; return }
+			const parts = line.split('\t').map((p) => p.trim())
+			if (parts.length !== 13 || !parts[0] || !parts[0].startsWith('/')) { skipped++; return }
 			const values = { path: parts[0] }
 			kstatFieldNames.forEach((name, i) => {
 				values[name] = parts[i + 1]
 			})
-			createKstatEntry(values)
+			createKstatEntry(values, 'static')
 		})
-		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 13 TAB-separated fields`)
+		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 1 (dynamic) or 13 TAB-separated (static) fields`)
 	}
 
-	addKstatButton.onclick = () => createKstatEntry()
+	addKstatButton.onclick = () => createKstatEntry({}, 'static')
 
 	function createOpenRedirectEntry(values) {
 		values = values || {}
@@ -736,7 +806,7 @@ if (resetDialog && resetButton) {
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
 		loadKstatEntries(result.errno === 0 ? result.stdout : '')
 	})
-	exec(`grep '^\\[custom_sus_kstat\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
+	exec(`grep '^\[custom_sus_kstat' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const kstatLog = document.getElementById('kstat_log_display')
 		kstatLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no kstat log entries yet)'
 	})

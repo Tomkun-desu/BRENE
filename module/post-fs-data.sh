@@ -170,6 +170,17 @@ if [[ "${config_brene_logs}" == "1" ]]; then
         final_uname_release="${config_custom_uname_kernel_release}"
         final_uname_version="${config_custom_uname_kernel_version}"
 
+        # Shell-side allowlist (config.sh is sourced; hand edits must not become code exec).
+        # Release: default or [A-Za-z0-9._+~-] ; Version: default or [A-Za-z0-9 #(),.:+_~@-]
+        case "${final_uname_release}" in
+                default) ;;
+                *[!A-Za-z0-9._+~-]*|"") final_uname_release="default" ;;
+        esac
+        case "${final_uname_version}" in
+                default) ;;
+                *[!A-Za-z0-9\ \#\(\),.:+_~@-]*|"") final_uname_version="default" ;;
+        esac
+
         # Preserve BRENE's custom 'default' fallback behavior.
         if [[ "${final_uname_release}" == "default" || "${final_uname_version}" == "default" ]]; then
                 auto_kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
@@ -375,8 +386,11 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
 fi
 
 # Load custom_sus_kstat.txt
-# Format per line (TAB-separated, 13 fields): <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
-# Use the literal word 'default' for any field to leave it as the real current value.
+# Format per line:
+#   1 field (path only, no TAB): dynamic  -> add_sus_kstat <path> (snapshot current stat)
+#   13 fields (TAB-separated):   static   -> add_sus_kstat_statically <path> <12 values>
+#     <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
+# Use the literal word 'default' for any static field to leave it as the real current value.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
                 {
@@ -398,14 +412,40 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                 set -- ${i}
                 IFS="${OLDIFS}"
 
-                if [[ "$#" -eq 13 ]]; then
-                        if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
-                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
-                        else
-                                echo "[custom_sus_kstat] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
-                        fi
+                if [[ "$#" -eq 1 ]]; then
+                        case "$1" in
+                                /*)
+                                        # Legacy fallback: old hand-edited static lines used spaces, not TABs.
+                                        # If the single TAB-field splits into 13 whitespace parts with an
+                                        # absolute path first, treat it as static (matches WebUI loader).
+                                        _ws_count=$(set -f; set -- $1; echo "$#")
+                                        if [[ "${_ws_count}" -eq 13 ]]; then
+                                                set -f; set -- $1
+                                                if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static]: OK (legacy space-separated): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                else
+                                                        echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                fi
+                                        else
+                                                if kstat_err="$(${SUSFS_BIN} add_sus_kstat "$1" 2>&1)"; then
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:dynamic]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                else
+                                                        echo "[custom_sus_kstat:dynamic] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                fi
+                                        fi ;;
+                                *) echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;
+                        esac
+                elif [[ "$#" -eq 13 ]]; then
+                        case "$1" in
+                                /*) if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        else
+                                                echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        fi ;;
+                                *) echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;
+                        esac
                 else
-                        echo "[custom_sus_kstat] SKIPPED (expected 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        echo "[custom_sus_kstat] SKIPPED (expected 1 or 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
         set +f
