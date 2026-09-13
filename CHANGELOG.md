@@ -1,3 +1,20 @@
+## v0.0.66-custom.10 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+- Added a new way to load the config file, which checks for certain conditions and only loads the file if it's trusted.
+- The new config loading method uses a while loop to read the config file line by line.
+- The new config loading method strips any carriage returns (CR) from the lines and removes any surrounding quotes from the values.
+- The new config loading method only loads keys that start with "config_" and contain only letters, numbers, and underscores.
+- Added a line to create a directory called "brene" in the "/data/adb/brene" path.
+- Added a line to create a directory called "brene" in the "/data/adb/brene" path, but this line seems to be a duplicate.
+- Removed a line that loaded a config file from a different location.
+- Changed some echo statements to print ASCII art.
+
 ## v0.0.66-custom.9 - 2026-09-13
 
 ### Synced from upstream BRENE
