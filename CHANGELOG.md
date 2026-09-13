@@ -1,3 +1,18 @@
+## v0.0.66-custom.8 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added code to parse and sanitize config file to prevent potential security risks.
+* Removed direct sourcing of untrusted config file.
+* Added code to remove carriage returns from config file lines.
+* Added code to remove quotes from config file values.
+* Added code to only allow specific keys to be set in config file.
+* Removed lines of code that display version and variant information.
+* Renamed variables to shorter and more descriptive names.
+* Added a comment to explain the purpose of the code.
+
 ## v0.0.66-custom.7 - 2026-09-13
 
 ### Synced from upstream BRENE
