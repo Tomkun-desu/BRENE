@@ -89,6 +89,7 @@ if [[ ! -f "${PERSISTENT_DIR}/config.sh" ]]; then
 	cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'
 else
 	while IFS='=' read -r key value || [[ -n "${key}" ]]; do
+		key="${key%$'\r'}"; value="${value%$'\r'}"
 
 		# Skip empty lines or comments
 		[[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue

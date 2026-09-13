@@ -143,12 +143,12 @@ brene_sus_path() {
 }
 brene_sus_path_loop() {
 	_sus_err=$(${SUSFS_BIN} add_sus_path_loop "$1" 2>&1); _sus_rc=$?
-	if [[ ${_sus_rc} -eq 0 ]]; then
+	if [[ "${_sus_rc}" -eq 0 ]]; then
 		[[ "${config_brene_logs}" == "1" ]] && echo "[sus_path_loop]: $1" >> "${PERSISTENT_DIR}/logs.txt"
 	else
 		[[ "${config_brene_logs}" == "1" ]] && echo "[sus_path_loop] FAILED rc=${_sus_rc}: $1 :: ${_sus_err}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
-	return ${_sus_rc}
+	return "${_sus_rc}"
 }
 brene_sus_map() {
 	if ${SUSFS_BIN} add_sus_map "$1" && [[ "${config_brene_logs}" == "1" ]]; then
@@ -179,7 +179,13 @@ brene_open_redirect() {
 	fi
 	if [ -z "${_or_bad}" ]; then
 		[ -e "${SRC}" ] || _or_bad="missing src"
-		[ -e "${DST}" ] || _or_bad="missing dst"
+		if [ ! -e "${DST}" ]; then
+			if [ -n "${_or_bad}" ]; then
+				_or_bad="${_or_bad}+missing dst"
+			else
+				_or_bad="missing dst"
+			fi
+		fi
 	fi
 	if [ -n "${_or_bad}" ]; then
 		[ "${config_brene_logs}" = "1" ] && echo "[open_redirect] SKIPPED (${_or_bad}): ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"

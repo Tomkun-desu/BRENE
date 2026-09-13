@@ -285,6 +285,7 @@ function updateConfig(config, value) {
 	}
 	const safeValue = sedReplacementEscape(value)
 	exec(`sed -i "s/^${config}=.*/${config}=${safeValue}/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
+		exec(`grep -q "^${config}=" ${PERSISTENT_DIR}/config.sh || echo "${config}=${safeValue}" >> ${PERSISTENT_DIR}/config.sh`)
 		if (result.errno !== 0) toast('Failed to update config')
 	})
 }
@@ -564,7 +565,6 @@ if (resetDialog && resetButton) {
 
 	button.addEventListener('click', () => {
 		const digest = textField.value.trim()
-		updateConfig2('config_verified_boot_hash', digest)
 
 		if (digest === '') {
 			toast('Missing verified boot hash')
@@ -574,6 +574,7 @@ if (resetDialog && resetButton) {
 			toast('Invalid verified boot hash')
 			return
 		}
+		updateConfig2('config_verified_boot_hash', digest)
 		const safeDigest = `'${digest.replace(/'/g, "'\\''")}'`
 		exec(`resetprop -n ro.boot.vbmeta.digest ${safeDigest}`).then((result) => {
                         if (result.errno === 0) {
