@@ -1,3 +1,20 @@
+## v0.0.66-custom.11 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+* The local version of the module/action.sh file loads a config file, but does so in a way that prevents malicious code from being executed by only allowing trusted keys to be sourced.
+* The local version of the module/action.sh file uses POSIX sh compatible syntax to ensure it works with BusyBox ash, which is used to run boot scripts.
+* The local version of the module/action.sh file adds a banner message to the console.
+* The local version of the module/boot-completed.sh file creates the /data/adb/brene directory if it doesn't already exist.
+* The local version of the module/boot-completed.sh file doesn't change any other functionality.
+* The local version of the module/boot-completed.sh file doesn't add any new banner messages to the console.
+* The local version of the module/boot-completed.sh file doesn't make any other changes to the file.
+* The local version of the module/action.sh file and module/boot-completed.sh file both have a timestamp indicating when they were last modified.
+
 ## v0.0.66-custom.10 - 2026-09-13
 
 ### Synced from upstream BRENE
