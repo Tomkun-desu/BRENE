@@ -45,7 +45,7 @@ fi
 chmod +x "${MODPATH}/tools/susfs" 2>/dev/null || true
 src_susfs_ver=$("${MODPATH}/tools/susfs" show version 2>/dev/null)
 if [[ "${src_susfs_ver}" == "v2"* ]]; then
-        echo "[✅] Detected SuSFS version: ${src_susfs_ver}"
+        echo "[✅] Bundled SuSFS version: ${src_susfs_ver}"
 else
         abort "[❌] Not supported SuSFS version ${src_susfs_ver}!"
 fi
@@ -59,7 +59,7 @@ ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || tru
 
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
 if [[ "${susfs_ver}" == "v2"* ]]; then
-        echo "[✅] Detected SuSFS version: ${susfs_ver}"
+        echo "[✅] Installed SuSFS version: ${susfs_ver}"
 else
         abort "[❌] Not supported SuSFS version ${susfs_ver}!"
 fi

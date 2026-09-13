@@ -43,8 +43,12 @@ if [[ "${config_brene_logs}" == "1" ]]; then
         echo "service.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi
 
-# Best-effort update for normal (bare-path) kstat entries at a later stage.
-# If another module already mounted over the path, update_sus_kstat refreshes
+# Best-effort update for custom kstat entries at a later stage.
+# Mapping (verified with ResuKisu apply_ops.rs final_sus_kstat):
+#   normal (bare path) -> update_sus_kstat (update(false))
+#   full_clone (fullclone:/path) -> update_sus_kstat_full_clone (update(true))
+#   static (13-field line) -> no update
+# If another module already mounted over the path, update refreshes
 # to the current stat and the flow completes; if a module mounts after
 # service.sh, ordering cannot be guaranteed here.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
@@ -61,6 +65,17 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
 
                 if [[ "$#" -eq 1 ]]; then
                         case "$1" in
+                                fullclone:/*)
+                                        path="${1#fullclone:}"
+                                        _ws_count=$(set -f; set -- $path; echo "$#")
+                                        if [[ "${_ws_count}" -eq 13 ]]; then
+                                                continue
+                                        fi
+                                        if kstat_err="$(${SUSFS_BIN} update_sus_kstat_full_clone "$path" 2>&1)"; then
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update-full-clone]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        else
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update-full-clone] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        fi ;;
                                 /*)
                                         _ws_count=$(set -f; set -- $1; echo "$#")
                                         if [[ "${_ws_count}" -eq 13 ]]; then

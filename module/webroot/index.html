@@ -575,11 +575,11 @@
 
 							<!-- SUS MAP -->
 							<span class="card-row__title">SUS MAP</span>
-							<span class="card-row__sub">Added real file path which gets mmapped will be hidden from /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap]</span>
+							<span class="card-row__sub">A real file path that gets mmapped will be hidden from /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap]. One absolute path per line.</span>
 							<span class="card-row__sub">Important Notes:</span>
 							<span class="card-row__sub">- It does NOT support hiding for anon memory.</span>
-							<span class="card-row__sub">- It does NOT hide any inline hooks or plt hooks cause by the injected library itself</span>
-							<span class="card-row__sub">- It may not be able to evade detections by apps that implement a good injection detection</span>
+							<span class="card-row__sub">- It does NOT hide any inline hooks or PLT hooks caused by the injected library itself.</span>
+							<span class="card-row__sub">- It may not evade detection by apps with good injection detection.</span>
 							<span class="card-row__tag--code">Example:</span>
 							<span class="card-row__tag--code">/system/fonts/Roboto-Regular.ttf</span>
 							<span class="card-row__tag--code">/data/adb/modules/my_module/zygisk/arm64-v8a.so</span>
@@ -587,12 +587,12 @@
 
 							<!-- SUS PATH -->
 							<span class="card-row__title">SUS PATH</span>
-							<span class="card-row__sub">Added path and all its sub-paths will be hidden for umounted app process from several syscalls</span>
+							<span class="card-row__sub">An added path and all its sub-paths will be hidden from several syscalls for umounted app processes. One absolute path per line.</span>
 							<span class="card-row__sub"
-								>Please be reminded that if the target path has upper mounts then make sure the proper layer is added, otherwise it may not be effective for the target
+								>If the target path has upper mounts, make sure the proper layer is added, otherwise it may not be effective for the target
 								process</span
 							>
-							<span class="card-row__sub">For paths that are read-only all the time, add them via 'add_sus_path'</span>
+							<span class="card-row__sub">For paths that stay read-only, add them via 'add_sus_path'.</span>
 							<span class="card-row__tag--code">Example:</span>
 							<span class="card-row__tag--code">/system/addon.d</span>
 							<span class="card-row__tag--code">/system/bin/install-recovery.sh</span>
@@ -601,11 +601,11 @@
 							<!-- SUS PATH LOOP -->
 							<span class="card-row__title">SUS PATH LOOP</span>
 							<span class="card-row__sub"
-								>The only difference to add_sus_path is that the added sus_path via this cli will be flagged as SUS_PATH again for the app process when it is being spawned by
-								zygote and marked umounted</span
+								>The only difference from add_sus_path is that a sus_path added this way is flagged as SUS_PATH again for the app process when it is spawned by
+								zygote and marked umounted. One absolute path per line.</span
 							>
-							<span class="card-row__sub">Also it does not check if the path is existed or not, instead it checks for empty string only, so be careful what to add</span>
-							<span class="card-row__sub">For paths that are frequently modified, we can add them via 'add_sus_path_loop'</span>
+							<span class="card-row__sub">It does not check whether the path exists, only whether the string is empty, so be careful what to add.</span>
+							<span class="card-row__sub">For paths that are frequently modified, add them via 'add_sus_path_loop'.</span>
 							<span class="card-row__tag--code">Example:</span>
 							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
@@ -613,11 +613,11 @@
 
 							<!-- OPEN REDIRECT -->
 							<span class="card-row__title">OPEN REDIRECT</span>
-							<span class="card-row__sub">Redirect a target path to be opened from a user defined path</span>
-							<span class="card-row__sub">Both paths must already exist, and you must fix the SELinux context of the redirected path yourself</span>
-							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/system/etc/hosts -&gt; /data/adb/brene/fake_files/hosts (3)</span>
-							<span class="card-row__sub">uid_scheme: 0 non-app, 1 non-su uid 0, 2 non-su, 3 umounted uid&gt;=10000, 4 umounted (default 3)</span>
+							<span class="card-row__sub">Open the target path but serve the redirected path instead. Each entry is one line with 3 TAB-separated fields: src, dst, uid_scheme. Only applies to processes matching the uid_scheme.</span>
+							<span class="card-row__sub">Both paths must already exist; the destination is never created automatically. Fix the SELinux context of the redirected path yourself (e.g. clone it from the target), otherwise open can be denied.</span>
+							<span class="card-row__tag--code">Format (TAB-separated, one line per entry):</span>
+							<span class="card-row__tag--code">src [TAB] dst [TAB] uid_scheme<br />Example (one line in the file, split here for readability):<br />/system/etc/hosts [TAB]<br />/data/adb/brene/fake_files/hosts [TAB]<br />3</span>
+							<span class="card-row__sub">uid_scheme (default 3):<br />0 - non-app processes (uid &lt; 10000)<br />1 - non-su processes with uid 0 (root without su domain)<br />2 - non-su processes (use carefully)<br />3 - umounted processes with uid &gt;= 10000 (default, use carefully)<br />4 - umounted processes, including most init-spawned ones (use carefully)</span>
 							<!-- OPEN REDIRECT -->
 						</div>
 						<md-ripple></md-ripple>
@@ -649,7 +649,7 @@
 								<md-filled-text-field class="content" id="custom_sus_path_loop_text_field" type="textarea" rows="12" label="SUS PATH LOOP"></md-filled-text-field>
 							</div>
 							<div class="snap-item">
-								<p style="font-size:13px; opacity:.75; margin:0 0 8px;">static = explicit values (13 fields: path + 12 values, empty means default); normal = boot-time snapshot values (path only), if you edit any value it is applied explicitly. Logged as <code>[custom_sus_kstat:static]</code> / <code>[custom_sus_kstat:normal]</code> / <code>[custom_sus_kstat:update]</code>.</p>
+								<p style="font-size:13px; opacity:.75; margin:0 0 8px;">Static mode sets explicit stat values with 13 TAB-separated fields: path plus 12 values (ino, dev, nlink, size, atime, atime_nsec, mtime, mtime_nsec, ctime, ctime_nsec, blocks, blksize). Leave a field empty to keep &#39;default&#39;, which means the current real value.<br /><br />Normal mode stores only the path as a bare-path line: its boot-time stat is snapshotted with add_sus_kstat and refreshed later with update_sus_kstat.<br /><br />Full clone mode stores only the path as a <code>fullclone:/path</code> line (note the <code>fullclone:</code> prefix): its boot-time full snapshot is taken with the full-clone add and refreshed later with the full-clone update.<br /><br />Normal and full clone take no values — only Path is shown. Progress is logged as <code>[custom_sus_kstat:static]</code> / <code>[custom_sus_kstat:normal]</code> / <code>[custom_sus_kstat:fullclone]</code> / <code>[custom_sus_kstat:update]</code> / <code>[custom_sus_kstat:update-full-clone]</code>.</p>
 								<div id="kstat_entries_container" style="display:flex;flex-direction:column;gap:12px;"></div>
 								<md-filled-button id="add_kstat_entry_button" style="margin-top:12px;">+ ADD ENTRY</md-filled-button>
 
@@ -856,7 +856,7 @@
 							<span class="card-row__title">Important Notes:</span>
 							<span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
 							<span class="card-row__title">Kernel Umount</span>
-							<span class="card-row__sub">Adding sus mounts to umount list via built-in KernelSU kernel umount</span>
+							<span class="card-row__sub">One absolute path per line. Adds the mount to the umount list via the built-in KernelSU kernel umount, so it stays hidden.</span>
 							<span class="card-row__tag--code">Example:</span>
 							<span class="card-row__tag--code">/system/etc/hosts</span>
 						</div>

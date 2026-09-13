@@ -635,26 +635,37 @@ if (resetDialog && resetButton) {
 
 	function createKstatEntry(values, mode) {
 		values = values || {}
-		const initialMode = mode === 'normal' ? 'normal' : 'static'
+		const initialMode = mode === 'normal' ? 'normal' : mode === 'fullclone' ? 'fullclone' : 'static'
 		const entry = document.createElement('div')
 		entry.className = 'kstat-entry'
 		entry.dataset.mode = initialMode
 		entry.style.cssText = 'border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;'
 
-		// Both modes keep fields enabled (no blackout).
+		// Normal/FullClone take no values — only Path is rendered (no value fields).
+		const modeRow = document.createElement('div')
+		modeRow.style.cssText = 'display:flex; gap:8px; align-items:center;'
+		const modeLabel = document.createElement('span')
+		modeLabel.textContent = 'Mode:'
+		modeLabel.style.cssText = 'font-size:13px; opacity:.8;'
+		modeRow.appendChild(modeLabel)
 		const modeSelect = document.createElement('select')
 		modeSelect.className = 'kstat-mode'
+		modeSelect.style.cssText = 'flex:1; background:var(--md-sys-color-surface-container-high, #1d1b20); color:var(--md-sys-color-on-surface, #e6e0e9); border:1px solid var(--md-sys-color-outline, #79747E); border-radius:8px; padding:10px 12px; font-size:14px;'
 		const optStatic = document.createElement('option')
 		optStatic.value = 'static'
-		optStatic.textContent = 'static (spoof values)'
+		optStatic.textContent = 'static (explicit values)'
 		const optNormal = document.createElement('option')
 		optNormal.value = 'normal'
 		optNormal.textContent = 'normal (boot-time snapshot)'
+		const optFullClone = document.createElement('option')
+		optFullClone.value = 'fullclone'
+		optFullClone.textContent = 'full clone (boot-time full snapshot)'
 		modeSelect.appendChild(optStatic)
 		modeSelect.appendChild(optNormal)
+		modeSelect.appendChild(optFullClone)
 		modeSelect.value = initialMode
-		modeSelect.onchange = () => { entry.dataset.mode = modeSelect.value }
-		entry.appendChild(modeSelect)
+		modeRow.appendChild(modeSelect)
+		entry.appendChild(modeRow)
 
 		const pathField = document.createElement('md-outlined-text-field')
 		pathField.setAttribute('label', 'Path')
@@ -675,18 +686,25 @@ if (resetDialog && resetButton) {
 			}
 			grid.appendChild(field)
 		})
-		entry.appendChild(grid)
 
 		const removeBtn = document.createElement('md-filled-tonal-button')
 		removeBtn.textContent = 'REMOVE ENTRY'
 		removeBtn.onclick = () => entry.remove()
+		modeSelect.onchange = () => {
+			entry.dataset.mode = modeSelect.value
+			if (modeSelect.value === 'static') {
+				if (!grid.isConnected) entry.insertBefore(grid, removeBtn)
+			} else {
+				if (grid.isConnected) grid.remove()
+			}
+		}
+		if (initialMode === 'static') entry.appendChild(grid)
 		entry.appendChild(removeBtn)
 
 		kstatContainer.appendChild(entry)
 	}
 
-	// NOTE: file format has no flag; normal with explicit values is written as 13-field TAB.
-	// چون فرمت فایل flag ندارد، لودر آن را از مسیر static اعمال می‌کند
+	// normal: bare path, fullclone: fullclone:/path, static: 13-field TAB.
 	function serializeKstatEntries() {
 		const entries = kstatContainer.querySelectorAll('.kstat-entry')
 		const outLines = []
@@ -698,7 +716,9 @@ if (resetDialog && resetButton) {
 			if (!path) return
 			if (!path.startsWith('/')) throw new Error(`KSTAT path must be absolute: ${path}`)
 			if (/(^|\/)\.\.(\/|$)/.test(path)) throw new Error(`KSTAT path must not contain ..: ${path}`)
-			const mode = entry.dataset.mode === 'normal' ? 'normal' : 'static'
+			const mode = entry.dataset.mode === 'normal' ? 'normal' : entry.dataset.mode === 'fullclone' ? 'fullclone' : 'static'
+			if (mode === 'normal') { outLines.push(path); return }
+			if (mode === 'fullclone') { outLines.push('fullclone:' + path); return }
 			const values = [path]
 			kstatFieldNames.forEach((name) => {
 				const v = entry.querySelector(`.kstat-${name}`).value.trim()
@@ -707,11 +727,7 @@ if (resetDialog && resetButton) {
 				if (nv !== 'default' && name.endsWith('_nsec') && Number(nv) > 999999999) throw new Error(`KSTAT ${name} out of range`)
 				values.push(nv)
 			})
-			if (mode === 'normal' && values.slice(1).every((v) => v === 'default')) {
-				outLines.push(path)
-			} else {
-				outLines.push(values.join('\t'))
-			}
+			outLines.push(values.join('\t'))
 		})
 		return outLines.join('\n')
 	}
@@ -721,8 +737,14 @@ if (resetDialog && resetButton) {
 		const rawLines = (text || '').split('\n').map((l) => l.replace(/\r$/, '').trim()).filter((l) => l && !l.startsWith('#'))
 		let skipped = 0
 		rawLines.forEach((line) => {
+			// fullclone:/path = fullclone (boot-time full snapshot).
 			// 1-field line (no TAB) = normal (boot-time snapshot, bare path).
 			// 13-field TAB line = static (add_sus_kstat_statically).
+			if (line.startsWith('fullclone:')) {
+				const p = line.slice('fullclone:'.length).trim()
+				if (p && p.startsWith('/')) { createKstatEntry({ path: p }, 'fullclone'); return }
+				skipped++; return
+			}
 			if (!line.includes('\t')) {
 				const p = line.trim()
 				// Legacy fallback first: old hand-edited static lines used spaces instead of TABs.
@@ -749,7 +771,7 @@ if (resetDialog && resetButton) {
 			while (kstatContainer.childElementCount > 2000) kstatContainer.lastChild.remove()
 			toast('KSTAT: too many entries, truncated to 2000')
 		}
-		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 1 (normal) or 13 TAB-separated (static) fields`)
+		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 1 (normal), fullclone:/path (fullclone) or 13 TAB-separated (static) fields`)
 	}
 
 	addKstatButton.onclick = () => createKstatEntry({}, 'static')

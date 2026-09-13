@@ -445,7 +445,8 @@ fi
 
 # Load custom_sus_kstat.txt
 # Format per line:
-#   1 field (path only, no TAB): normal -> add_sus_kstat <path> (snapshot boot-time stat values)
+#   bare `/absolute/path`            : normal -> add_sus_kstat <path> (snapshot boot-time stat values)
+#   bare `fullclone:/absolute/path`  : full_clone -> add_sus_kstat <path> (same cmd, full_clone mode)
 #   13 fields (TAB-separated):   static -> add_sus_kstat_statically <path> <12 values>
 #     <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
 # Use the literal word 'default' for any static field to leave it as the real current value.
@@ -473,6 +474,17 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
 
                 if [[ "$#" -eq 1 ]]; then
                         case "$1" in
+                                fullclone:/*)
+                                        _kstat_path="${1#fullclone:}"
+                                        if [[ ! -e "${_kstat_path}" ]]; then
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not found): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                continue
+                                        fi
+                                        if kstat_err="$(${SUSFS_BIN} add_sus_kstat "${_kstat_path}" 2>&1)"; then
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:fullclone]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        else
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:fullclone] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        fi ;;
                                 /*)
                                         # Legacy fallback: old hand-edited static lines used spaces, not TABs.
                                         # If the single TAB-field splits into 13 whitespace parts with an
@@ -480,12 +492,20 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                                         _ws_count=$(set -f; set -- $1; echo "$#")
                                         if [[ "${_ws_count}" -eq 13 ]]; then
                                                 set -f; set -- $1
+                                                if [[ ! -e "$1" ]]; then
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not found): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                        continue
+                                                fi
                                                 if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
                                                         [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static]: OK (legacy space-separated): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 else
                                                         [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 fi
                                         else
+                                                if [[ ! -e "$1" ]]; then
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not found): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                        continue
+                                                fi
                                                 if kstat_err="$(${SUSFS_BIN} add_sus_kstat "$1" 2>&1)"; then
                                                         [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:normal]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 else
@@ -496,7 +516,12 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                         esac
                 elif [[ "$#" -eq 13 ]]; then
                         case "$1" in
-                                /*) if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
+                                /*)
+                                        if [[ ! -e "$1" ]]; then
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not found): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                continue
+                                        fi
+                                        if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
                                                 [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                         else
                                                 [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
