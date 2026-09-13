@@ -1,3 +1,16 @@
+## v0.0.66-custom.9 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added code to load config from a file in the persistent directory, but with security features to prevent malicious files from being sourced.
+* The new code uses a while loop to read the config file line by line, strips carriage returns and surrounding quotes, and only allows specific key-value pairs to be loaded.
+* The new code also escapes single quotes in values to prevent shell expansion.
+* Removed the original line that sourced the config file directly.
+* Added some ASCII art at the end of the action.sh file.
+* The changes to boot-completed.sh are similar to those in action.sh, but were not fully shown in the snippet.
+
 ## v0.0.66-custom.8 - 2026-09-13
 
 ### Synced from upstream BRENE
