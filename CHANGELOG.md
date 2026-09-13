@@ -1,3 +1,17 @@
+## v0.0.66-custom.15 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added code to parse the config file in a secure way, allowing only specific keys and stripping any unwanted characters.
+* Modified the way the config file is loaded to prevent loading untrusted files.
+* Added a check to see if the config file exists before trying to load it.
+* Added a line to create a directory if it doesn't exist.
+* Removed some code that was likely a placeholder or a test.
+* Added some ASCII art to the script, possibly for debugging or aesthetic purposes.
+* Changed the way the script handles the config file, making it more secure and POSIX sh compatible.
+
 ## v0.0.66-custom.14 - 2026-09-13
 
 ### Synced from upstream BRENE
