@@ -51,6 +51,14 @@ fi
 #     after mounts are up, per susfs docs; same as brene_sus_kstat_static)
 # Every outcome is logged as [custom_sus_kstat:update*]: OK / FAILED rc=N.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                {
+                        echo ""
+                        echo "########################"
+                        echo "Custom KSTAT (late update)"
+                        echo "########################"
+                } >> "${PERSISTENT_DIR}/logs.txt"
+        fi
         while IFS= read -r i || [[ -n "${i}" ]]; do
                 brene_kstat_update_line "${i}"
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
