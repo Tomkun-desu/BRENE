@@ -153,7 +153,7 @@ const splits = result.stdout.split('\n')
 
 exec('resetprop ro.product.marketname')
         .then((result) => {
-                if (result.errno !== 0) { toast('load failed: '+String(result.stderr||'').slice(0,120)); return }
+                if (result.errno !== 0) { return }
                 model = result.stdout
         })
         .then(() => {
@@ -174,7 +174,7 @@ exec('[[ -n "$(find /system -iname "*lineage*")" ]] && echo "Yes" || echo "No"')
 })
 
 // Load ..5.u.S Status
-exec('[[ -e /sdcard/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((result) => {
+exec('[[ -e /sdcard/..5.u.S || -e /sdcard/Android/data/..5.u.S || -e /sdcard/Android/media/..5.u.S || -e /sdcard/Android/obb/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((result) => {
 	const container = document.querySelector('#sus-status .card-row__sub')
 
 	if (result.errno !== 0) {
@@ -186,7 +186,7 @@ exec('[[ -e /sdcard/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((resul
 
 // Recommended Modules
 exec('ksud module list').then((result) => {
-	if (result.errno !== 0) { toast('load failed: '+String(result.stderr||'').slice(0,120)); return }
+	if (result.errno !== 0) { return }
 
 	const container = document.querySelector('#recommended-modules')
 	let modules
@@ -208,7 +208,7 @@ exec('ksud module list').then((result) => {
 	})
 
 	exec('[[ -e /data/adb/modules/TA_utl ]]').then((result) => {
-		if (result.errno !== 0) { toast('load failed: '+String(result.stderr||'').slice(0,120)); return }
+		if (result.errno !== 0) { const _se = String(result.stderr||''); if (_se === '' || /No such file/i.test(_se)) return; toast('load failed: '+_se.slice(0,120)); return }
 
 		const card = document.querySelector('[data-module="tricky_addon"]')
 		const statusSpan = card.querySelector('.status-text')
@@ -249,10 +249,10 @@ exec('susfs show enabled_features').then((result) => {
                 container.textContent += 'Failed to load logs'
                 return
         }
-        let out2 = r2.stdout || ''
-        if (out2.length > MAX) out2 = out2.slice(-MAX) + '\n…(truncated)'
-        container.textContent += out2
-})()
+	let out2 = r2.stdout || ''
+	if (out2.length > MAX) out2 = out2.slice(-MAX) + '\n…(truncated)'
+	container.textContent += out2
+})().catch(() => {})
 
 // Load brene version
 exec(`grep "^version=" ${MODDIR}/module.prop | cut -d'=' -f2`).then((result) => {
@@ -307,12 +307,12 @@ function updateConfig(config, value) {
 	}
 	const safeValue = sedReplacementEscape(value)
 	exec(`sed -i "s/^${config}=.*/${config}=${safeValue}/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
-		exec(`grep -q "^${config}=" ${PERSISTENT_DIR}/config.sh || echo "${config}=${safeValue}" >> ${PERSISTENT_DIR}/config.sh`)
+		exec(`grep -q "^${config}=" ${PERSISTENT_DIR}/config.sh || echo "${config}='${safeValue}'" >> ${PERSISTENT_DIR}/config.sh`)
 		if (result.errno !== 0) toast('Failed to update config')
 	})
 }
 
-// TEMP
+// quoted config writer
 // Helper function to update config
 function updateConfig2(config, value) {
 	if (!isValidConfigValue(config, value)) {
@@ -321,6 +321,7 @@ function updateConfig2(config, value) {
 	}
 	const safeValue = sedReplacementEscape(value)
 	exec(`sed -i "s/^${config}=.*/${config}='${safeValue}'/" ${PERSISTENT_DIR}/config.sh`).then((result) => {
+		exec(`grep -q "^${config}=" ${PERSISTENT_DIR}/config.sh || echo "${config}='${safeValue}'" >> ${PERSISTENT_DIR}/config.sh`)
 		if (result.errno !== 0) toast('Failed to update config')
 	})
 }
@@ -334,9 +335,11 @@ function setFeature(cmd) {
 }
 
 // Load config and add toggle event
+document.querySelectorAll('md-switch').forEach((el) => { el.disabled = true })
 exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	if (result.errno !== 0) {
 		toast('Failed to load config')
+		document.querySelectorAll('md-switch').forEach((el) => { el.disabled = false })
 		return
 	}
 
@@ -357,11 +360,11 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	)
 
 	// custom uname
-	document.getElementById('custom_uname_release').value = configValues['config_custom_uname_kernel_release']
-	document.getElementById('custom_uname_version').value = configValues['config_custom_uname_kernel_version']
+	document.getElementById('custom_uname_release').value = configValues['config_custom_uname_kernel_release'] ?? ''
+	document.getElementById('custom_uname_version').value = configValues['config_custom_uname_kernel_version'] ?? ''
 
 	// Verified Boot Hash
-	document.getElementById('verified_boot_hash_text_field').value = configValues['config_verified_boot_hash']
+	document.getElementById('verified_boot_hash_text_field').value = configValues['config_verified_boot_hash'] ?? ''
 
 	// toggle
 	configs.forEach((config) => {
@@ -383,20 +386,23 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			}
 		})
 	})
-})
+	document.querySelectorAll('md-switch').forEach((el) => { el.disabled = false })
+}).catch(() => { document.querySelectorAll('md-switch').forEach((el) => { el.disabled = false }) })
 
 // Manual Kernel Umount
 ;(async () => {
 	const mountField = document.getElementById('custom_kernel_umount_text_field')
 	const applyButton = document.getElementById('kernel_umount_apply_button')
+	let truncated = false
 
 	// Load all content
 	exec(`cat ${PERSISTENT_DIR}/custom_kernel_umount.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		mountField.value = result.errno === 0 ? `${out}` : ''
 	})
 
 	applyButton.onclick = () => {
+		if (truncated) { toast('File too large, not saved'); return }
 		let file = 'custom_kernel_umount.txt'
 		let content = mountField.value
 		const badPath = findInvalidSusPath(content)
@@ -498,6 +504,8 @@ if (resetDialog && resetButton) {
 	const toggleAllModules = (enable) => {
 		exec(`
 			for i in /data/adb/modules/*; do
+				[ "$i" = "${MODDIR}" ] && continue
+				[ "$(basename "$i")" = "brene" ] && continue
 				${enable ? 'rm -f' : 'touch'} "$i/disable"
 			done
 		`).then((result) => {
@@ -523,13 +531,15 @@ if (resetDialog && resetButton) {
                 const version = `#1 SMP PREEMPT ${(bd.stdout || '').trim()}`
                 const randomGit = Math.floor(10000000 + Math.random() * 90000000)
 
-                let release
+                let release = 'default'
 
-                if (susfsVariant === 'GKI') {
-                        const kmi = await exec("/data/adb/ksud boot-info current-kmi | cut -d'-' -f1")
-                        release = `${kernelVersion}-${(kmi.stdout || '').trim()}-9-g${randomGit}`
-                } else {
-                        release = `${kernelVersion}-g${randomGit}`
+                if (kernelVersion) {
+                        if (susfsVariant === 'GKI') {
+                                const kmi = await exec("/data/adb/ksud boot-info current-kmi | cut -d'-' -f1")
+                                release = `${kernelVersion}-${(kmi.stdout || '').trim()}-9-g${randomGit}`
+                        } else {
+                                release = `${kernelVersion}-g${randomGit}`
+                        }
                 }
 
                 return { release, version }
@@ -825,26 +835,27 @@ if (resetDialog && resetButton) {
 	const applyButton = document.getElementById('unified_apply_button')
 	const tabs = document.getElementById('sus_tabs')
 	const scrollContainer = document.getElementById('horizontal_scroll_container')
+	let truncated = { map: false, mount: false, path: false, loop: false, kstat: false, redirect: false }
 
 	// Load all contents
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_map.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.map = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		mapField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_mount.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.mount = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		mountField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.path = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		pathField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_loop.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.loop = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		loopField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.kstat = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		loadKstatEntries(result.errno === 0 ? out : '')
 	})
 	exec(`grep '^\[custom_sus_kstat' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
@@ -853,7 +864,7 @@ if (resetDialog && resetButton) {
 		kstatLog.value = result.errno === 0 && out ? out : '(no kstat log entries yet)'
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.redirect = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		loadOpenRedirectEntries(result.errno === 0 ? out : '')
 	})
 	exec(`grep '^\\[custom_open_redirect\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
@@ -891,26 +902,32 @@ if (resetDialog && resetButton) {
 		const index = tabs.activeTabIndex
 		let file = ''
 		let content = ''
+		let truncatedKey = ''
 
 		switch (index) {
 			case 0:
 				file = 'custom_sus_map.txt'
 				content = mapField.value
+				truncatedKey = 'map'
 				break
 			case 1:
 				file = 'custom_sus_mount.txt'
 				content = mountField.value
+				truncatedKey = 'mount'
 				break
 			case 2:
 				file = 'custom_sus_path.txt'
 				content = pathField.value
+				truncatedKey = 'path'
 				break
 			case 3:
 				file = 'custom_sus_path_loop.txt'
 				content = loopField.value
+				truncatedKey = 'loop'
 				break
 			case 4:
 				file = 'custom_sus_kstat.txt'
+				truncatedKey = 'kstat'
 				try {
 					content = serializeKstatEntries()
 				} catch (e) {
@@ -920,10 +937,14 @@ if (resetDialog && resetButton) {
 				break
 			case 5:
 				file = 'custom_open_redirect.txt'
+				truncatedKey = 'redirect'
 				content = serializeOpenRedirectEntries()
 				if (content === null) return
 				break
 		}
+
+		if (file === '') { toast('Select a tab first'); return }
+		if (truncatedKey && truncated[truncatedKey]) { toast('File too large, not saved'); return }
 
 		if (index >= 0 && index <= 3) {
 			const bad = findInvalidSusPath(content)

@@ -83,7 +83,7 @@ Here are the changes in simple bullet points:
 * The module now has a new configuration option, config_fix_data_local_tmp_inconsistencies.
 * The module now has a new configuration option, config_hide_injections.
 * The module now has a new configuration option, config_umount_suspicious_mounts.
-* The module now has a new configuration option, config_spoof_verified_boot_hash.
+ * The module now has a new configuration option, config_verified_boot_hash.
 * The module now has a new configuration option, config_uname_spoofing.
 * The module now has a new configuration option, config_custom_uname_spoofing.
 * The module now has a new configuration option, config_spoof_hosts.
@@ -305,7 +305,7 @@ Here is a summary of the changes in plain, simple bullet points:
 * The module's author has been updated to include "simonpunk & KOWX712 + Community".
 * The module's update JSON URL has been updated to a new GitHub repository.
 * The `config_spoof_uname` and `config_spoof_hosts` options have been removed.
-* The `config_spoof_verified_boot_hash` option has been added.
+ * The `config_verified_boot_hash` option has been added.
 * The `config_fix_data_local_tmp_inconsistencies` option has been added.
 * The `config_show_refresh_rate` option has been added.
 * The `config_disable_child_process_restrictions` option has been added.
@@ -891,15 +891,15 @@ Here's a summary of the changes in simple bullet points:
 - (manual rebuild, no new upstream commits)
 
 ### Local customizations
-* Added a new configuration option `config_sync_build_props` to enable syncing of build props across partitions.
-* Added a new feature to fully sync all build-related props (fingerprint + sub-fields) across all partitions when `config_sync_build_props` is enabled.
+ * Added a new configuration option `config_sync_device_props` to enable syncing of build props across partitions.
+ * Added a new feature to fully sync all build-related props (fingerprint + sub-fields) across all partitions when `config_sync_device_props` is enabled.
 * Modified the `post-fs-data.sh` script to include the new build prop syncing feature.
 * Added a new UI element to the `index.html` file to display the build prop syncing feature.
 * Added a new UI element to the `index.html` file to display a card for build prop syncing.
 * Added a new UI element to the `script.js` file to handle the build prop syncing feature.
 * Changed the `module.prop` file to include a new author and updated version information.
 * Changed the `module.prop` file to include a new name and updated version code.
-* Removed the `MODULE_HOT_INSTALL_REQUEST` export from the `customize.sh` file.
+ * The `MODULE_HOT_INSTALL_REQUEST` export is still present in the `customize.sh` file (see customize.sh:22).
 * Changed the `customize.sh` file to remove the hot install support check.
 * Changed the `module.prop` file to update the update JSON URL.
 

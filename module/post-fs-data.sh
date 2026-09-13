@@ -6,8 +6,9 @@ KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
-SUSFS_VARIANT=$(${SUSFS_BIN} show variant)
+mkdir -p "${PERSISTENT_DIR}"
 [[ -x "${SUSFS_BIN}" ]] || { echo "[!] susfs missing" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true; }
+SUSFS_VARIANT=$(${SUSFS_BIN} show variant 2>/dev/null)
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # Load utils
@@ -144,7 +145,11 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		cat /proc/bootconfig > "${FAKE_BOOTCONFIG}"
 		sed -i 's/androidboot.warranty_bit = "1"/androidboot.warranty_bit = "0"/' "${FAKE_BOOTCONFIG}"
 		sed -i 's/androidboot.verifiedbootstate = "orange"/androidboot.verifiedbootstate = "green"/' "${FAKE_BOOTCONFIG}"
-		${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}"
+		if [[ -s "${FAKE_BOOTCONFIG}" ]]; then
+			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}"
+		elif [[ "${config_brene_logs}" == "1" ]]; then
+			echo "[cmdline_or_bootconfig] SKIPPED (empty FAKE_BOOTCONFIG)" >> "${PERSISTENT_DIR}/logs.txt"
+		fi
 	else
 		FAKE_CMDLINE="${PERSISTENT_DIR}/fake_cmdline"
 		[ -L "${FAKE_CMDLINE}" ] && rm -f -- "${FAKE_CMDLINE}"
@@ -152,7 +157,11 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		cat /proc/cmdline > "${FAKE_CMDLINE}"
 		sed -i 's/androidboot.warranty_bit=1/androidboot.warranty_bit=0/' "${FAKE_CMDLINE}"
 		sed -i 's/androidboot.verifiedbootstate=orange/androidboot.verifiedbootstate=green/' "${FAKE_CMDLINE}"
-		${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}"
+		if [[ -s "${FAKE_CMDLINE}" ]]; then
+			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}"
+		elif [[ "${config_brene_logs}" == "1" ]]; then
+			echo "[cmdline_or_bootconfig] SKIPPED (empty FAKE_CMDLINE)" >> "${PERSISTENT_DIR}/logs.txt"
+		fi
 	fi
 fi
 
@@ -218,15 +227,19 @@ if [[ "${config_brene_logs}" == "1" ]]; then
                 auto_kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
                 auto_uname_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
-                if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
-                        auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
-                else
-                        auto_uname_release="${auto_kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
-                fi
+                if [[ -n "${auto_kernel_version}" ]]; then
+                        if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
+                                auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+                                if [[ -n "${auto_kmi}" ]]; then
+                                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
+                                fi
+                        else
+                                auto_uname_release="${auto_kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
+                        fi
 
-                [[ "${final_uname_release}" == "default" ]] && final_uname_release="${auto_uname_release}"
-                [[ "${final_uname_version}" == "default" ]] && final_uname_version="${auto_uname_version}"
+                        [[ -n "${auto_uname_release:-}" && "${final_uname_release}" == "default" ]] && final_uname_release="${auto_uname_release}"
+                        [[ "${final_uname_version}" == "default" ]] && final_uname_version="${auto_uname_version}"
+                fi
         fi
 
         brene_set_uname "${final_uname_release}" "${final_uname_version}"
@@ -244,14 +257,18 @@ elif [[ "${config_uname_spoofing}" == "1" ]]; then
         kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
         uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
 
-        if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
-                kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-                uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
-        else
-                uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
-        fi
+        if [[ -n "${kernel_version}" ]]; then
+                if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
+                        kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+                        if [[ -n "${kmi}" ]]; then
+                                uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
+                        fi
+                else
+                        uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
+                fi
 
-        brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
+                [[ -n "${uname_kernel_release:-}" ]] && brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
+        fi
 fi
 
 ## Disable susfs kernel log ##
@@ -270,12 +287,12 @@ fi
 # Hide Custom ROM Paths
 if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	for i in ${CUSTOM_ROM_NAMES//|/ }; do
-		find /system /system_ext /vendor /product -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
+		find /system /system_ext /vendor /product -iname "*${i}*" -print0 2>/dev/null | while IFS= read -r -d '' path; do
 			brene_sus_map "${path}"
 			brene_sus_path_loop "${path}"
 		done
 
-		find /data -maxdepth 1 -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
+		find /data -maxdepth 1 -iname "*${i}*" -print0 2>/dev/null | while IFS= read -r -d '' path; do
 			brene_sus_path_loop "${path}"
 		done
 	done
@@ -284,7 +301,7 @@ fi
 # Hide Custom ROM Paths (Extreme)
 if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
         for i in ${CUSTOM_ROM_NAMES//|/ }; do
-                find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
+                find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" -print0 2>/dev/null | while IFS= read -r -d '' path; do
                         brene_sus_map "${path}"
                         brene_sus_path_loop "${path}"
                 done
@@ -292,7 +309,7 @@ if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
 fi
 # Hide LineageOS Strings
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
+	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 2>/dev/null | while IFS= read -r -d '' path; do
 		safe="$(printf '%s' "$path" | tr '/' '_')"
 		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
 
@@ -300,7 +317,7 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 		busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
 		[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
                 if [[ ! -f "${fake_file_path}" ]]; then
-                        cp "${path}" "${fake_file_path}"
+                        cp "${path}" "${fake_file_path}" || continue
                         sed -i "s/lineage//g" "${fake_file_path}"
                 fi
 
@@ -387,10 +404,11 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                             *) continue ;;
                         esac
 
-                        if [[ "${current_value}" != "${new_value}" ]]; then
-                            timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
-                            if [[ "${config_brene_logs}" == "1" ]]; then
-                                echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                        if [[ -n "${new_value}" && "${current_value}" != "${new_value}" ]]; then
+                            if timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null; then
+                                if [[ "${config_brene_logs}" == "1" ]]; then
+                                    echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                                fi
                             fi
                         fi
                     fi
@@ -411,10 +429,11 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                             *) continue ;;
                         esac
 
-                        if [[ "${current_value}" != "${new_value}" ]]; then
-                            timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
-                            if [[ "${config_brene_logs}" == "1" ]]; then
-                                echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                        if [[ -n "${new_value}" && "${current_value}" != "${new_value}" ]]; then
+                            if timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null; then
+                                if [[ "${config_brene_logs}" == "1" ]]; then
+                                    echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                                fi
                             fi
                         fi
                     fi
@@ -534,7 +553,7 @@ fi
 
 # Hide LineageOS Strings in RC files
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-        find /system /system_ext /vendor /product -iname "*.rc" -print0 | while IFS= read -r -d '' path; do
+        find /system /system_ext /vendor /product -iname "*.rc" -print0 2>/dev/null | while IFS= read -r -d '' path; do
                 if grep -iq "lineage" "${path}"; then
                         safe="$(printf '%s' "$path" | tr '/' '_')"
                         fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
@@ -543,7 +562,7 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
                         busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
                         [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
                         if [[ ! -f "${fake_file_path}" ]]; then
-                                cp "${path}" "${fake_file_path}"
+                                cp "${path}" "${fake_file_path}" || continue
                                 sed -i "s/lineage//g" "${fake_file_path}"
                         fi
 

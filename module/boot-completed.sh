@@ -5,6 +5,7 @@ KSU_BIN=/data/adb/ksud
 KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
+mkdir -p "${PERSISTENT_DIR}"
 DEST_BIN_DIR=/data/adb/ksu/bin
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
@@ -40,7 +41,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
 fi
 
 # Update Description
-susfs_ver=$(${SUSFS_BIN} show version)
+susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
 if [[ -n "${susfs_ver}" ]]; then
 	${KSU_BIN} module config set override.description "[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}] ${description}"
@@ -73,23 +74,23 @@ ${KSU_BIN} feature save
 
 # Developer Options
 if [[ "${config_developer_options}" == "1" ]]; then
-	settings put global development_settings_enabled 1
+	command -v settings >/dev/null 2>&1 && settings put global development_settings_enabled 1
 elif [[ "${config_developer_options}" == "0" ]]; then
-	settings put global development_settings_enabled 0
+	command -v settings >/dev/null 2>&1 && settings put global development_settings_enabled 0
 fi
 
 # USB Debugging
 if [[ "${config_usb_debugging}" == "1" ]]; then
-	settings put global adb_enabled 1
+	command -v settings >/dev/null 2>&1 && settings put global adb_enabled 1
 elif [[ "${config_usb_debugging}" == "0" ]]; then
-	settings put global adb_enabled 0
+	command -v settings >/dev/null 2>&1 && settings put global adb_enabled 0
 fi
 
 # Wireless Debugging
 if [[ "${config_wireless_debugging}" == "1" ]]; then
-	settings put global adb_wifi_enabled 1
+	command -v settings >/dev/null 2>&1 && settings put global adb_wifi_enabled 1
 elif [[ "${config_wireless_debugging}" == "0" ]]; then
-	settings put global adb_wifi_enabled 0
+	command -v settings >/dev/null 2>&1 && settings put global adb_wifi_enabled 0
 fi
 
 # Disable Child Process Restrictions
@@ -98,13 +99,13 @@ if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
 fi
 
 # SELinux Enforcing
-if [[ "${config_selinux}" == "1" ]]; then
+if [[ "${config_selinux}" == "1" ]] && command -v getenforce >/dev/null 2>&1 && command -v setenforce >/dev/null 2>&1; then
 	[[ "$(getenforce)" != "Enforcing" ]] && setenforce 1
 fi
 
 # Remove Custom ROM Properties
 if [[ "${config_rom_props}" == "1" ]]; then
-	resetprop | grep -iE "${CUSTOM_ROM_NAMES}" | awk -F'[][]' '{print $2}' | while read -r prop; do
+	resetprop | grep -iE "${CUSTOM_ROM_NAMES}" | awk -F'[][]' '{print $2}' | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
 		resetprop -d "${prop}"
 	done
 
@@ -113,18 +114,18 @@ fi
 
 # Remove Play Integrity Fix Properties
 if [[ "${config_pif_props}" == "1" ]]; then
-	resetprop | grep -iE "pihook|pixelprops|spoof" | awk -F'[][]' '{print $2}' | while read -r prop; do
+	resetprop | grep -iE "pihook|pixelprops|spoof" | awk -F'[][]' '{print $2}' | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
 		resetprop -d -p "${prop}"
 	done
 fi
 
 # Max Saturation
 if [[ "${config_saturation}" == "1" ]]; then
-	service call SurfaceFlinger 1022 f 2.0
+	command -v service >/dev/null 2>&1 && service call SurfaceFlinger 1022 f 2.0
 fi
 # Show Refresh Rate
 if [[ "${config_show_refresh_rate}" == "1" ]]; then
-    service call SurfaceFlinger 1034 i32 1
+    command -v service >/dev/null 2>&1 && service call SurfaceFlinger 1034 i32 1
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
@@ -149,14 +150,17 @@ brene_wait_for_nonempty_listing() {
 }
 # Spoof Android System Properties Every Minute
 if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
-   if [[ -f "${PERSISTENT_DIR}/spoof_repeat.pid" ]] && kill -0 "$(cat "${PERSISTENT_DIR}/spoof_repeat.pid")" 2>/dev/null; then
-      :
-   else
-      while true; do
-              sleep 60
-              spoof_android_system_properties
-      done &
-      echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
+   if mkdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null; then
+      if [[ -f "${PERSISTENT_DIR}/spoof_repeat.pid" ]] && kill -0 "$(cat "${PERSISTENT_DIR}/spoof_repeat.pid" 2>/dev/null)" 2>/dev/null; then
+         :
+      else
+         while true; do
+                 sleep 60
+                 spoof_android_system_properties
+         done &
+         echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
+      fi
+      rmdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock"
    fi
 fi
 
@@ -180,7 +184,7 @@ for t in "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"; do
 	if [[ -L "$t" ]]; then rm -f -- "$t"; continue; fi
 	rm -rf -- "$t"
 done
-pgrep inotifyd >/dev/null 2>&1 || inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
+pgrep -x inotifyd >/dev/null 2>&1 || inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
 ## Be reminded that without HMA's vold app data enabled, added sus_paths are still vulnerable to zwc exploit, so in this case users also have to add its underlying path as well ##
@@ -196,6 +200,7 @@ __brene_hide_nonstandard_sdcard_once() {
 	fi
 
 	local _hide_n=0 _seen=0
+	local standard_paths pass i x
 	# POSIX nullglob emulation inside function scope (set -- is local to functions):
 	# an unmatched glob stays literal, so detect and drop it.
 	set -- /sdcard/*
@@ -242,6 +247,7 @@ fi
 __brene_hide_nonstandard_sdcard_android_once() {
 	standard_paths="data media obb"
 	local _hide_n=0 _seen=0
+	local pass i x
 	set -- /sdcard/Android/*
 	if [ "$#" -eq 1 ] && [ ! -e "$1" ]; then set --; fi
 	_seen=$#
@@ -330,7 +336,7 @@ fi
 # Fix /data/local/tmp Inconsistencies
 if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
         target_folder="/data/local/tmp"
-
+        if [ ! -L "${target_folder}" ]; then
         mkdir -p "${target_folder}"
         chmod 0771 "${target_folder}"
         chown shell:shell "${target_folder}"
@@ -339,6 +345,7 @@ if [[ "${config_fix_data_local_tmp_inconsistencies}" == "1" ]]; then
         # ino -> %i, dev -> %d, nlink -> %h, atime -> %X, mtime -> %Y, ctime -> %Z, size -> %s, blocks -> %b, blksize -> %B
         # Example: stat -c %i <path>
         ${SUSFS_BIN} add_sus_kstat_statically "${target_folder}" '100' 'default' 'default' '4096' 'default' 'default' 'default' 'default' 'default' 'default' '8' '4096'
+        fi
 fi
 
 # Manually-installed User CA Certificates
@@ -415,7 +422,7 @@ fi
 
 # Load custom_sus_map.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]]; then
-	while IFS= read -r i; do
+	while IFS= read -r i || [[ -n "${i}" ]]; do
 		# Skip empty lines or comments
 		[[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
@@ -425,7 +432,7 @@ fi
 
 # Load custom_sus_path.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_path.txt" ]]; then
-	while IFS= read -r i; do
+	while IFS= read -r i || [[ -n "${i}" ]]; do
 		# Skip empty lines or comments
 		[[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
@@ -435,7 +442,7 @@ fi
 
 # Load custom_sus_path_loop.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]]; then
-	while IFS= read -r i; do
+	while IFS= read -r i || [[ -n "${i}" ]]; do
 		# Skip empty lines or comments
 		[[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
@@ -445,7 +452,7 @@ fi
 
 # Load custom_sus_mount.txt
 if [[ -e "${PERSISTENT_DIR}/custom_sus_mount.txt" ]]; then
-	while IFS= read -r i; do
+	while IFS= read -r i || [[ -n "${i}" ]]; do
 		# Skip empty lines or comments
 		[[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
@@ -455,7 +462,7 @@ fi
 
 # Load custom_kernel_umount.txt
 if [[ -e "${PERSISTENT_DIR}/custom_kernel_umount.txt" ]]; then
-        while IFS= read -r i; do
+        while IFS= read -r i || [[ -n "${i}" ]]; do
                 # Skip empty lines or comments
                 [[ -z "${i// /}" || "${i// /}" == "#"* ]] && continue
 
@@ -501,13 +508,13 @@ if [[ "${config_hide_injections}" == "1" ]]; then
 
         for module in "${path}"/*; do
                 if [[ -e "${module}/system" ]]; then
-                        find "${module}/system" -type f -print0 | while IFS= read -r -d '' file; do
+                        find "${module}/system" -type f -print0 2>/dev/null | while IFS= read -r -d '' file; do
                                 brene_sus_map "${file}"
                         done
                 fi
         done
 
-        find /data/adb/modules -name "*.so" -print0 | while IFS= read -r -d '' file; do
+        find /data/adb/modules -name "*.so" -print0 2>/dev/null | while IFS= read -r -d '' file; do
                 brene_sus_map "${file}"
         done
 fi
@@ -529,14 +536,14 @@ if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
 	${KSU_BIN} kernel notify-module-mounted
 
-	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | sed 's/\\040/ /g' | while read -r mount; do
+	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | sed 's/\\040/ /g' | while IFS= read -r mount; do
 		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
 	done
 fi
 
 # Hide framework-res.apk
 if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
-	find /system -iname "*framework-res.apk" -print0 | while IFS= read -r -d '' path; do
+	find /system -iname "*framework-res.apk" -print0 2>/dev/null | while IFS= read -r -d '' path; do
 		brene_sus_map "${path}"
 	done
 fi
@@ -545,7 +552,10 @@ fi
 
 # Android Verified Boot Hash Spoofing
 if [[ "${config_verified_boot_hash}" != '' ]]; then
-	resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}"
+	case "${config_verified_boot_hash}" in
+		*[!0-9a-fA-F]*|"") ;;
+		*) [ "${#config_verified_boot_hash}" -eq 64 ] && resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}" ;;
+	esac
 fi
 
 resetprop -c --force

@@ -10,8 +10,9 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 
 ## brene_clone_perm <file/or/dir/perm/to/be/changed> <file/or/dir/to/clone/from>
 brene_clone_perm() {
-	TO=$1
-	FROM=$2
+	local TO=$1
+	local FROM=$2
+	local permission owner group
 
 	if [[ -z "${TO}" ]] || [[ -z "${FROM}" ]]; then
 		return 1
@@ -35,7 +36,7 @@ brene_clone_perm() {
 # }
 
 resetprop_n() {
-	resetprop -n "$1" "$2" || echo "[resetprop FAILED]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"
+	resetprop -n "$1" "$2" || { [[ "${config_brene_logs}" == "1" ]] && echo "[resetprop FAILED]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"; }
 }
 if_prop_exits_resetprop_n() {
 	local PROP_NAME=$1
@@ -55,6 +56,7 @@ if_prop_exits_resetprop_n() {
 # }
 
 spoof_android_system_properties() {
+	local size sdk new_date_value new_utc_value
 	resetprop_n "init.svc.adbd" "stopped"
 	resetprop_n "init.svc_debug_pid.adbd" ""
 	resetprop_n "persist.sys.usb.config" "mtp"
@@ -94,7 +96,7 @@ spoof_android_system_properties() {
 	# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)
 
 	new_date_value=$(resetprop ro.build.date)
-	[[ -n "$new_date_value" ]] || return
+	if [[ -n "$new_date_value" ]]; then
 	resetprop_n "ro.bootimage.build.date" "${new_date_value}"
 	resetprop_n "ro.build.date" "${new_date_value}"
 	resetprop_n "ro.odm.build.date" "${new_date_value}"
@@ -105,9 +107,10 @@ spoof_android_system_properties() {
 	resetprop_n "ro.system_ext.build.date" "${new_date_value}"
 	resetprop_n "ro.vendor.build.date" "${new_date_value}"
 	resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
+	fi
 
 	new_utc_value=$(resetprop ro.build.date.utc)
-	[[ -n "$new_utc_value" ]] || return
+	if [[ -n "$new_utc_value" ]]; then
 	resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
@@ -119,6 +122,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
 	resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
+	fi
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"
@@ -141,6 +145,7 @@ spoof_android_system_properties() {
 }
 
 brene_sus_path() {
+	local _rc
 	${SUSFS_BIN} add_sus_path "$1"; _rc=$?
 	if [[ "${_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_path]: $1" >> "${PERSISTENT_DIR}/logs.txt"
@@ -148,6 +153,7 @@ brene_sus_path() {
 	return "${_rc}"
 }
 brene_sus_path_loop() {
+	local _sus_err _sus_rc
 	_sus_err=$(${SUSFS_BIN} add_sus_path_loop "$1" 2>&1); _sus_rc=$?
 	if [[ "${_sus_rc}" -eq 0 ]]; then
 		[[ "${config_brene_logs}" == "1" ]] && echo "[sus_path_loop]: $1" >> "${PERSISTENT_DIR}/logs.txt"
@@ -157,6 +163,7 @@ brene_sus_path_loop() {
 	return "${_sus_rc}"
 }
 brene_sus_map() {
+	local _rc
 	${SUSFS_BIN} add_sus_map "$1"; _rc=$?
 	if [[ "${_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_map]: $1" >> "${PERSISTENT_DIR}/logs.txt"
@@ -171,6 +178,7 @@ brene_open_redirect() {
 	local DST=$2
 	local UID_SCHEME=${3:-3}
 	local _or_bad=""
+	local _or_err _or_rc
 	[ -z "${SRC}" ] && _or_bad="empty path"
 	[ -z "${DST}" ] && _or_bad="empty path"
 	if [ -z "${_or_bad}" ]; then
@@ -203,11 +211,12 @@ brene_open_redirect() {
 	if [ "${_or_rc}" -eq 0 ]; then
 		[ "${config_brene_logs}" = "1" ] && echo "[open_redirect]: ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
 	else
-		echo "[open_redirect] FAILED rc=${_or_rc}: ${SRC} -> ${DST} (${UID_SCHEME}) :: ${_or_err}" >> "${PERSISTENT_DIR}/logs.txt"
+		[[ "${config_brene_logs}" == "1" ]] && echo "[open_redirect] FAILED rc=${_or_rc}: ${SRC} -> ${DST} (${UID_SCHEME}) :: ${_or_err}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 	return "${_or_rc}"
 }
 brene_set_uname() {
+	local _rc
 	${SUSFS_BIN} set_uname "$1" "$2"; _rc=$?
 	if [[ "${_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[set_uname]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"
@@ -215,8 +224,9 @@ brene_set_uname() {
 	return "${_rc}"
 }
 brene_kernel_umount() {
+	local TARGET=$1
 	${KSU_BIN} kernel notify-module-mounted
-	${KSU_BIN} kernel umount add -f 2 "$1" 2> /dev/null
+	${KSU_BIN} kernel umount add -f 2 "$TARGET" 2> /dev/null
 }
 
 # Backward compatibility for existing custom_sus_mount.txt users.
@@ -224,7 +234,7 @@ brene_sus_mount() {
 	brene_kernel_umount "$1"
 }
 brene_sus_kstat_static() {
-	local TARGET=$1 STAT_OUT INO DEV NLINK SIZE BLOCKS BLKSIZE
+	local TARGET=$1 STAT_OUT INO DEV NLINK SIZE BLOCKS BLKSIZE _kstat_rc
 	[ -z "${TARGET}" ] && return
 	[ ! -e "${TARGET}" ] && return
 
@@ -232,11 +242,14 @@ brene_sus_kstat_static() {
 	[ -z "${STAT_OUT}" ] && return
 	set -f
 	set -- ${STAT_OUT}
+	[[ $# -eq 6 ]] || return 1
 	set +f
 	INO=$1; DEV=$2; NLINK=$3; SIZE=$4; BLOCKS=$5; BLKSIZE=$6
 
-	if ${SUSFS_BIN} add_sus_kstat_statically "${TARGET}" "${INO}" "${DEV}" "${NLINK}" "${SIZE}" 'default' 'default' 'default' 'default' 'default' 'default' "${BLOCKS}" "${BLKSIZE}" && [[ "${config_brene_logs}" == "1" ]]; then
+	${SUSFS_BIN} add_sus_kstat_statically "${TARGET}" "${INO}" "${DEV}" "${NLINK}" "${SIZE}" 'default' 'default' 'default' 'default' 'default' 'default' "${BLOCKS}" "${BLKSIZE}"; _kstat_rc=$?
+	if [[ "${_kstat_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_kstat_static]: ${TARGET} (ino=${INO} dev=${DEV} nlink=${NLINK} size=${SIZE} blocks=${BLOCKS} blksize=${BLKSIZE})" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
-	${SUSFS_BIN} update_sus_kstat "${TARGET}" 2> /dev/null
+	[[ "${_kstat_rc}" -eq 0 ]] && ${SUSFS_BIN} update_sus_kstat "${TARGET}" 2> /dev/null
+	return "${_kstat_rc}"
 }

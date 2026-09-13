@@ -31,6 +31,7 @@ if [[ "${ARCH}" != "arm64" ]]; then
 fi
 
 [[ -z "${KSU_KERNEL_VER_CODE}" ]] && abort '[x] KSU_KERNEL_VER_CODE unset!'
+case "${KSU_KERNEL_VER_CODE}" in ''|*[!0-9]*) abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!";; esac
 if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
 	echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
 else
@@ -41,6 +42,13 @@ if [[ ! -d "${DEST_BIN_DIR}" ]]; then
 	abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
 fi
 
+src_susfs_ver=$("${MODPATH}/tools/susfs" show version 2>/dev/null)
+if [[ "${src_susfs_ver}" == "v2"* ]]; then
+        echo "[✅] Detected SuSFS version: ${src_susfs_ver}"
+else
+        abort "[❌] Not supported SuSFS version ${src_susfs_ver}!"
+fi
+
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}" || abort "[❌] Failed to copy susfs binary!"
 chmod +x "${MODPATH}/inotify.sh"
 chmod +x "${MODPATH}/post-fs-data.sh" "${MODPATH}/service.sh" "${MODPATH}/boot-completed.sh" "${MODPATH}/action.sh" 2>/dev/null || true
@@ -48,7 +56,7 @@ chmod 755 "${DEST_BIN_DIR}/susfs" || abort "[❌] Failed to chmod susfs binary!"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
 
-susfs_ver=$(${SUSFS_BIN} show version)
+susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
 if [[ "${susfs_ver}" == "v2"* ]]; then
         echo "[✅] Detected SuSFS version: ${susfs_ver}"
 else

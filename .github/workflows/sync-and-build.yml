@@ -33,7 +33,8 @@ jobs:
       - name: Verify susfs binary hash
         run: |
           # TODO: compare against pinned known-good hash and fail when mismatched.
-          sha256sum module/tools/susfs* 2>/dev/null | tee /tmp/susfs.sha256 || echo "::warning::susfs binary hash check skipped (binary missing)"
+          sha256sum module/tools/susfs* 2>/dev/null | tee /tmp/susfs.sha256 || exit 1
+          [ -s module/tools/susfs ] || exit 1
 
       - name: Configure git identity
         run: |
@@ -469,6 +470,7 @@ jobs:
         run: |
           if git rev-parse "${{ steps.build.outputs.build_version }}" >/dev/null 2>&1; then
             echo "::warning::tag ${{ steps.build.outputs.build_version }} already exists"
+            exit 1
           else
             echo "Tag ${{ steps.build.outputs.build_version }} not present, proceeding."
           fi
