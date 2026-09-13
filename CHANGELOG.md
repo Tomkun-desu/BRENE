@@ -1,3 +1,17 @@
+## v0.0.66-custom.14 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* In the `action.sh` file:
+  * The local version loads the config file, but with added security to only allow certain types of variables to be loaded.
+  * It strips any carriage returns and single or double quotes from the variable values.
+  * It escapes any single quotes in the variable values for safe evaluation.
+  * It uses a POSIX sh compatible syntax to ensure it works in different environments.
+* In the `boot-completed.sh` file:
+  * A new line was added to create a directory if it doesn't exist.
+
 ## v0.0.66-custom.13 - 2026-09-13
 
 ### Synced from upstream BRENE
