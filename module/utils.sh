@@ -253,3 +253,166 @@ brene_sus_kstat_static() {
 	[[ "${_kstat_rc}" -eq 0 ]] && ${SUSFS_BIN} update_sus_kstat "${TARGET}" 2> /dev/null
 	return "${_kstat_rc}"
 }
+
+# Log one kstat line (only when brene logs are enabled).
+__brene_kstat_log() {
+	[[ "${config_brene_logs}" == "1" ]] && echo "$1" >> "${PERSISTENT_DIR}/logs.txt"
+}
+
+# Run one susfs kstat command, capturing the REAL exit status (never
+# `if var="$(...)"`, whose status is always 0). Logs OK/FAILED uniformly.
+# Usage: __brene_kstat_run <log-tag> <susfs-cmd> [args...]
+__brene_kstat_run() {
+	local _tag="$1"; shift
+	local _err _rc
+	_err="$("${SUSFS_BIN}" "$@" 2>&1)"; _rc=$?
+	if [[ "${_rc}" -eq 0 ]]; then
+		__brene_kstat_log "[custom_sus_kstat:${_tag}]: OK: $*"
+	else
+		__brene_kstat_log "[custom_sus_kstat:${_tag}] FAILED rc=${_rc}: $* :: ${_err}"
+	fi
+	return "${_rc}"
+}
+
+# Validate one static kstat value: 'default'/empty or decimal digits.
+__brene_kstat_valid_val() {
+	case "$1" in
+		""|default) return 0 ;;
+		*[^0-9]*) return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+# brene_kstat_add_line <raw-line>
+# Parse one custom_sus_kstat.txt line and issue the matching susfs add command:
+#   bare /path            -> add_sus_kstat (normal, boot-time snapshot)
+#   fullclone:/path       -> add_sus_kstat (full-clone snapshot)
+#   13 TAB fields         -> add_sus_kstat_statically (explicit values)
+#   13 space fields       -> same (legacy hand-edited lines)
+# Safe to call live from a root shell (e.g. via su -c) as well as from boot.
+# Returns 0 on add success, 1 on failure/skip (2 = empty/comment, silent).
+brene_kstat_add_line() {
+	local _raw="$1" _line _trim _n _p _had_glob=0 _oldifs
+	# Strip ONE trailing CR (CRLF-edited files). NOTE: $'\r' must NOT be
+	# quoted -- "...$'\r'..." would strip the literal 4 chars $'\r' instead.
+	_line=${_raw%$'\r'}
+	_trim="$(printf '%s' "${_line}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+	[[ -z "${_trim}" || "${_trim}" == "#"* ]] && return 2
+
+	case $- in *f*) _had_glob=1 ;; esac
+	set -f
+	_oldifs="${IFS}"; IFS=$'\t'; set -- ${_line}; IFS="${_oldifs}"
+	_n=$#
+	[[ "${_had_glob}" -eq 0 ]] && set +f
+
+	if [[ "${_n}" -eq 1 ]]; then
+		case "$1" in
+			fullclone:/*)
+				_p="${1#fullclone:}"
+				if [[ ! -e "${_p}" ]]; then
+					__brene_kstat_log "[custom_sus_kstat] SKIPPED (not found): ${_line}"
+					return 1
+				fi
+				__brene_kstat_run "fullclone" add_sus_kstat "${_p}"
+				return $? ;;
+			/*)
+				# Legacy fallback: space-separated static line (13 ws fields).
+				set -f; set -- $1
+				if [[ "$#" -eq 13 ]]; then
+					[[ "${_had_glob}" -eq 0 ]] && set +f
+					__brene_kstat_add_static "(legacy space-separated)" "${_line}" "$@"
+					return $?
+				fi
+				[[ "${_had_glob}" -eq 0 ]] && set +f
+				if [[ ! -e "$1" ]]; then
+					__brene_kstat_log "[custom_sus_kstat] SKIPPED (not found): ${_line}"
+					return 1
+				fi
+				__brene_kstat_run "normal" add_sus_kstat "$1"
+				return $? ;;
+			*)
+				__brene_kstat_log "[custom_sus_kstat] SKIPPED (not absolute path): ${_line}"
+				return 1 ;;
+		esac
+	elif [[ "${_n}" -eq 13 ]]; then
+		case "$1" in
+			/*) __brene_kstat_add_static "" "${_line}" "$@"; return $? ;;
+			*) __brene_kstat_log "[custom_sus_kstat] SKIPPED (not absolute path): ${_line}"; return 1 ;;
+		esac
+	else
+		__brene_kstat_log "[custom_sus_kstat] SKIPPED (expected 1 or 13 fields, got ${_n}): ${_line}"
+		return 1
+	fi
+}
+
+# __brene_kstat_add_static <note> <rawline> <path> <12 values...>
+# (internal: validates values, checks existence, runs add_sus_kstat_statically)
+__brene_kstat_add_static() {
+	local _note="$1" _raw="$2" _p="$3"
+	shift 3
+	local _vals=() _v
+	for _v in "$@"; do
+		[[ -z "${_v}" ]] && _v="default"
+		if ! __brene_kstat_valid_val "${_v}"; then
+			__brene_kstat_log "[custom_sus_kstat] SKIPPED (bad value '${_v}'): ${_raw}"
+			return 1
+		fi
+		_vals+=("${_v}")
+	done
+	if [[ ! -e "${_p}" ]]; then
+		__brene_kstat_log "[custom_sus_kstat] SKIPPED (not found): ${_raw}"
+		return 1
+	fi
+	if __brene_kstat_run "static" add_sus_kstat_statically "${_p}" "${_vals[@]}"; then
+		[[ -n "${_note}" ]] && __brene_kstat_log "[custom_sus_kstat:static] note ${_note}: ${_raw}"
+		return 0
+	fi
+	return 1
+}
+
+# brene_kstat_update_line <raw-line>
+# Late-stage refresh for one custom_sus_kstat.txt line (called from service.sh):
+#   normal / bare path      -> update_sus_kstat
+#   fullclone:/path         -> update_sus_kstat_full_clone
+#   static (13 fields)      -> update_sus_kstat (completes the static add
+#                              after mounts are up, per susfs docs)
+# Returns 0 on update success, 1 on failure/skip (2 = empty/comment, silent).
+brene_kstat_update_line() {
+	local _raw="$1" _line _trim _n _p _had_glob=0 _oldifs
+	_line=${_raw%$'\r'}
+	_trim="$(printf '%s' "${_line}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+	[[ -z "${_trim}" || "${_trim}" == "#"* ]] && return 2
+
+	case $- in *f*) _had_glob=1 ;; esac
+	set -f
+	_oldifs="${IFS}"; IFS=$'\t'; set -- ${_line}; IFS="${_oldifs}"
+	_n=$#
+	[[ "${_had_glob}" -eq 0 ]] && set +f
+
+	if [[ "${_n}" -eq 1 ]]; then
+		case "$1" in
+			fullclone:/*)
+				_p="${1#fullclone:}"
+				__brene_kstat_run "update-full-clone" update_sus_kstat_full_clone "${_p}"
+				return $? ;;
+			/*)
+				set -f; set -- $1
+				if [[ "$#" -eq 13 ]]; then
+					[[ "${_had_glob}" -eq 0 ]] && set +f
+					__brene_kstat_run "update-static" update_sus_kstat "$1"
+					return $?
+				fi
+				[[ "${_had_glob}" -eq 0 ]] && set +f
+				__brene_kstat_run "update" update_sus_kstat "$1"
+				return $? ;;
+			*) return 1 ;;
+		esac
+	elif [[ "${_n}" -eq 13 ]]; then
+		case "$1" in
+			/*) __brene_kstat_run "update-static" update_sus_kstat "$1"; return $? ;;
+			*) return 1 ;;
+		esac
+	else
+		return 1
+	fi
+}

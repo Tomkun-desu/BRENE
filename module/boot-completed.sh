@@ -193,14 +193,15 @@ pgrep -x inotifyd >/dev/null 2>&1 || inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 
 # Non-standard /sdcard
 __brene_hide_nonstandard_sdcard_once() {
+	local _hide_n=0 _seen=0
+	local pass i x
+	local standard_paths
 	if [[ -z "$(resetprop ro.miui.ui.version.name)" ]]; then
 		standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
 	else
 		standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones MIUI"
 	fi
 
-	local _hide_n=0 _seen=0
-	local standard_paths pass i x
 	# POSIX nullglob emulation inside function scope (set -- is local to functions):
 	# an unmatched glob stays literal, so detect and drop it.
 	set -- /sdcard/*
@@ -245,9 +246,10 @@ fi
 
 # Non-standard /sdcard/Android
 __brene_hide_nonstandard_sdcard_android_once() {
-	standard_paths="data media obb"
 	local _hide_n=0 _seen=0
 	local pass i x
+	local standard_paths
+	standard_paths="data media obb"
 	set -- /sdcard/Android/*
 	if [ "$#" -eq 1 ] && [ ! -e "$1" ]; then set --; fi
 	_seen=$#

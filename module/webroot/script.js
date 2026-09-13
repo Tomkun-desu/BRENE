@@ -871,7 +871,7 @@ if (resetDialog && resetButton) {
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.kstat = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		loadKstatEntries(result.errno === 0 ? out : '')
 	})
-	exec(`grep '^\[custom_sus_kstat' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
+	exec(`grep '^\\[custom_sus_kstat' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const kstatLog = document.getElementById('kstat_log_display')
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
 		kstatLog.value = result.errno === 0 && out ? out : '(no kstat log entries yet)'

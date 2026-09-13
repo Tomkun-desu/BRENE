@@ -44,50 +44,14 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 fi
 
 # Best-effort update for custom kstat entries at a later stage.
-# Mapping (verified with ResuKisu apply_ops.rs final_sus_kstat):
-#   normal (bare path) -> update_sus_kstat (update(false))
-#   full_clone (fullclone:/path) -> update_sus_kstat_full_clone (update(true))
-#   static (13-field line) -> no update
-# If another module already mounted over the path, update refreshes
-# to the current stat and the flow completes; if a module mounts after
-# service.sh, ordering cannot be guaranteed here.
+# Mapping (see brene_kstat_update_line in utils.sh):
+#   normal (bare path) -> update_sus_kstat
+#   full_clone (fullclone:/path) -> update_sus_kstat_full_clone
+#   static (13-field line) -> update_sus_kstat (completes the static add
+#     after mounts are up, per susfs docs; same as brene_sus_kstat_static)
+# Every outcome is logged as [custom_sus_kstat:update*]: OK / FAILED rc=N.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
-        set -f
         while IFS= read -r i || [[ -n "${i}" ]]; do
-                i="${i%$'\r'}"
-                trimmed="$(printf '%s' "${i}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-                [[ -z "${trimmed}" || "${trimmed}" == "#"* ]] && continue
-
-                OLDIFS="${IFS}"
-                IFS=$'\t'
-                set -- ${i}
-                IFS="${OLDIFS}"
-
-                if [[ "$#" -eq 1 ]]; then
-                        case "$1" in
-                                fullclone:/*)
-                                        path="${1#fullclone:}"
-                                        _ws_count=$(set -f; set -- $path; echo "$#")
-                                        if [[ "${_ws_count}" -eq 13 ]]; then
-                                                continue
-                                        fi
-                                        if kstat_err="$(${SUSFS_BIN} update_sus_kstat_full_clone "$path" 2>&1)"; then
-                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update-full-clone]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
-                                        else
-                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update-full-clone] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
-                                        fi ;;
-                                /*)
-                                        _ws_count=$(set -f; set -- $1; echo "$#")
-                                        if [[ "${_ws_count}" -eq 13 ]]; then
-                                                continue
-                                        fi
-                                        if kstat_err="$(${SUSFS_BIN} update_sus_kstat "$1" 2>&1)"; then
-                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
-                                        else
-                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
-                                        fi ;;
-                        esac
-                fi
+                brene_kstat_update_line "${i}"
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
-        set +f
 fi
