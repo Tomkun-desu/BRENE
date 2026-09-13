@@ -18,7 +18,9 @@ brene_clone_perm() {
 		return 1
 	fi
 
-	read -r permission owner group < <(busybox stat -c "%a %U %G" "${FROM}") || return 1
+	read -r permission owner group <<EOF || return 1
+$(busybox stat -c "%a %U %G" "${FROM}" 2>/dev/null)
+EOF
 	[[ -n "${permission}" ]] || return 1
 
 	busybox chmod "${permission}" "${TO}" || return 1
@@ -347,23 +349,28 @@ brene_kstat_add_line() {
 
 # __brene_kstat_add_static <note> <rawline> <path> <12 values...>
 # (internal: validates values, checks existence, runs add_sus_kstat_statically)
+# NOTE: no bash arrays here -- the installer parses every *.sh with plain sh,
+# where `arr+=(x)` is a hard syntax error (while [[ ]] merely parses as a
+# command name). Values are validated to digits/'default' so plain
+# word-splitting below is safe.
 __brene_kstat_add_static() {
 	local _note="$1" _raw="$2" _p="$3"
 	shift 3
-	local _vals=() _v
+	local _v _list=""
 	for _v in "$@"; do
-		[[ -z "${_v}" ]] && _v="default"
+		[ -z "${_v}" ] && _v="default"
 		if ! __brene_kstat_valid_val "${_v}"; then
 			__brene_kstat_log "[custom_sus_kstat] SKIPPED (bad value '${_v}'): ${_raw}"
 			return 1
 		fi
-		_vals+=("${_v}")
+		_list="${_list} ${_v}"
 	done
 	if [[ ! -e "${_p}" ]]; then
 		__brene_kstat_log "[custom_sus_kstat] SKIPPED (not found): ${_raw}"
 		return 1
 	fi
-	if __brene_kstat_run "static" add_sus_kstat_statically "${_p}" "${_vals[@]}"; then
+	# shellcheck disable=SC2086
+	if __brene_kstat_run "static" add_sus_kstat_statically "${_p}" ${_list}; then
 		[[ -n "${_note}" ]] && __brene_kstat_log "[custom_sus_kstat:static] note ${_note}: ${_raw}"
 		return 0
 	fi
