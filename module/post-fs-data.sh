@@ -445,10 +445,11 @@ fi
 
 # Load custom_sus_kstat.txt
 # Format per line:
-#   1 field (path only, no TAB): dynamic  -> add_sus_kstat <path> (snapshot current stat)
-#   13 fields (TAB-separated):   static   -> add_sus_kstat_statically <path> <12 values>
+#   1 field (path only, no TAB): normal -> add_sus_kstat <path> (snapshot boot-time stat values)
+#   13 fields (TAB-separated):   static -> add_sus_kstat_statically <path> <12 values>
 #     <path> <ino> <dev> <nlink> <size> <atime> <atime_nsec> <mtime> <mtime_nsec> <ctime> <ctime_nsec> <blocks> <blksize>
 # Use the literal word 'default' for any static field to leave it as the real current value.
+# NOTE: normal-with-values entries that WebUI writes as 13 fields are applied via the static path because the file format has no mode flag.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
                 {
@@ -486,9 +487,9 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                                                 fi
                                         else
                                                 if kstat_err="$(${SUSFS_BIN} add_sus_kstat "$1" 2>&1)"; then
-                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:dynamic]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:normal]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 else
-                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:dynamic] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:normal] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 fi
                                         fi ;;
                                 *) [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;

@@ -635,28 +635,32 @@ if (resetDialog && resetButton) {
 
 	function createKstatEntry(values, mode) {
 		values = values || {}
+		const initialMode = mode === 'normal' ? 'normal' : 'static'
 		const entry = document.createElement('div')
 		entry.className = 'kstat-entry'
+		entry.dataset.mode = initialMode
 		entry.style.cssText = 'border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;'
-		entry.dataset.mode = mode === 'dynamic' ? 'dynamic' : 'static'
+
+		// Both modes keep fields enabled (no blackout).
+		const modeSelect = document.createElement('select')
+		modeSelect.className = 'kstat-mode'
+		const optStatic = document.createElement('option')
+		optStatic.value = 'static'
+		optStatic.textContent = 'static (spoof values)'
+		const optNormal = document.createElement('option')
+		optNormal.value = 'normal'
+		optNormal.textContent = 'normal (boot-time snapshot)'
+		modeSelect.appendChild(optStatic)
+		modeSelect.appendChild(optNormal)
+		modeSelect.value = initialMode
+		modeSelect.onchange = () => { entry.dataset.mode = modeSelect.value }
+		entry.appendChild(modeSelect)
 
 		const pathField = document.createElement('md-outlined-text-field')
 		pathField.setAttribute('label', 'Path')
 		pathField.className = 'kstat-path'
 		pathField.value = values.path || ''
 		entry.appendChild(pathField)
-
-		const modeRow = document.createElement('div')
-		modeRow.style.cssText = 'display:flex; gap:8px; align-items:center;'
-		const modeLabel = document.createElement('span')
-		modeLabel.textContent = 'Mode:'
-		modeLabel.style.cssText = 'font-size:13px; opacity:.8;'
-		modeRow.appendChild(modeLabel)
-		const modeSelect = document.createElement('md-outlined-select')
-		modeSelect.className = 'kstat-mode'
-		modeSelect.innerHTML = `<md-select-option value="static"${entry.dataset.mode === 'static' ? ' selected' : ''}><div slot="headline">static (spoof values)</div></md-select-option><md-select-option value="dynamic"${entry.dataset.mode === 'dynamic' ? ' selected' : ''}><div slot="headline">dynamic (current stat)</div></md-select-option>`
-		modeRow.appendChild(modeSelect)
-		entry.appendChild(modeRow)
 
 		const grid = document.createElement('div')
 		grid.style.cssText = 'display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;'
@@ -673,21 +677,6 @@ if (resetDialog && resetButton) {
 		})
 		entry.appendChild(grid)
 
-		const applyMode = () => {
-			const isDyn = entry.dataset.mode === 'dynamic'
-			grid.querySelectorAll('md-outlined-text-field').forEach((f) => {
-				f.disabled = isDyn
-				f.style.opacity = isDyn ? 0.4 : 1
-			})
-		}
-		modeSelect.addEventListener('change', () => {
-			entry.dataset.mode = modeSelect.value === 'dynamic' ? 'dynamic' : 'static'
-			applyMode()
-		})
-		// md-outlined-select exposes .value once mwc is upgraded; fallback to selected option
-		setTimeout(applyMode, 0)
-		applyMode()
-
 		const removeBtn = document.createElement('md-filled-tonal-button')
 		removeBtn.textContent = 'REMOVE ENTRY'
 		removeBtn.onclick = () => entry.remove()
@@ -696,6 +685,8 @@ if (resetDialog && resetButton) {
 		kstatContainer.appendChild(entry)
 	}
 
+	// NOTE: file format has no flag; normal with explicit values is written as 13-field TAB.
+	// چون فرمت فایل flag ندارد، لودر آن را از مسیر static اعمال می‌کند
 	function serializeKstatEntries() {
 		const entries = kstatContainer.querySelectorAll('.kstat-entry')
 		const outLines = []
@@ -707,11 +698,7 @@ if (resetDialog && resetButton) {
 			if (!path) return
 			if (!path.startsWith('/')) throw new Error(`KSTAT path must be absolute: ${path}`)
 			if (/(^|\/)\.\.(\/|$)/.test(path)) throw new Error(`KSTAT path must not contain ..: ${path}`)
-			const isDyn = entry.dataset.mode === 'dynamic'
-			if (isDyn) {
-				outLines.push(path)
-				return
-			}
+			const mode = entry.dataset.mode === 'normal' ? 'normal' : 'static'
 			const values = [path]
 			kstatFieldNames.forEach((name) => {
 				const v = entry.querySelector(`.kstat-${name}`).value.trim()
@@ -720,7 +707,11 @@ if (resetDialog && resetButton) {
 				if (nv !== 'default' && name.endsWith('_nsec') && Number(nv) > 999999999) throw new Error(`KSTAT ${name} out of range`)
 				values.push(nv)
 			})
-			outLines.push(values.join('\t'))
+			if (mode === 'normal' && values.slice(1).every((v) => v === 'default')) {
+				outLines.push(path)
+			} else {
+				outLines.push(values.join('\t'))
+			}
 		})
 		return outLines.join('\n')
 	}
@@ -730,7 +721,7 @@ if (resetDialog && resetButton) {
 		const rawLines = (text || '').split('\n').map((l) => l.replace(/\r$/, '').trim()).filter((l) => l && !l.startsWith('#'))
 		let skipped = 0
 		rawLines.forEach((line) => {
-			// 1-field line (no TAB) = dynamic (add_sus_kstat <path>).
+			// 1-field line (no TAB) = normal (boot-time snapshot, bare path).
 			// 13-field TAB line = static (add_sus_kstat_statically).
 			if (!line.includes('\t')) {
 				const p = line.trim()
@@ -741,7 +732,7 @@ if (resetDialog && resetButton) {
 					kstatFieldNames.forEach((name, i) => { values[name] = ws[i + 1] })
 					createKstatEntry(values, 'static'); return
 				}
-				if (p && p.startsWith('/')) { createKstatEntry({ path: p }, 'dynamic'); return }
+				if (p && p.startsWith('/')) { createKstatEntry({ path: p }, 'normal'); return }
 				skipped++; return
 			}
 			// Canonical format is TAB-separated (serializeKstatEntries + post-fs-data.sh IFS=$'\t').
@@ -758,7 +749,7 @@ if (resetDialog && resetButton) {
 			while (kstatContainer.childElementCount > 2000) kstatContainer.lastChild.remove()
 			toast('KSTAT: too many entries, truncated to 2000')
 		}
-		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 1 (dynamic) or 13 TAB-separated (static) fields`)
+		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 1 (normal) or 13 TAB-separated (static) fields`)
 	}
 
 	addKstatButton.onclick = () => createKstatEntry({}, 'static')

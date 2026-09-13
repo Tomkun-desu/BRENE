@@ -42,3 +42,37 @@ mkdir -p "${PERSISTENT_DIR}"
 if [[ "${config_brene_logs}" == "1" ]]; then
         echo "service.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi
+
+# Best-effort update for normal (bare-path) kstat entries at a later stage.
+# If another module already mounted over the path, update_sus_kstat refreshes
+# to the current stat and the flow completes; if a module mounts after
+# service.sh, ordering cannot be guaranteed here.
+if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
+        set -f
+        while IFS= read -r i || [[ -n "${i}" ]]; do
+                i="${i%$'\r'}"
+                trimmed="$(printf '%s' "${i}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+                [[ -z "${trimmed}" || "${trimmed}" == "#"* ]] && continue
+
+                OLDIFS="${IFS}"
+                IFS=$'\t'
+                set -- ${i}
+                IFS="${OLDIFS}"
+
+                if [[ "$#" -eq 1 ]]; then
+                        case "$1" in
+                                /*)
+                                        _ws_count=$(set -f; set -- $1; echo "$#")
+                                        if [[ "${_ws_count}" -eq 13 ]]; then
+                                                continue
+                                        fi
+                                        if kstat_err="$(${SUSFS_BIN} update_sus_kstat "$1" 2>&1)"; then
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        else
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:update] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                        fi ;;
+                        esac
+                fi
+        done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
+        set +f
+fi
