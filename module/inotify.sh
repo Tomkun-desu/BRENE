@@ -1,3 +1,4 @@
+#!/system/bin/sh
 # shellcheck disable=SC2154
 # shellcheck disable=SC2148
 # Remove "..5.u.S"

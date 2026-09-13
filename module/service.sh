@@ -11,6 +11,7 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
+mkdir -p "${PERSISTENT_DIR}"
 
 if [[ "${config_brene_logs}" == "1" ]]; then
         echo "service.sh ✅" >> "${PERSISTENT_DIR}/log.txt"

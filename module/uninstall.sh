@@ -8,6 +8,6 @@ PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
 
 [ -e "${PERSISTENT_DIR}" ] && mv "${PERSISTENT_DIR}" "/data/adb/brene.uninstalled.$(date +%s)"
-rm -f "${SUSFS_BIN}"
+: # kept shared susfs binary (other modules may need it)
 rm -f "${DEST_BIN_DIR}/sus"
 rm -f "${DEST_BIN_DIR}/ksu_susfs"

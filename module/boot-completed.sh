@@ -121,13 +121,9 @@ brene_wait_for_nonempty_listing() {
 	done
 	return 1
 }
-# Spoof Android System Properties
-if [[ "${config_spoof_system_properties}" == "1" ]]; then
-   spoof_android_system_properties
-fi
-
 # Spoof Android System Properties Every Minute
 if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
+   pkill -f "boot-completed.sh.*spoof" 2>/dev/null || true
    while true; do
            sleep 60
            spoof_android_system_properties
@@ -154,7 +150,7 @@ for t in "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"; do
 	if [[ -L "$t" ]]; then rm -f -- "$t"; continue; fi
 	rm -rf -- "$t"
 done
-inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
+pgrep inotifyd >/dev/null 2>&1 || inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
 ## Be reminded that without HMA's vold app data enabled, added sus_paths are still vulnerable to zwc exploit, so in this case users also have to add its underlying path as well ##

@@ -7,6 +7,7 @@ SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
 SUSFS_VARIANT=$(${SUSFS_BIN} show variant)
+[[ -x "${SUSFS_BIN}" ]] || { echo "[!] susfs missing" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true; }
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
 # Load utils
@@ -14,6 +15,7 @@ CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
 
+mkdir -p "${PERSISTENT_DIR}"
 # Clear logs
 true > "${PERSISTENT_DIR}/log.txt"
 true > "${PERSISTENT_DIR}/logs.txt"
@@ -335,6 +337,7 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                     current_value=$(getprop "${prop_name}")
 
                     if [[ -n "${current_value}" ]]; then
+                        new_value=""
                         case "${field}" in
                             fingerprint) new_value="${MAIN_FP}" ;;
                             id) new_value="${MAIN_ID}" ;;
@@ -348,6 +351,7 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                             version.security_patch) new_value="${MAIN_SECURITY_PATCH}" ;;
                             tags) new_value="${MAIN_TAGS}" ;;
                             type) new_value="${MAIN_TYPE}" ;;
+                            *) continue ;;
                         esac
 
                         if [[ "${current_value}" != "${new_value}" ]]; then
@@ -364,12 +368,14 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                     current_value=$(getprop "${prop_name}")
 
                     if [[ -n "${current_value}" ]]; then
+                        new_value=""
                         case "${pfield}" in
                             brand) new_value="${MAIN_BRAND}" ;;
                             device) new_value="${MAIN_DEVICE}" ;;
                             manufacturer) new_value="${MAIN_MANUFACTURER}" ;;
                             model) new_value="${MAIN_MODEL}" ;;
                             name) new_value="${MAIN_NAME}" ;;
+                            *) continue ;;
                         esac
 
                         if [[ "${current_value}" != "${new_value}" ]]; then
@@ -424,28 +430,28 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                                                 if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
                                                         [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static]: OK (legacy space-separated): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 else
-                                                        echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 fi
                                         else
                                                 if kstat_err="$(${SUSFS_BIN} add_sus_kstat "$1" 2>&1)"; then
                                                         [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:dynamic]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 else
-                                                        echo "[custom_sus_kstat:dynamic] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:dynamic] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                                 fi
                                         fi ;;
-                                *) echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;
+                                *) [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;
                         esac
                 elif [[ "$#" -eq 13 ]]; then
                         case "$1" in
                                 /*) if kstat_err="$(${SUSFS_BIN} add_sus_kstat_statically "$@" 2>&1)"; then
                                                 [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static]: OK: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                         else
-                                                echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat:static] FAILED (${kstat_err:-exit $?}): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                                         fi ;;
-                                *) echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;
+                                *) [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (not absolute path): ${i}" >> "${PERSISTENT_DIR}/logs.txt" ;;
                         esac
                 else
-                        echo "[custom_sus_kstat] SKIPPED (expected 1 or 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_sus_kstat] SKIPPED (expected 1 or 13 fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
         set +f
@@ -486,7 +492,7 @@ if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
                                 [[ "${config_brene_logs}" == "1" ]] && echo "[custom_open_redirect]: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                         fi
                 else
-                        echo "[custom_open_redirect] SKIPPED (expected 3 TAB-separated fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_open_redirect] SKIPPED (expected 3 TAB-separated fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
                 fi
         done < "${PERSISTENT_DIR}/custom_open_redirect.txt"
         set +f
@@ -501,7 +507,10 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
                         fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
 
                         [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-                        [[ ! -f "${fake_file_path}" ]] && touch "${fake_file_path}"
+                        if [[ ! -f "${fake_file_path}" ]]; then
+                                cp "${path}" "${fake_file_path}"
+                                sed -i "s/lineage//g" "${fake_file_path}"
+                        fi
 
                         brene_clone_perm "${fake_file_path}" "${path}"
                         ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'

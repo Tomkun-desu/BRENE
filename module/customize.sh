@@ -30,6 +30,7 @@ if [[ "${ARCH}" != "arm64" ]]; then
 	abort '[❌] Only arm64 is supported!'
 fi
 
+[[ -z "${KSU_KERNEL_VER_CODE}" ]] && abort '[x] KSU_KERNEL_VER_CODE unset!'
 if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
 	echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
 else
@@ -42,6 +43,7 @@ fi
 
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}" || abort "[❌] Failed to copy susfs binary!"
 chmod +x "${MODPATH}/inotify.sh"
+chmod +x "${MODPATH}/post-fs-data.sh" "${MODPATH}/service.sh" "${MODPATH}/boot-completed.sh" "${MODPATH}/action.sh" 2>/dev/null || true
 chmod 755 "${DEST_BIN_DIR}/susfs" || abort "[❌] Failed to chmod susfs binary!"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
@@ -91,7 +93,7 @@ else
 		# Skip empty lines or comments
 		[[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
 
-		if grep -qF -- "${key}=" "${PERSISTENT_DIR}/config.sh"; then
+		if awk -F= -v k="${key}" '$1==k{found=1; exit} END{exit !found}' "${PERSISTENT_DIR}/config.sh"; then
 			:
 		else
 			echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"

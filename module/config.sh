@@ -28,7 +28,6 @@ config_enable_log=0
 config_hide_addon_d=0
 config_sync_device_props=0
 config_usb_debugging=0
-config_hide_modules_img=0
 config_developer_options=0
 config_wireless_debugging=0
 config_hide_lineage_strings=0

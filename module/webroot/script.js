@@ -382,7 +382,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 					toast(result.errno === 0 ? 'Success' : result.stderr)
 				})
 			} else {
-				const eofRand = window.crypto && crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
+				const eofRand = window.crypto && window.crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
 				const eof = 'EOF_' + Date.now().toString(36) + Math.floor(eofRand / 1000).toString(36)
 				if (content.split('\n').some((line) => line === eof)) {
 					toast('Refusing to write: content contains delimiter')
@@ -884,7 +884,7 @@ if (resetDialog && resetButton) {
 		                        toast(result.errno === 0 ? 'Success' : result.stderr)
 		                })
 		        } else {
-		                const eofRand = window.crypto && crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
+		                const eofRand = window.crypto && window.crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
 		                const eof = 'EOF_' + Date.now().toString(36) + Math.floor(eofRand / 1000).toString(36)
 		                if (content.split('\n').some((line) => line === eof)) {
 		                        toast('Refusing to write: content contains delimiter')
@@ -938,7 +938,8 @@ ${eof}
 	const bodyContent = document
 	const buttons = Array.from(tabBar.querySelectorAll('button.tab-btn'))
 	const SWIPE_THRESHOLD = 10
-	let currentIndex = buttons.findIndex((btn) => btn.classList.contains('active')) || 0
+	let fi = buttons.findIndex((btn) => btn.classList.contains('active'))
+	let currentIndex = fi === -1 ? 0 : fi
 	let touchStartX = 0
 	let touchStartY = 0
 

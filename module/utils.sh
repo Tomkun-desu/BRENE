@@ -186,12 +186,12 @@ brene_open_redirect() {
 		return 1
 	fi
 	_or_err=$(${SUSFS_BIN} add_open_redirect "${SRC}" "${DST}" "${UID_SCHEME}" 2>&1); _or_rc=$?
-	if [ ${_or_rc} -eq 0 ]; then
+	if [ "${_or_rc}" -eq 0 ]; then
 		[ "${config_brene_logs}" = "1" ] && echo "[open_redirect]: ${SRC} -> ${DST} (${UID_SCHEME})" >> "${PERSISTENT_DIR}/logs.txt"
 	else
 		echo "[open_redirect] FAILED rc=${_or_rc}: ${SRC} -> ${DST} (${UID_SCHEME}) :: ${_or_err}" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
-	return ${_or_rc}
+	return "${_or_rc}"
 }
 brene_set_uname() {
 	if ${SUSFS_BIN} set_uname "$1" "$2" && [[ "${config_brene_logs}" == "1" ]]; then

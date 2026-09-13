@@ -241,9 +241,9 @@ jobs:
           sed -i "s/^name=.*/name=.BRENE - Custom AI/" module/module.prop
           sed -i "s/^author=.*/author=rrr333nnn333, simonpunk \& KOWX712 + Community/" module/module.prop
           if grep -q "^updateJson=" module/module.prop; then
-            sed -i "s#^updateJson=.*#updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json#" module/module.prop
+            sed -i "s#^updateJson=.*#updateJson=https://raw.githubusercontent.com/tomkun-desu/brene/main/update.json#" module/module.prop
           else
-            echo "updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json" >> module/module.prop
+            echo "updateJson=https://raw.githubusercontent.com/tomkun-desu/brene/main/update.json" >> module/module.prop
           fi
 
       - name: Neutralize redundant upstream fingerprint spoofing
@@ -356,13 +356,8 @@ jobs:
           [ -z "$UPSTREAM_VER" ] && UPSTREAM_VER="v0.0.0"
 
           LAST_VER=$(cat LAST_UPSTREAM_VERSION 2>/dev/null || echo "")
-          if [[ "$UPSTREAM_VER" != "$LAST_VER" ]]; then
-            PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
-            RUN_NUM=$((PREV_NUM + 1))
-          else
-            PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
-            RUN_NUM=$((PREV_NUM + 1))
-          fi
+          PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
+          RUN_NUM=$((PREV_NUM + 1))
           echo "$RUN_NUM" > BUILD_NUMBER
           echo "$UPSTREAM_VER" > LAST_UPSTREAM_VERSION
 
