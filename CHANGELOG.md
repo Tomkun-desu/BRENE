@@ -1,3 +1,16 @@
+## v0.0.66-custom.12 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* In `action.sh`, the code now loads a config file from a persistent directory, but with added security features to prevent loading untrusted files.
+* The config file is parsed line by line, allowing only specific keys that start with "config_" and contain only letters and numbers.
+* The values of these allowed keys are then safely evaluated to prevent code injection.
+* The original config loading code was removed.
+* The script now prints a banner at the top with ASCII art.
+* In `boot-completed.sh`, a new directory was created in the persistent directory using `mkdir -p`.
+
 ## v0.0.66-custom.11 - 2026-09-13
 
 ### Synced from upstream BRENE
