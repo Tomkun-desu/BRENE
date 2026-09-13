@@ -1,3 +1,15 @@
+## v0.0.66-custom.13 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in plain, simple bullet points:
+
+- Added a new way to load the config file, which includes parsing and validating the file's contents to prevent potential security risks.
+- Modified the config file loading to strip carriage returns and quotes from the file's contents.
+- Created a new directory using `mkdir -p` in the `boot-completed.sh` script.
+
 ## v0.0.66-custom.12 - 2026-09-13
 
 ### Synced from upstream BRENE
