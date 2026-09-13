@@ -9,17 +9,31 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
   issues: write
+
+concurrency:
+  group: sync-and-build-main
+  cancel-in-progress: false
 
 jobs:
   sync-and-build:
     runs-on: ubuntu-latest
+    # NOTE: step-level permissions are ignored by GHA; job-level write covers the two push steps + release step.
+    permissions:
+      contents: write
+      issues: write
     steps:
       - name: Checkout main (full history)
+        # TODO: pin to SHA (e.g. actions/checkout@<sha>) for supply-chain hardening.
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Verify susfs binary hash
+        run: |
+          # TODO: compare against pinned known-good hash and fail when mismatched.
+          sha256sum module/tools/susfs* 2>/dev/null | tee /tmp/susfs.sha256 || echo "::warning::susfs binary hash check skipped (binary missing)"
 
       - name: Configure git identity
         run: |
@@ -32,13 +46,16 @@ jobs:
 
       - name: Add upstream and fetch
         run: |
-          git remote add upstream https://github.com/rrr333nnn333/BRENE.git
+          # TODO: pin upstream to a fixed URL/mirror; review if upstream moves.
+          git remote add upstream https://github.com/rrr333nnn333/BRENE.git || git remote set-url upstream https://github.com/rrr333nnn333/BRENE.git
           git fetch upstream main
 
       - name: Try merging upstream
         id: merge
         run: |
-          PROTECTED_FILES=("README.md" "CHANGELOG.md" ".github" "update.json" "BUILD_NUMBER" "module/module.prop" "module/webroot/index.html" "module/webroot/script.js")
+          # NOTE: .github is intentionally not protected so upstream workflow fixes still merge.
+          PROTECTED_FILES=("README.md" "CHANGELOG.md" "update.json" "BUILD_NUMBER" "module/module.prop" "module/webroot/index.html" "module/webroot/script.js")
+          REAL_CONFLICT_FILES=("module/post-fs-data.sh" "module/config.sh" "module/utils.sh")
 
           if git merge upstream/main --no-edit; then
             echo "conflict=false" >> "$GITHUB_OUTPUT"
@@ -57,6 +74,13 @@ jobs:
                 REAL_CONFLICT=true
               fi
             done
+            for f in $CONFLICTED; do
+              for r in "${REAL_CONFLICT_FILES[@]}"; do
+                if [[ "$f" == "$r" ]]; then
+                  REAL_CONFLICT=true
+                fi
+              done
+            done
 
             if [ "$REAL_CONFLICT" = true ]; then
               echo "conflict=true" >> "$GITHUB_OUTPUT"
@@ -73,9 +97,13 @@ jobs:
 
       - name: Open issue on conflict
         if: steps.merge.outputs.conflict == 'true'
+        # TODO: pin to SHA (e.g. actions/github-script@<sha>) for supply-chain hardening.
         uses: actions/github-script@v7
         with:
           script: |
+            const TITLE_PREFIX = "Upstream sync conflict";
+            const open = await github.rest.issues.listForRepo({owner: context.repo.owner, repo: context.repo.repo, state: "open"});
+            if (open.data.some(i => i.title.startsWith(TITLE_PREFIX))) { console.log("Open conflict issue already exists, skipping."); return; }
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -88,7 +116,7 @@ jobs:
         id: diff
         run: |
           NEW_SHA=$(git rev-parse HEAD)
-          COUNT=$(git rev-list --count ${{ steps.pre.outputs.sha }}..$NEW_SHA -- module ':!CHANGELOG.md')
+          COUNT=$(git rev-list --count ${{ steps.pre.outputs.sha }}..$NEW_SHA)
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           echo "new_sha=$NEW_SHA" >> "$GITHUB_OUTPUT"
 
@@ -143,7 +171,8 @@ jobs:
                   fi
 
                   if [[ -n "${MAIN_FP}" ]]; then
-                      DISCOVERED_PARTS=$(getprop | grep -oE '^\[ro\.[a-z0-9_]+\.build\.fingerprint\]' | sed -E 's/^\[ro\.([a-z0-9_]+)\.build\.fingerprint\]$/\1/')
+                      # timeout fallback: leave empty if getprop pipeline fails (fail-safe, no boot block)
+                      DISCOVERED_PARTS=$(getprop | grep -oE '^\[ro\.[a-z0-9_]+\.build\.fingerprint\]' | sed -E 's/^\[ro\.([a-z0-9_]+)\.build\.fingerprint\]$/\1/' || echo "")
 
                       for part in ${DISCOVERED_PARTS}; do
                           [[ "${part}" == "build" ]] && continue
@@ -204,10 +233,14 @@ jobs:
               fi
           fi
           BLOCK
+          else
+            echo "::warning::post-fs-data.sh anchor already present, skipping"
           fi
 
           if ! grep -q "config_sync_device_props" module/config.sh; then
             echo "config_sync_device_props=0" >> module/config.sh
+          else
+            echo "::warning::config.sh anchor already present, skipping"
           fi
 
           if ! grep -q 'id="sync_device_props"' module/webroot/index.html; then
@@ -232,10 +265,14 @@ jobs:
               ' module/webroot/index.html > /tmp/index_new.html
               mv /tmp/index_new.html module/webroot/index.html
             fi
+          else
+            echo "::warning::index.html anchor already present, skipping"
           fi
 
           if ! grep -q "'sync_device_props'" module/webroot/script.js; then
             sed -i "s/{ id: 'enable_log' },/{ id: 'enable_log' },\n\t{ id: 'sync_device_props' },/" module/webroot/script.js
+          else
+            echo "::warning::script.js anchor already present, skipping"
           fi
 
           sed -i "s/^name=.*/name=.BRENE - Custom AI/" module/module.prop
@@ -292,14 +329,14 @@ jobs:
               print("Removed redundant upstream fingerprint block from utils.sh")
               removed_any = True
           else:
-              print("Fingerprint block not found (already clean or upstream changed it) -- nothing to do")
+              print("::warning::Fingerprint block not found (already clean or upstream changed it) -- nothing to do")
 
           if old_utc in content:
               content = content.replace(old_utc, new_block_utc, 1)
               print("Removed redundant upstream UTC date block from utils.sh (already covered by sync_device_props)")
               removed_any = True
           else:
-              print("UTC block not found (already clean or upstream changed it) -- nothing to do")
+              print("::warning::UTC block not found (already clean or upstream changed it) -- nothing to do")
 
           if removed_any:
               with open(path, "w") as f:
@@ -313,7 +350,7 @@ jobs:
           rm -rf /tmp/upstream_pure
           mkdir -p /tmp/upstream_pure
           git archive upstream/main -- module | tar -x -C /tmp/upstream_pure
-          diff -ruN /tmp/upstream_pure/module module | head -c 40000 > /tmp/custom.diff || true
+          diff -ruN /tmp/upstream_pure/module module | head -c 2000 > /tmp/custom.diff || true
 
       - name: Summarize with Cloudflare Workers AI (free)
         if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
@@ -321,6 +358,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
+          command -v jq >/dev/null || { echo "- (summary unavailable: jq missing)" > /tmp/ai_summary.md; cat /tmp/ai_summary.md; exit 0; }
           if [ ! -s /tmp/custom.diff ]; then
             echo "- No local changes this build." > /tmp/ai_summary.md
           else
@@ -330,18 +368,18 @@ jobs:
                   {role: "system", content: "You summarize code diffs in plain, simple bullet points for non-technical readers. One line per change. No code snippets. No headers."},
                   {role: "user", content: ("This is a diff comparing a customized KernelSU/SuSFS module fork against its pure upstream original. Summarize what was locally added, changed, or removed:\n\n" + $diff)}
                 ]
-              }' | curl -s "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct" \
+              }' | curl -sS --fail --proto '=https' --tlsv1.2 --retry 2 --max-time 60 "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct" \
                 -H "Authorization: Bearer ${CF_API_TOKEN}" \
                 -H "Content-Type: application/json" \
                 --data-binary @-)
 
             echo "$RESPONSE" > /tmp/cf_raw_response.json
-            echo "$RESPONSE" | jq -r '.result.response // empty' > /tmp/ai_summary.md
+            echo "$RESPONSE" | jq -re '.result.response // empty' > /tmp/ai_summary.md || true
 
             if [ ! -s /tmp/ai_summary.md ]; then
               echo "- (summary unavailable this run)" > /tmp/ai_summary.md
-              echo "---- raw Cloudflare response (debug) ----"
-              cat /tmp/cf_raw_response.json
+              echo "---- Cloudflare response (redacted, size only) ----"
+              echo "response bytes: $(wc -c < /tmp/cf_raw_response.json 2>/dev/null || echo 0)"
             fi
           fi
           cat /tmp/ai_summary.md
@@ -419,12 +457,25 @@ jobs:
       - name: Zip module (only module/ contents at zip root)
         if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
         run: |
+          # NOTE: SOURCE_DATE_EPOCH could pin zip timestamps for reproducibility (not enforced here).
           cd module
-          zip -r9 "../BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip" . -x ".git*"
+          zip -X -r9 "../BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip" . -x ".git*" "*.pyc" "__pycache__/*" ".DS_Store*"
+          unzip -l "../BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip"
+          zip -T "../BRENE-Custom-AI-${{ steps.build.outputs.build_version }}.zip"
           cd ..
+
+      - name: Check tag absence
+        if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
+        run: |
+          if git rev-parse "${{ steps.build.outputs.build_version }}" >/dev/null 2>&1; then
+            echo "::warning::tag ${{ steps.build.outputs.build_version }} already exists"
+          else
+            echo "Tag ${{ steps.build.outputs.build_version }} not present, proceeding."
+          fi
 
       - name: Create Release
         if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
+        # TODO: pin to SHA (e.g. softprops/action-gh-release@<sha>) for supply-chain hardening.
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "${{ steps.build.outputs.build_version }}"

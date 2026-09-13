@@ -153,7 +153,7 @@ const splits = result.stdout.split('\n')
 
 exec('resetprop ro.product.marketname')
         .then((result) => {
-                if (result.errno !== 0) return
+                if (result.errno !== 0) { toast('load failed: '+String(result.stderr||'').slice(0,120)); return }
                 model = result.stdout
         })
         .then(() => {
@@ -186,10 +186,14 @@ exec('[[ -e /sdcard/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((resul
 
 // Recommended Modules
 exec('ksud module list').then((result) => {
-	if (result.errno !== 0) return
+	if (result.errno !== 0) { toast('load failed: '+String(result.stderr||'').slice(0,120)); return }
 
 	const container = document.querySelector('#recommended-modules')
-	const modules = JSON.parse(result.stdout)
+	let modules
+	try {
+		modules = JSON.parse(result.stdout)
+	} catch (e) { return }
+	if (!Array.isArray(modules)) return
 	const moduleIds = modules.map((mod) => mod.id)
 	const cardRows = container.querySelectorAll('.card-row')
 
@@ -204,7 +208,7 @@ exec('ksud module list').then((result) => {
 	})
 
 	exec('[[ -e /data/adb/modules/TA_utl ]]').then((result) => {
-		if (result.errno !== 0) return
+		if (result.errno !== 0) { toast('load failed: '+String(result.stderr||'').slice(0,120)); return }
 
 		const card = document.querySelector('[data-module="tricky_addon"]')
 		const statusSpan = card.querySelector('.status-text')
@@ -228,13 +232,16 @@ exec('susfs show enabled_features').then((result) => {
 ;(async () => {
         const container = document.getElementById('logs')
         container.textContent = ''
+        const MAX = 65536
 
         const r1 = await exec(`cat ${PERSISTENT_DIR}/log.txt`)
         if (r1.errno !== 0) {
                 container.textContent += 'Failed to load logs'
                 return
         }
-        container.textContent += r1.stdout
+        let out1 = r1.stdout || ''
+        if (out1.length > MAX) out1 = out1.slice(-MAX) + '\n…(truncated)'
+        container.textContent += out1
         container.textContent += '\n'
 
         const r2 = await exec(`cat ${PERSISTENT_DIR}/logs.txt`)
@@ -242,7 +249,9 @@ exec('susfs show enabled_features').then((result) => {
                 container.textContent += 'Failed to load logs'
                 return
         }
-        container.textContent += r2.stdout
+        let out2 = r2.stdout || ''
+        if (out2.length > MAX) out2 = out2.slice(-MAX) + '\n…(truncated)'
+        container.textContent += out2
 })()
 
 // Load brene version
@@ -260,6 +269,19 @@ exec('susfs show version').then((result) => {
 // Helper function to update config
 function sedReplacementEscape(s) {
 	return String(s).replace(/\\/g, '\\\\').replace(/\//g, '\\/').replace(/&/g, '\\&').replace(/'/g, "'\\''")
+}
+const norm=p=>p.replace(/\/+/g,'/').replace(/\/$/,'')||'/'
+function findInvalidSusPath(content) {
+	let bad = null
+	String(content ?? '').split('\n').forEach((raw) => {
+		if (bad !== null) return
+		const line = String(raw).trim()
+		if (line === '' || line.startsWith('#')) return
+		if (/[\t\r\n]/.test(raw)) { bad = line || raw; return }
+		if (!line.startsWith('/')) { bad = line; return }
+		if (/\.\.(\/|$)/.test(line)) { bad = line; return }
+	})
+	return bad
 }
 function isValidUnameRelease(v) {
 	if (v === 'default') return true
@@ -306,7 +328,7 @@ function updateConfig2(config, value) {
 // Helper function to set config immedialtely that no need to reboot
 function setFeature(cmd) {
 	return exec(cmd).then((result) => {
-		toast(result.errno === 0 ? 'No need to reboot' : result.stderr)
+		toast(result.errno === 0 ? 'No need to reboot' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 		return result
 	})
 }
@@ -370,17 +392,20 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 	// Load all content
 	exec(`cat ${PERSISTENT_DIR}/custom_kernel_umount.txt`).then((result) => {
-		mountField.value = result.errno === 0 ? `${result.stdout}` : ''
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		mountField.value = result.errno === 0 ? `${out}` : ''
 	})
 
 	applyButton.onclick = () => {
 		let file = 'custom_kernel_umount.txt'
 		let content = mountField.value
+		const badPath = findInvalidSusPath(content)
+		if (badPath !== null) { toast('Invalid path: '+String(badPath).slice(0,80)); return }
 
 		if (file) {
 			if (content === '') {
 				exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
-					toast(result.errno === 0 ? 'Success' : result.stderr)
+					toast(result.errno === 0 ? 'Success' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 				})
 			} else {
 				const eofRand = window.crypto && window.crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
@@ -394,7 +419,7 @@ cat <<'${eof}' > ${PERSISTENT_DIR}/${file}
 ${content}
 ${eof}
 				`).then((result) => {
-					toast(result.errno === 0 ? 'Success' : result.stderr)
+					toast(result.errno === 0 ? 'Success' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 				})
 			}
 		}
@@ -453,11 +478,11 @@ if (resetDialog && resetButton) {
                                 })
 
                                 document.getElementById('custom_uname_release').value =
-                                        freshConfigValues['config_custom_uname_kernel_release']
+                                        freshConfigValues['config_custom_uname_kernel_release'] ?? ''
                                 document.getElementById('custom_uname_version').value =
-                                        freshConfigValues['config_custom_uname_kernel_version']
+                                        freshConfigValues['config_custom_uname_kernel_version'] ?? ''
                                 document.getElementById('verified_boot_hash_text_field').value =
-                                        freshConfigValues['config_verified_boot_hash']
+                                        freshConfigValues['config_verified_boot_hash'] ?? ''
 
                                 toast('Success')
                         })
@@ -476,7 +501,7 @@ if (resetDialog && resetButton) {
 				${enable ? 'rm -f' : 'touch'} "$i/disable"
 			done
 		`).then((result) => {
-			toast(result.errno === 0 ? 'Success' : result.stderr)
+			toast(result.errno === 0 ? 'Success' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 		})
 	}
 
@@ -515,11 +540,11 @@ if (resetDialog && resetButton) {
 		const vRaw = String(version ?? '').trim()
 		const finalVersion = vRaw === '' ? 'default' : vRaw
 		if (!isValidUnameRelease(r)) {
-			toast(`Invalid Kernel Release: ${r}`)
+			toast(('Invalid Kernel Release: ' + r).replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 			return null
 		}
 		if (!isValidUnameVersion(finalVersion)) {
-			toast(`Invalid Kernel Version: ${finalVersion}`)
+			toast(('Invalid Kernel Version: ' + finalVersion).replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 			return null
 		}
 		updateConfig2('config_custom_uname_kernel_release', r)
@@ -546,7 +571,7 @@ if (resetDialog && resetButton) {
 
 		const esc = (s) => s.replace(/'/g, "'\\''")
 		exec(`/data/adb/ksu/bin/susfs set_uname '${esc(liveRelease)}' '${esc(liveVersion)}'`).then((result) => {
-			toast(result.errno === 0 ? 'Applied (no need to reboot)' : result.stderr)
+			toast(result.errno === 0 ? 'Applied (no need to reboot)' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 		})
 	}
 
@@ -671,6 +696,7 @@ if (resetDialog && resetButton) {
 			const path = rawPath.trim()
 			if (!path) return
 			if (!path.startsWith('/')) throw new Error(`KSTAT path must be absolute: ${path}`)
+			if (/(^|\/)\.\.(\/|$)/.test(path)) throw new Error(`KSTAT path must not contain ..: ${path}`)
 			const isDyn = entry.dataset.mode === 'dynamic'
 			if (isDyn) {
 				outLines.push(path)
@@ -718,6 +744,10 @@ if (resetDialog && resetButton) {
 			})
 			createKstatEntry(values, 'static')
 		})
+		if (kstatContainer.childElementCount > 2000) {
+			while (kstatContainer.childElementCount > 2000) kstatContainer.lastChild.remove()
+			toast('KSTAT: too many entries, truncated to 2000')
+		}
 		if (skipped) toast(`KSTAT: skipped ${skipped} malformed line(s), need 1 (dynamic) or 13 TAB-separated (static) fields`)
 	}
 
@@ -768,7 +798,8 @@ if (resetDialog && resetButton) {
 			if (!s.startsWith('/') || !d.startsWith('/')) { toast('REDIRECT: paths must be absolute'); return null }
 			if (/[\t\r\n]/.test(s) || /[\t\r\n]/.test(d)) { toast('REDIRECT: paths must not contain TAB/newline'); return null }
 			if (!/^[0-4]$/.test(u)) { toast('REDIRECT: uid_scheme must be 0-4'); return null }
-			if (s === d) { toast('REDIRECT: source and target must differ'); return null }
+			if (/(^|\/)\.\.(\/|$)/.test(s) || /(^|\/)\.\.(\/|$)/.test(d)) { toast('REDIRECT: paths must not contain ..'); return null }
+			if (norm(s) === norm(d)) { toast('REDIRECT: source and target must differ'); return null }
 			outLines.push(`${s}\t${d}\t${u}`)
 		}
 		return outLines.join('\n')
@@ -783,6 +814,10 @@ if (resetDialog && resetButton) {
 			if (parts.length !== 3 || !parts[0] || !parts[1]) { skipped++; return }
 			createOpenRedirectEntry({ src: parts[0].trim(), dst: parts[1].trim(), uid: (parts[2] || '3').trim() })
 		})
+		if (openRedirectContainer.childElementCount > 2000) {
+			while (openRedirectContainer.childElementCount > 2000) openRedirectContainer.lastChild.remove()
+			toast('REDIRECT: too many entries, truncated to 2000')
+		}
 		if (skipped) toast(`REDIRECT: skipped ${skipped} malformed line(s), need 3 TAB-separated fields`)
 	}
 
@@ -793,34 +828,43 @@ if (resetDialog && resetButton) {
 
 	// Load all contents
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_map.txt`).then((result) => {
-		mapField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		mapField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_mount.txt`).then((result) => {
-		mountField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		mountField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path.txt`).then((result) => {
-		pathField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		pathField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_loop.txt`).then((result) => {
-		loopField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		loopField.value = result.errno === 0 ? `${out}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
-		loadKstatEntries(result.errno === 0 ? result.stdout : '')
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		loadKstatEntries(result.errno === 0 ? out : '')
 	})
 	exec(`grep '^\[custom_sus_kstat' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const kstatLog = document.getElementById('kstat_log_display')
-		kstatLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no kstat log entries yet)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		kstatLog.value = result.errno === 0 && out ? out : '(no kstat log entries yet)'
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
-		loadOpenRedirectEntries(result.errno === 0 ? result.stdout : '')
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		loadOpenRedirectEntries(result.errno === 0 ? out : '')
 	})
 	exec(`grep '^\\[custom_open_redirect\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const openRedirectLog = document.getElementById('open_redirect_log_display')
-		openRedirectLog.value = result.errno === 0 && result.stdout ? result.stdout : '(no open redirect log entries yet)'
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
+		openRedirectLog.value = result.errno === 0 && out ? out : '(no open redirect log entries yet)'
 	})
 
 	// Tabs and Scroll Sync
 	tabs.addEventListener('change', () => {
+		applyButton.disabled = true
 		const index = tabs.activeTabIndex
 		const width = scrollContainer.getBoundingClientRect().width
 		scrollContainer.scrollTo({
@@ -831,6 +875,7 @@ if (resetDialog && resetButton) {
 
 	let scrollTimeout
 	scrollContainer.addEventListener('scroll', () => {
+		applyButton.disabled = true
 		clearTimeout(scrollTimeout)
 		scrollTimeout = setTimeout(() => {
 			const width = scrollContainer.getBoundingClientRect().width
@@ -838,6 +883,7 @@ if (resetDialog && resetButton) {
 			if (tabs.activeTabIndex !== index) {
 				tabs.activeTabIndex = index
 			}
+			applyButton.disabled = false
 		}, 50)
 	})
 
@@ -879,10 +925,15 @@ if (resetDialog && resetButton) {
 				break
 		}
 
+		if (index >= 0 && index <= 3) {
+			const bad = findInvalidSusPath(content)
+			if (bad !== null) { toast('Invalid path: '+String(bad).slice(0,80)); return }
+		}
+
 		if (file) {
 		        if (content === '') {
 		                exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
-		                        toast(result.errno === 0 ? 'Success' : result.stderr)
+		                        toast(result.errno === 0 ? 'Success' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 		                })
 		        } else {
 		                const eofRand = window.crypto && window.crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
@@ -896,7 +947,7 @@ cat <<'${eof}' > ${PERSISTENT_DIR}/${file}
 ${content}
 ${eof}
                 `).then((result) => {
-		                        toast(result.errno === 0 ? 'Success' : result.stderr)
+		                        toast(result.errno === 0 ? 'Success' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 		                })
 		        }
 
@@ -929,7 +980,8 @@ ${eof}
 
 	try {
 		var saved = sessionStorage.getItem('brene_tab')
-		if (saved) activate(saved)
+		const ids = Array.from(btns).map((b) => b.dataset.tab)
+		if (saved && ids.includes(saved)) activate(saved)
 	} catch (e) {}
 })()
 
@@ -973,7 +1025,7 @@ ${eof}
 	bodyContent.addEventListener(
 		'touchend',
 		(e) => {
-			if (e.target.closest('.tab-bar') === null) {
+			if (e.target.closest('.tab-bar') === null && e.target.closest('md-filled-text-field,md-outlined-text-field,textarea,input,md-select,md-dialog,[contenteditable],#horizontal_scroll_container') === null) {
 				const touchEndX = e.changedTouches[0].clientX
 				const touchEndY = e.changedTouches[0].clientY
 

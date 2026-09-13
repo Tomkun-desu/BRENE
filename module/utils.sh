@@ -14,14 +14,15 @@ brene_clone_perm() {
 	FROM=$2
 
 	if [[ -z "${TO}" ]] || [[ -z "${FROM}" ]]; then
-		return
+		return 1
 	fi
 
-	read -r permission owner group < <(busybox stat -c "%a %U %G" "${FROM}")
+	read -r permission owner group < <(busybox stat -c "%a %U %G" "${FROM}") || return 1
+	[[ -n "${permission}" ]] || return 1
 
-	busybox chmod "${permission}" "${TO}"
-	busybox chown "${owner}":"${group}" "${TO}"
-	busybox chcon --reference="${FROM}" "${TO}"
+	busybox chmod "${permission}" "${TO}" || return 1
+	busybox chown "${owner}":"${group}" "${TO}" || return 1
+	busybox chcon --reference="${FROM}" "${TO}" || return 1
 }
 
 # susfs_list_full_file_access_for_third_party_apps() {
@@ -34,7 +35,7 @@ brene_clone_perm() {
 # }
 
 resetprop_n() {
-	resetprop -n "$1" "$2"
+	resetprop -n "$1" "$2" || echo "[resetprop FAILED]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"
 }
 if_prop_exits_resetprop_n() {
 	local PROP_NAME=$1
@@ -93,6 +94,7 @@ spoof_android_system_properties() {
 	# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)
 
 	new_date_value=$(resetprop ro.build.date)
+	[[ -n "$new_date_value" ]] || return
 	resetprop_n "ro.bootimage.build.date" "${new_date_value}"
 	resetprop_n "ro.build.date" "${new_date_value}"
 	resetprop_n "ro.odm.build.date" "${new_date_value}"
@@ -105,6 +107,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
 
 	new_utc_value=$(resetprop ro.build.date.utc)
+	[[ -n "$new_utc_value" ]] || return
 	resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.build.date.utc" "${new_utc_value}"
 	resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
@@ -127,7 +130,8 @@ spoof_android_system_properties() {
 	resetprop -d service.adb.root
 	resetprop -d service.adb.tcp.port
 
-	if [[ "$(resetprop ro.build.version.sdk)" -ge "36" ]]; then
+	sdk="$(resetprop ro.build.version.sdk)"; case "$sdk" in ''|*[!0-9]*) sdk=0;; esac
+	if [[ "$sdk" -ge 36 ]]; then
 		resetprop -d sys.oem_unlock_allowed
 	else
 		resetprop_n "sys.oem_unlock_allowed" "0"
@@ -137,9 +141,11 @@ spoof_android_system_properties() {
 }
 
 brene_sus_path() {
-	if ${SUSFS_BIN} add_sus_path "$1" && [[ "${config_brene_logs}" == "1" ]]; then
+	${SUSFS_BIN} add_sus_path "$1"; _rc=$?
+	if [[ "${_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_path]: $1" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
+	return "${_rc}"
 }
 brene_sus_path_loop() {
 	_sus_err=$(${SUSFS_BIN} add_sus_path_loop "$1" 2>&1); _sus_rc=$?
@@ -151,9 +157,11 @@ brene_sus_path_loop() {
 	return "${_sus_rc}"
 }
 brene_sus_map() {
-	if ${SUSFS_BIN} add_sus_map "$1" && [[ "${config_brene_logs}" == "1" ]]; then
+	${SUSFS_BIN} add_sus_map "$1"; _rc=$?
+	if [[ "${_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_map]: $1" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
+	return "${_rc}"
 }
 # add_open_redirect <src> <dst> <uid_scheme>: both must already exist.
 # Only absolute paths are accepted (never flags). No auto SELinux fix:
@@ -200,9 +208,11 @@ brene_open_redirect() {
 	return "${_or_rc}"
 }
 brene_set_uname() {
-	if ${SUSFS_BIN} set_uname "$1" "$2" && [[ "${config_brene_logs}" == "1" ]]; then
+	${SUSFS_BIN} set_uname "$1" "$2"; _rc=$?
+	if [[ "${_rc}" -eq 0 && "${config_brene_logs}" == "1" ]]; then
 		echo "[set_uname]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"
 	fi
+	return "${_rc}"
 }
 brene_kernel_umount() {
 	${KSU_BIN} kernel notify-module-mounted

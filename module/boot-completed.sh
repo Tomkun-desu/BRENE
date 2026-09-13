@@ -129,11 +129,15 @@ brene_wait_for_nonempty_listing() {
 }
 # Spoof Android System Properties Every Minute
 if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
-   pkill -f "boot-completed.sh.*spoof" 2>/dev/null || true
-   while true; do
-           sleep 60
-           spoof_android_system_properties
-   done &
+   if [[ -f "${PERSISTENT_DIR}/spoof_repeat.pid" ]] && kill -0 "$(cat "${PERSISTENT_DIR}/spoof_repeat.pid")" 2>/dev/null; then
+      :
+   else
+      while true; do
+              sleep 60
+              spoof_android_system_properties
+      done &
+      echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
+   fi
 fi
 
 
@@ -260,7 +264,7 @@ fi
 
 # Late second pass: storage often populates after boot-completed. Same functions,
 # same allowlists — idempotent retry only. Backgrounded so boot is never blocked.
-( sleep 60
+pgrep -f "brene_hide_nonstandard" >/dev/null 2>&1 || ( sleep 60
   [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]] && __brene_hide_nonstandard_sdcard_once
   [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]] && __brene_hide_nonstandard_sdcard_android_once
   [[ "${config_brene_logs}" == "1" ]] && echo "[retry] late sdcard hide pass done" >> "${PERSISTENT_DIR}/logs.txt"
@@ -477,13 +481,13 @@ if [[ "${config_hide_injections}" == "1" ]]; then
 
         for module in "${path}"/*; do
                 if [[ -e "${module}/system" ]]; then
-                        find "${module}/system" -type f | while read -r file; do
+                        find "${module}/system" -type f -print0 | while IFS= read -r -d '' file; do
                                 brene_sus_map "${file}"
                         done
                 fi
         done
 
-        find /data/adb/modules -name "*.so" | while read -r file; do
+        find /data/adb/modules -name "*.so" -print0 | while IFS= read -r -d '' file; do
                 brene_sus_map "${file}"
         done
 fi
@@ -505,14 +509,14 @@ if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
 	${KSU_BIN} kernel notify-module-mounted
 
-	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r mount; do
+	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | sed 's/\\040/ /g' | while read -r mount; do
 		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
 	done
 fi
 
 # Hide framework-res.apk
 if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
-	find /system -iname "*framework-res.apk" | while read -r path; do
+	find /system -iname "*framework-res.apk" -print0 | while IFS= read -r -d '' path; do
 		brene_sus_map "${path}"
 	done
 fi

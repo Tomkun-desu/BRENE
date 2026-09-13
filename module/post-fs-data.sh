@@ -77,10 +77,12 @@ true > "${PERSISTENT_DIR}/logs.txt"
 # Spoof /system/lib64/libstagefright.so
 if [[ "${config_spoof_libstagefright}" == "1" ]]; then
         path=/system/lib64/libstagefright.so
-        file_name=$(basename "${path}")
-        fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+        safe="$(printf '%s' "${path}" | tr '/' '_')"
+        fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
 
         [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+        busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+        [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
         [[ ! -f "${fake_file_path}" ]] && {
                 touch "${fake_file_path}"
         }
@@ -117,6 +119,7 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 
 	if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
 		FAKE_BOOTCONFIG="${PERSISTENT_DIR}/fake_bootconfig"
+		[ -L "${FAKE_BOOTCONFIG}" ] && rm -f -- "${FAKE_BOOTCONFIG}"
 
 		cat /proc/bootconfig > "${FAKE_BOOTCONFIG}"
 		sed -i 's/androidboot.warranty_bit = "1"/androidboot.warranty_bit = "0"/' "${FAKE_BOOTCONFIG}"
@@ -124,6 +127,7 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}"
 	else
 		FAKE_CMDLINE="${PERSISTENT_DIR}/fake_cmdline"
+		[ -L "${FAKE_CMDLINE}" ] && rm -f -- "${FAKE_CMDLINE}"
 
 		cat /proc/cmdline > "${FAKE_CMDLINE}"
 		sed -i 's/androidboot.warranty_bit=1/androidboot.warranty_bit=0/' "${FAKE_CMDLINE}"
@@ -246,12 +250,12 @@ fi
 # Hide Custom ROM Paths
 if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	for i in ${CUSTOM_ROM_NAMES//|/ }; do
-		find /system /system_ext /vendor /product -iname "*${i}*" | while read -r path; do
+		find /system /system_ext /vendor /product -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
 			brene_sus_map "${path}"
 			brene_sus_path_loop "${path}"
 		done
 
-		find /data -maxdepth 1 -iname "*${i}*" | while read -r path; do
+		find /data -maxdepth 1 -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
 			brene_sus_path_loop "${path}"
 		done
 	done
@@ -260,7 +264,7 @@ fi
 # Hide Custom ROM Paths (Extreme)
 if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
         for i in ${CUSTOM_ROM_NAMES//|/ }; do
-                find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" | while read -r path; do
+                find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
                         brene_sus_map "${path}"
                         brene_sus_path_loop "${path}"
                 done
@@ -268,11 +272,13 @@ if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
 fi
 # Hide LineageOS Strings
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) | while read -r path; do
-		file_name=$(basename "${path}")
-		fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
+		safe="$(printf '%s' "$path" | tr '/' '_')"
+		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
 
 		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+		busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+		[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
                 if [[ ! -f "${fake_file_path}" ]]; then
                         cp "${path}" "${fake_file_path}"
                         sed -i "s/lineage//g" "${fake_file_path}"
@@ -290,6 +296,7 @@ fi
 ## is unsafe while zygote/system_server are already running; it will apply normally on
 ## the next real reboot instead. ##
 BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
+case "$BRENE_UPTIME_SEC" in ''|*[!0-9]*) BRENE_UPTIME_SEC=999;; esac
 if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
     RESETPROP=""
     for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
@@ -507,12 +514,14 @@ fi
 
 # Hide LineageOS Strings in RC files
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-        find /system /system_ext /vendor /product -iname "*.rc" | while read -r path; do
+        find /system /system_ext /vendor /product -iname "*.rc" -print0 | while IFS= read -r -d '' path; do
                 if grep -iq "lineage" "${path}"; then
-                        file_name=$(basename "${path}")
-                        fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+                        safe="$(printf '%s' "$path" | tr '/' '_')"
+                        fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
 
                         [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+                        busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+                        [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
                         if [[ ! -f "${fake_file_path}" ]]; then
                                 cp "${path}" "${fake_file_path}"
                                 sed -i "s/lineage//g" "${fake_file_path}"

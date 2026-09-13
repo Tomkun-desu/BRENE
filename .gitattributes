@@ -2,3 +2,5 @@
 *.jpg binary
 module/tools/susfs binary
 *.zip binary
+module/tools/* binary
+*.{png,gif,ico,bin,dat,so,dex,apk,img} binary
