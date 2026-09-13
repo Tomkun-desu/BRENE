@@ -1,3 +1,14 @@
+## v0.0.66-custom.7 - 2026-09-13
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* In the 'action.sh' file, the original line that loads the config has been modified to parse the config file securely, rather than simply sourcing it.
+* The original config loading line has been removed from the 'boot-completed.sh' file.
+* In the 'boot-completed.sh' file, the original lines that update the 'susfs_version', 'susfs_variant', and 'susfs_features_number' variables have been replaced with new lines that use different variable names and possibly different commands.
+* The original lines that print ASCII art have been removed from both the 'action.sh' and 'boot-completed.sh' files.
+
 ## v0.0.66-custom.6 - 2026-09-13
 
 ### Synced from upstream BRENE
