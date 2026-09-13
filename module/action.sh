@@ -10,8 +10,14 @@ CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising
 
 # Load utils
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
-# Load config
-[[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
+# Load config (allowlist parser; never source untrusted file)
+if [[ -e "${PERSISTENT_DIR}/config.sh" ]]; then
+  while IFS='=' read -r k v || [[ -n "$k" ]]; do
+    k="${k%$'\r'}"; v="${v%$'\r'}"
+    case "$v" in \'*\'|\"*\") v="${v:1:-1}" ;; esac
+    case "$k" in config_[A-Za-z0-9_]*) printf -v "$k" '%s' "$v" ;; esac
+  done < "${PERSISTENT_DIR}/config.sh"
+fi
 
 echo "██████╗ ██████╗ ███████╗███╗   ██╗███████╗"
 echo "██╔══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝"
