@@ -42,6 +42,7 @@ if [[ ! -d "${DEST_BIN_DIR}" ]]; then
 	abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
 fi
 
+chmod +x "${MODPATH}/tools/susfs" 2>/dev/null || true
 src_susfs_ver=$("${MODPATH}/tools/susfs" show version 2>/dev/null)
 if [[ "${src_susfs_ver}" == "v2"* ]]; then
         echo "[✅] Detected SuSFS version: ${src_susfs_ver}"
