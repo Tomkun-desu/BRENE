@@ -1,3 +1,20 @@
+## v0.0.66-custom.16 - 2026-09-14
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added a secure way to load a configuration file from a persistent directory, allowing only specific keys to be loaded and stripping any unwanted characters.
+* Added code to handle CRLF-edited configuration files and strip surrounding single or double quotes from values.
+* Added code to escape single quotes in values for safe evaluation.
+* Added a mkdir -p command to create a directory if it doesn't exist.
+* Added some ASCII art to the action.sh script.
+* Removed the line that loaded the config file directly.
+* Added a check to make sure the configuration file exists before trying to load it.
+* Changed the way the configuration file is read and parsed to make it more secure and POSIX sh compatible.
+
 ## v0.0.66-custom.15 - 2026-09-13
 
 ### Synced from upstream BRENE
