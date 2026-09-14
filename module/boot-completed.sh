@@ -41,9 +41,10 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
 fi
 
 # Update Description
+# Fail-loud like customize.sh: only v2* counts as healthy; missing/mismatch -> honest ❌ (no exit, boot never blocked)
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
-if [[ -n "${susfs_ver}" ]]; then
+if [[ "${susfs_ver}" == "v2"* ]]; then
 	${KSU_BIN} module config set override.description "[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}] ${description}"
 else
 	${KSU_BIN} module config set override.description "[Module Status: ❌ | SuSFS Patches: ❌] ${description}"
@@ -105,7 +106,8 @@ fi
 
 # Remove Custom ROM Properties
 if [[ "${config_rom_props}" == "1" ]]; then
-	resetprop | grep -iE "${CUSTOM_ROM_NAMES}" | awk -F'[][]' '{print $2}' | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
+	# Match on prop NAME only (value may legitimately contain e.g. "lineage" in fingerprint)
+	resetprop | awk -F'[][]' '{print $2}' | grep -iE "${CUSTOM_ROM_NAMES}" | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
 		resetprop -d "${prop}"
 	done
 
@@ -151,16 +153,33 @@ brene_wait_for_nonempty_listing() {
 # Spoof Android System Properties Every Minute
 if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
    if mkdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null; then
-      if [[ -f "${PERSISTENT_DIR}/spoof_repeat.pid" ]] && kill -0 "$(cat "${PERSISTENT_DIR}/spoof_repeat.pid" 2>/dev/null)" 2>/dev/null; then
-         :
-      else
-         while true; do
-                 sleep 60
-                 spoof_android_system_properties
-         done &
-         echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
-      fi
-      rmdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock"
+      trap 'rmdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null' EXIT INT TERM
+      _spoof_pid="$(cat "${PERSISTENT_DIR}/spoof_repeat.pid" 2>/dev/null)"
+      case "${_spoof_pid}" in
+         ''|*[!0-9]*)
+            # stale pidfile (empty/non-numeric) -> drop it and start a fresh single daemon
+            rm -f "${PERSISTENT_DIR}/spoof_repeat.pid"
+            while true; do
+                  sleep 60
+                  spoof_android_system_properties
+            done &
+            echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
+            ;;
+         *)
+            if kill -0 "${_spoof_pid}" 2>/dev/null; then
+               :
+            else
+               # stale numeric pid (dead process) -> start a fresh single daemon
+               while true; do
+                  sleep 60
+                  spoof_android_system_properties
+               done &
+               echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
+            fi
+            ;;
+      esac
+      rmdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null
+      trap - EXIT INT TERM
    fi
 fi
 
@@ -209,7 +228,7 @@ __brene_hide_nonstandard_sdcard_once() {
 	_seen=$#
 	for i in "$@"; do
 		if [ ! -e "${i}" ]; then
-			[ "${config_brene_logs}" = "1" ] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+			[ "${config_brene_logs}" = "1" ] && brene_log "[skip] vanished/denied: ${i}"
 			continue
 		fi
 		pass=0
@@ -225,21 +244,19 @@ __brene_hide_nonstandard_sdcard_once() {
 		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
 	if [ "${_hide_n}" -eq 0 ] && [ "${config_brene_logs}" = "1" ]; then
-		echo "[skip] /sdcard pass added 0 entries (empty listing or all standard), entries_seen=${_seen}" >> "${PERSISTENT_DIR}/logs.txt"
+		brene_log "[skip] /sdcard pass added 0 entries (empty listing or all standard), entries_seen=${_seen}"
 	fi
 }
 if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################"
-			echo "Non-standard /sdcard"
-			echo "####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log ""
+			brene_log "####################"
+			brene_log "Non-standard /sdcard"
+			brene_log "####################"
 	fi
 
 	if ! brene_wait_for_nonempty_listing "/sdcard" 15 && [[ "${config_brene_logs}" == "1" ]]; then
-		echo "[wait] /sdcard listing still empty after ~30s, attempting once anyway" >> "${PERSISTENT_DIR}/logs.txt"
+		brene_log "[wait] /sdcard listing still empty after ~30s, attempting once anyway"
 	fi
 	__brene_hide_nonstandard_sdcard_once
 fi
@@ -255,7 +272,7 @@ __brene_hide_nonstandard_sdcard_android_once() {
 	_seen=$#
 	for i in "$@"; do
 		if [ ! -e "${i}" ]; then
-			[ "${config_brene_logs}" = "1" ] && echo "[skip] vanished/denied: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+			[ "${config_brene_logs}" = "1" ] && brene_log "[skip] vanished/denied: ${i}"
 			continue
 		fi
 		pass=0
@@ -271,42 +288,47 @@ __brene_hide_nonstandard_sdcard_android_once() {
 		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
 	if [ "${_hide_n}" -eq 0 ] && [ "${config_brene_logs}" = "1" ]; then
-		echo "[skip] /sdcard/Android pass added 0 entries, entries_seen=${_seen}" >> "${PERSISTENT_DIR}/logs.txt"
+		brene_log "[skip] /sdcard/Android pass added 0 entries, entries_seen=${_seen}"
 	fi
 }
 if [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "############################"
-			echo "Non-standard /sdcard/Android"
-			echo "############################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log ""
+			brene_log "############################"
+			brene_log "Non-standard /sdcard/Android"
+			brene_log "############################"
 	fi
 
 	if ! brene_wait_for_nonempty_listing "/sdcard/Android" 15 && [[ "${config_brene_logs}" == "1" ]]; then
-		echo "[wait] /sdcard/Android listing still empty after ~30s, attempting once anyway" >> "${PERSISTENT_DIR}/logs.txt"
+		brene_log "[wait] /sdcard/Android listing still empty after ~30s, attempting once anyway"
 	fi
 	__brene_hide_nonstandard_sdcard_android_once
 fi
 
 # Late second pass: storage often populates after boot-completed. Same functions,
 # same allowlists — idempotent retry only. Backgrounded so boot is never blocked.
-pgrep -f "brene_hide_nonstandard" >/dev/null 2>&1 || ( sleep 60
-  [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]] && __brene_hide_nonstandard_sdcard_once
-  [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]] && __brene_hide_nonstandard_sdcard_android_once
-  [[ "${config_brene_logs}" == "1" ]] && echo "[retry] late sdcard hide pass done" >> "${PERSISTENT_DIR}/logs.txt"
-) &
+# NOTE: [b] self-match pattern won't match an attacker argv containing the plain
+# string; rc=127 (no pgrep) or other errors -> single safe pass only, never a respawn loop.
+if pgrep -f "[b]rene_hide_nonstandard_sdcard" >/dev/null 2>&1; then
+   :
+else
+   _pgrep_rc=$?
+   if [[ "${_pgrep_rc}" -eq 1 || "${_pgrep_rc}" -eq 127 ]]; then
+      ( sleep 60
+        [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]] && __brene_hide_nonstandard_sdcard_once
+        [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]] && __brene_hide_nonstandard_sdcard_android_once
+        [[ "${config_brene_logs}" == "1" ]] && brene_log "[retry] late sdcard hide pass done"
+      ) &
+   fi
+fi
 
 # Hide Custom Recovery Paths
 if [[ "${config_hide_custom_recovery}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "########################"
-                        echo "Hide Custom Recovery Paths"
-                        echo "########################"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "########################"
+                        brene_log "Hide Custom Recovery Paths"
+                        brene_log "########################"
         fi
 
         [[ -e "/storage/emulated/0/Fox" ]] && brene_sus_path_loop "/storage/emulated/0/Fox"
@@ -321,12 +343,10 @@ fi
 # /data/local/tmp
 if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "###############"
-			echo "/data/local/tmp"
-			echo "###############"
-		} >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log ""
+			brene_log "###############"
+			brene_log "/data/local/tmp"
+			brene_log "###############"
 	fi
 
 	for i in /data/local/tmp/*; do
@@ -353,12 +373,10 @@ fi
 # Manually-installed User CA Certificates
 if [[ "${config_paths_hiding__user_ca_certs}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "###############################"
-			echo "User CA Certificates"
-			echo "###############################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log ""
+			brene_log "###############################"
+			brene_log "User CA Certificates"
+			brene_log "###############################"
 	fi
 
         for i in /data/misc/user/*/cacerts-added/*; do
@@ -374,12 +392,10 @@ fi
 # /sdcard/Android/[data | media | obb]
 if [[ "${config_paths_hiding__sdcard_android_data_media_obb}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################################"
-			echo "/sdcard/Android/[data | media | obb]"
-			echo "####################################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log ""
+			brene_log "####################################"
+			brene_log "/sdcard/Android/[data | media | obb]"
+			brene_log "####################################"
 	fi
 
 	packages="
@@ -413,12 +429,10 @@ fi
 
 ## For paths that are read-only all the time, add them via 'add_sus_path' ##
 if [[ "${config_brene_logs}" == "1" ]]; then
-	{
-		echo ""
-		echo "#############################"
-		echo "Other Suspicious Paths Hiding"
-		echo "#############################"
-	} >> "${PERSISTENT_DIR}/logs.txt"
+		brene_log ""
+		brene_log "#############################"
+		brene_log "Other Suspicious Paths Hiding"
+		brene_log "#############################"
 fi
 # brene_sus_path "/sys/block/loop0"
 
@@ -496,12 +510,10 @@ fi
 # Injections Hiding
 if [[ "${config_hide_injections}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "#################"
-                        echo "Injections Hiding"
-                        echo "#################"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "#################"
+                        brene_log "Injections Hiding"
+                        brene_log "#################"
         fi
 
         overlayfs="/data/adb/modules/meta-overlayfs/mnt"
@@ -538,7 +550,18 @@ if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
 	${KSU_BIN} kernel notify-module-mounted
 
-	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | sed 's/\\040/ /g' | while IFS= read -r mount; do
+	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | sed -e 's/\\040/ /g' -e 's/\\011/	/g' -e 's/\\134/\\/g' | while IFS= read -r mount; do
+		# \012 (newline) cannot survive a line-based loop: skip honestly instead of corrupting the path
+		case "${mount}" in
+			*\\012*)
+				[[ "${config_brene_logs}" == "1" ]] && brene_log "[skip] mountpoint contains newline escape (\\012): ${mount}"
+				continue
+				;;
+		esac
+		if [[ -z "${mount}" ]]; then
+			[[ "${config_brene_logs}" == "1" ]] && brene_log "[decode] FAILED (empty mountpoint after unescape), skipping"
+			continue
+		fi
 		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
 	done
 fi

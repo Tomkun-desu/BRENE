@@ -32,9 +32,14 @@ jobs:
 
       - name: Verify susfs binary hash
         run: |
-          # TODO: compare against pinned known-good hash and fail when mismatched.
+          # pinned known-good susfs hash
+          PINNED_SUSFS_SHA256="db802bfbb8286d1176ae3c551ec6950eeb1046f12fc6c01182160fa35c9e491e"
           sha256sum module/tools/susfs* 2>/dev/null | tee /tmp/susfs.sha256 || exit 1
           [ -s module/tools/susfs ] || exit 1
+          ACTUAL_SUSFS_SHA256="$(sha256sum module/tools/susfs | awk '{print $1}')"
+          if [ "${ACTUAL_SUSFS_SHA256}" != "${PINNED_SUSFS_SHA256}" ]; then
+            echo "::error::susfs hash mismatch: expected ${PINNED_SUSFS_SHA256}, got ${ACTUAL_SUSFS_SHA256}" >&2; exit 1
+          fi
 
       - name: Configure git identity
         run: |

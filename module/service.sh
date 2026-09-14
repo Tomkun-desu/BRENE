@@ -52,12 +52,10 @@ fi
 # Every outcome is logged as [custom_sus_kstat:update*]: OK / FAILED rc=N.
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "########################"
-                        echo "Custom KSTAT (late update)"
-                        echo "########################"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "########################"
+                        brene_log "Custom KSTAT (late update)"
+                        brene_log "########################"
         fi
         while IFS= read -r i || [[ -n "${i}" ]]; do
                 brene_kstat_update_line "${i}"

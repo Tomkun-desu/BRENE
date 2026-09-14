@@ -7,7 +7,7 @@ SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
 mkdir -p "${PERSISTENT_DIR}"
-[[ -x "${SUSFS_BIN}" ]] || { echo "[!] susfs missing" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true; }
+[[ -x "${SUSFS_BIN}" ]] || { echo "[!] susfs missing, hiding DISABLED" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true; }
 SUSFS_VARIANT=$(${SUSFS_BIN} show variant 2>/dev/null)
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
@@ -46,6 +46,16 @@ mkdir -p "${PERSISTENT_DIR}"
 # Clear logs
 true > "${PERSISTENT_DIR}/log.txt"
 true > "${PERSISTENT_DIR}/logs.txt"
+# Boot header (truncate behavior preserved: header is written AFTER truncate)
+_brene_boot_ts="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo unknown)"
+echo "=== BRENE boot ${_brene_boot_ts} ===" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true
+if command -v brene_log >/dev/null 2>&1; then
+  brene_log "=== BRENE boot ${_brene_boot_ts} ==="
+else
+  echo "=== BRENE boot ${_brene_boot_ts} ===" >> "${PERSISTENT_DIR}/logs.txt" 2>/dev/null || true
+fi
+# Fail-loud (re-assert AFTER truncate above, so the message survives): no exit, boot never blocked
+[[ -x "${SUSFS_BIN}" ]] || echo "[!] susfs missing, hiding DISABLED" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true
 
 ## Important Notes:
 ## - The following command can be run at other stages like service.sh, boot-completed.sh etc..,
@@ -148,7 +158,7 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		if [[ -s "${FAKE_BOOTCONFIG}" ]]; then
 			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}"
 		elif [[ "${config_brene_logs}" == "1" ]]; then
-			echo "[cmdline_or_bootconfig] SKIPPED (empty FAKE_BOOTCONFIG)" >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log "[cmdline_or_bootconfig] SKIPPED (empty FAKE_BOOTCONFIG)"
 		fi
 	else
 		FAKE_CMDLINE="${PERSISTENT_DIR}/fake_cmdline"
@@ -160,7 +170,7 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		if [[ -s "${FAKE_CMDLINE}" ]]; then
 			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}"
 		elif [[ "${config_brene_logs}" == "1" ]]; then
-			echo "[cmdline_or_bootconfig] SKIPPED (empty FAKE_CMDLINE)" >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log "[cmdline_or_bootconfig] SKIPPED (empty FAKE_CMDLINE)"
 		fi
 	fi
 fi
@@ -200,12 +210,10 @@ fi
 if [[ "${config_custom_uname_spoofing}" == "1" ]]; then
 
 if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "#####################"
-                        echo "Custom Uname Spoofing"
-                        echo "#####################"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "#####################"
+                        brene_log "Custom Uname Spoofing"
+                        brene_log "#####################"
         fi
 
         final_uname_release="${config_custom_uname_kernel_release}"
@@ -246,12 +254,10 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 
 elif [[ "${config_uname_spoofing}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "##############"
-                        echo "Uname Spoofing"
-                        echo "##############"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "##############"
+                        brene_log "Uname Spoofing"
+                        brene_log "##############"
         fi
 
         kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
@@ -367,12 +373,10 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
         PRODUCT_FIELDS="brand device manufacturer model name"
 
         if [[ "${config_brene_logs}" == "1" ]]; then
-            {
-                echo ""
-                echo "########################"
-                echo "Build Props Spoofing"
-                echo "########################"
-            } >> "${PERSISTENT_DIR}/logs.txt"
+                brene_log ""
+                brene_log "########################"
+                brene_log "Build Props Spoofing"
+                brene_log "########################"
         fi
 
         if [[ -n "${MAIN_FP}" ]]; then
@@ -407,7 +411,7 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                         if [[ -n "${new_value}" && "${current_value}" != "${new_value}" ]]; then
                             if timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null; then
                                 if [[ "${config_brene_logs}" == "1" ]]; then
-                                    echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                                    brene_log "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}"
                                 fi
                             fi
                         fi
@@ -432,7 +436,7 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                         if [[ -n "${new_value}" && "${current_value}" != "${new_value}" ]]; then
                             if timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null; then
                                 if [[ "${config_brene_logs}" == "1" ]]; then
-                                    echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
+                                    brene_log "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}"
                                 fi
                             fi
                         fi
@@ -453,12 +457,10 @@ fi
 # Every outcome is logged as [custom_sus_kstat:<mode>]: OK / FAILED rc=N :: err / SKIPPED (reason).
 if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "########################"
-                        echo "Custom KSTAT"
-                        echo "########################"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "########################"
+                        brene_log "Custom KSTAT"
+                        brene_log "########################"
         fi
         while IFS= read -r i || [[ -n "${i}" ]]; do
                 brene_kstat_add_line "${i}"
@@ -474,12 +476,10 @@ fi
 # both paths must already exist (see brene_open_redirect in utils.sh).
 if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
-                {
-                        echo ""
-                        echo "########################"
-                        echo "Custom OPEN REDIRECT"
-                        echo "########################"
-                } >> "${PERSISTENT_DIR}/logs.txt"
+                        brene_log ""
+                        brene_log "########################"
+                        brene_log "Custom OPEN REDIRECT"
+                        brene_log "########################"
         fi
         set -f
         while IFS= read -r i || [[ -n "${i}" ]]; do
@@ -496,10 +496,10 @@ if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
                 if [[ "$#" -eq 3 ]]; then
                         # brene_open_redirect logs FAILED itself; log success here like the kstat loader.
                         if brene_open_redirect "$1" "$2" "$3"; then
-                                [[ "${config_brene_logs}" == "1" ]] && echo "[custom_open_redirect]: ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                                [[ "${config_brene_logs}" == "1" ]] && brene_log "[custom_open_redirect]: ${i}"
                         fi
                 else
-                        [[ "${config_brene_logs}" == "1" ]] && echo "[custom_open_redirect] SKIPPED (expected 3 TAB-separated fields, got $#): ${i}" >> "${PERSISTENT_DIR}/logs.txt"
+                        [[ "${config_brene_logs}" == "1" ]] && brene_log "[custom_open_redirect] SKIPPED (expected 3 TAB-separated fields, got $#): ${i}"
                 fi
         done < "${PERSISTENT_DIR}/custom_open_redirect.txt"
         set +f
@@ -541,12 +541,10 @@ fi
 # Hide Suspicious PTYs
 if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
-		{
-			echo ""
-			echo "####################"
-			echo "Hide Suspicious PTYs"
-			echo "####################"
-		} >> "${PERSISTENT_DIR}/logs.txt"
+			brene_log ""
+			brene_log "####################"
+			brene_log "Hide Suspicious PTYs"
+			brene_log "####################"
 	fi
 
 	for i in $(seq 0 9); do

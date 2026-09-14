@@ -43,6 +43,14 @@ if [[ ! -d "${DEST_BIN_DIR}" ]]; then
 fi
 
 chmod +x "${MODPATH}/tools/susfs" 2>/dev/null || true
+# pinned known-good susfs hash
+SUSFS_PINNED_SHA256="db802bfbb8286d1176ae3c551ec6950eeb1046f12fc6c01182160fa35c9e491e"
+if command -v sha256sum >/dev/null 2>&1; then
+  SUSFS_ACTUAL_SHA256="$(sha256sum "${MODPATH}/tools/susfs" 2>/dev/null | awk '{print $1}' || true)"
+  if [ "${SUSFS_ACTUAL_SHA256}" != "${SUSFS_PINNED_SHA256}" ]; then
+    abort "[❌] SuSFS hash mismatch! هش susfs نامعتبر است!"
+  fi
+fi
 src_susfs_ver=$("${MODPATH}/tools/susfs" show version 2>/dev/null)
 if [[ "${src_susfs_ver}" == "v2"* ]]; then
         echo "[✅] Bundled SuSFS version: ${src_susfs_ver}"

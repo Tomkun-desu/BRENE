@@ -59,6 +59,7 @@ const configs = [
 		id: 'sync_device_props',
 		action: (enabled) => {
 			if (!enabled) return
+			if (!confirm('Sync device properties now?')) return
 			return setFeature(`RESETPROP="";for c in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop;do [ -x "$c" ]&&RESETPROP="$c"&&break;done;[ -z "$RESETPROP" ]&&exit 1;MFP=$(getprop ro.build.fingerprint);MFP="\${MFP//userdebug/user}";MID=$(getprop ro.build.id);MREL=$(getprop ro.build.version.release);MSDK=$(getprop ro.build.version.sdk);MSDKF=$(getprop ro.build.version.sdk_full);MINC=$(getprop ro.build.version.incremental);MRC=$(getprop ro.build.version.release_or_codename);MDT=$(getprop ro.build.date);MDTU=$(getprop ro.build.date.utc);MSP=$(getprop ro.build.version.security_patch);MTG=$(getprop ro.build.tags);MTP=$(getprop ro.build.type);MBR=$(getprop ro.product.brand);MDEV=$(getprop ro.product.device);MMF=$(getprop ro.product.manufacturer);MMD=$(getprop ro.product.model);MNM=$(getprop ro.product.name);for part in $(getprop|grep -oE '^\\[ro\\.[a-z0-9_]+\\.build\\.fingerprint\\]'|sed -E 's/^\\[ro\\.([a-z0-9_]+)\\.build\\.fingerprint\\]$/\\1/');do [ "$part" = build ]&&continue;[ "$part" = bootimage ]&&continue;for f in fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type;do pn="ro.\${part}.build.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in fingerprint)nv="$MFP";;id)nv="$MID";;version.release)nv="$MREL";;version.sdk)nv="$MSDK";;version.incremental)nv="$MINC";;version.release_or_codename)nv="$MRC";;version.sdk_full)nv="$MSDKF";;date)nv="$MDT";;date.utc)nv="$MDTU";;version.security_patch)nv="$MSP";;tags)nv="$MTG";;type)nv="$MTP";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;for f in brand device manufacturer model name;do pn="ro.product.\${part}.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in brand)nv="$MBR";;device)nv="$MDEV";;manufacturer)nv="$MMF";;model)nv="$MMD";;name)nv="$MNM";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;done;echo done`)
 		},
 	},
@@ -228,6 +229,27 @@ exec('susfs show enabled_features').then((result) => {
 	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
 })
 
+// Display-only truncation: keep last full lines (drop partial first line)
+function cutToLastFullLines(s, max) {
+	s = String(s ?? '')
+	if (s.length <= max) return s
+	let cut = s.slice(-max)
+	const nl = cut.indexOf('\n')
+	if (nl !== -1) cut = cut.slice(nl + 1)
+	try {
+		if (cut.length > 0) {
+			const c = cut.charCodeAt(0)
+			if (c >= 0xDC00 && c <= 0xDFFF) {
+				cut = cut.slice(1)
+			} else if (c >= 0xD800 && c <= 0xDBFF) {
+				const c2 = cut.length > 1 ? cut.charCodeAt(1) : NaN
+				if (!(c2 >= 0xDC00 && c2 <= 0xDFFF)) cut = cut.slice(1)
+			}
+		}
+	} catch (e) {}
+	return cut + '\n…(truncated, showing last full lines)'
+}
+
 // Load logs once
 ;(async () => {
         const container = document.getElementById('logs')
@@ -240,9 +262,10 @@ exec('susfs show enabled_features').then((result) => {
                 return
         }
         let out1 = r1.stdout || ''
-        if (out1.length > MAX) out1 = out1.slice(-MAX) + '\n…(truncated)'
+        if (out1.length > MAX) out1 = cutToLastFullLines(out1, MAX)
+        container.textContent += '=== log.txt ===\n'
         container.textContent += out1
-        container.textContent += '\n'
+        container.textContent += '\n=== logs.txt ===\n'
 
         const r2 = await exec(`cat ${PERSISTENT_DIR}/logs.txt`)
         if (r2.errno !== 0) {
@@ -250,7 +273,7 @@ exec('susfs show enabled_features').then((result) => {
                 return
         }
 	let out2 = r2.stdout || ''
-	if (out2.length > MAX) out2 = out2.slice(-MAX) + '\n…(truncated)'
+	if (out2.length > MAX) out2 = cutToLastFullLines(out2, MAX)
 	container.textContent += out2
 })().catch(() => {})
 
@@ -268,7 +291,7 @@ exec('susfs show version').then((result) => {
 
 // Helper function to update config
 function sedReplacementEscape(s) {
-	return String(s).replace(/\\/g, '\\\\').replace(/\//g, '\\/').replace(/&/g, '\\&').replace(/'/g, "'\\''")
+	return String(s).replace(/\\/g, '\\\\').replace(/\//g, '\\/').replace(/&/g, '\\&').replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`').replace(/!/g, '\\!').replace(/[\r\n]+/g, ' ').replace(/'/g, "'\\''")
 }
 const norm=p=>p.replace(/\/+/g,'/').replace(/\/$/,'')||'/'
 function findInvalidSusPath(content) {
@@ -280,6 +303,8 @@ function findInvalidSusPath(content) {
 		if (/[\t\r\n]/.test(raw)) { bad = line || raw; return }
 		if (!line.startsWith('/')) { bad = line; return }
 		if (/\.\.(\/|$)/.test(line)) { bad = line; return }
+		const n = norm(line)
+		if (n === '/' || n === '/system' || n === '/data' || n === '/vendor') { bad = line; return }
 	})
 	return bad
 }
@@ -393,18 +418,21 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 ;(async () => {
 	const mountField = document.getElementById('custom_kernel_umount_text_field')
 	const applyButton = document.getElementById('kernel_umount_apply_button')
+	applyButton.disabled = true
 	let truncated = false
 
 	// Load all content
 	exec(`cat ${PERSISTENT_DIR}/custom_kernel_umount.txt`).then((result) => {
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated = true; out = out.slice(-MAX) + '\n…(truncated)' }
 		mountField.value = result.errno === 0 ? `${out}` : ''
-	})
+	}).finally(() => { applyButton.disabled = false })
 
 	applyButton.onclick = () => {
 		if (truncated) { toast('File too large, not saved'); return }
 		let file = 'custom_kernel_umount.txt'
 		let content = mountField.value
+		const MAX = 65536
+		if (content.length > MAX) { toast('File too large, not saved'); return }
 		const badPath = findInvalidSusPath(content)
 		if (badPath !== null) { toast('Invalid path: '+String(badPath).slice(0,80)); return }
 
@@ -502,6 +530,7 @@ if (resetDialog && resetButton) {
 	const disableButton = document.getElementById('disable_ksu_modules')
 
 	const toggleAllModules = (enable) => {
+		if (!confirm(enable ? 'Enable all KernelSU modules?' : 'Disable all KernelSU modules?')) return
 		exec(`
 			for i in /data/adb/modules/*; do
 				[ "$i" = "${MODDIR}" ] && continue
@@ -849,37 +878,41 @@ if (resetDialog && resetButton) {
 	const tabs = document.getElementById('sus_tabs')
 	const scrollContainer = document.getElementById('horizontal_scroll_container')
 	let truncated = { map: false, mount: false, path: false, loop: false, kstat: false, redirect: false }
+	applyButton.disabled = true
+	let susLoadsPending = 6
+	let susLoadsDone = false
+	const markSusLoaded = () => { if (--susLoadsPending <= 0) { susLoadsDone = true; applyButton.disabled = false } }
 
 	// Load all contents
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_map.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.map = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.map = true; out = cutToLastFullLines(out, MAX) }
 		mapField.value = result.errno === 0 ? `${out}\n` : ''
-	})
+	}).finally(markSusLoaded)
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_mount.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.mount = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.mount = true; out = cutToLastFullLines(out, MAX) }
 		mountField.value = result.errno === 0 ? `${out}\n` : ''
-	})
+	}).finally(markSusLoaded)
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.path = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.path = true; out = cutToLastFullLines(out, MAX) }
 		pathField.value = result.errno === 0 ? `${out}\n` : ''
-	})
+	}).finally(markSusLoaded)
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_loop.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.loop = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.loop = true; out = cutToLastFullLines(out, MAX) }
 		loopField.value = result.errno === 0 ? `${out}\n` : ''
-	})
+	}).finally(markSusLoaded)
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_kstat.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.kstat = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.kstat = true; out = cutToLastFullLines(out, MAX) }
 		loadKstatEntries(result.errno === 0 ? out : '')
-	})
+	}).finally(markSusLoaded)
 	exec(`grep '^\\[custom_sus_kstat' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const kstatLog = document.getElementById('kstat_log_display')
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
 		kstatLog.value = result.errno === 0 && out ? out : '(no kstat log entries yet)'
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
-		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.redirect = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.redirect = true; out = cutToLastFullLines(out, MAX) }
 		loadOpenRedirectEntries(result.errno === 0 ? out : '')
-	})
+	}).finally(markSusLoaded)
 	exec(`grep '^\\[custom_open_redirect\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const openRedirectLog = document.getElementById('open_redirect_log_display')
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
@@ -907,7 +940,7 @@ if (resetDialog && resetButton) {
 			if (tabs.activeTabIndex !== index) {
 				tabs.activeTabIndex = index
 			}
-			applyButton.disabled = false
+			if (susLoadsDone) applyButton.disabled = false
 		}, 50)
 	})
 
@@ -958,6 +991,8 @@ if (resetDialog && resetButton) {
 
 		if (file === '') { toast('Select a tab first'); return }
 		if (truncatedKey && truncated[truncatedKey]) { toast('File too large, not saved'); return }
+		const MAX = 65536
+		if (content.length > MAX) { toast('File too large, not saved'); return }
 
 		if (index >= 0 && index <= 3) {
 			const bad = findInvalidSusPath(content)
