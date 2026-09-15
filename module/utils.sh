@@ -166,7 +166,7 @@ spoof_android_system_properties() {
 }
 
 # Fingerprint subset fallback (mirrors upstream spoof_fingerprint_properties dcbf30f).
-# Owned by config_sync_device_props toggle — no separate toggle.
+# Owned by config_spoof_system_properties toggle — no separate toggle (legacy sync/fingerprint keys merged in).
 # Same 10-prop list + same 4-string sanitize (userdebug->user, strip evolution/crdroid/lineage).
 brene_spoof_fingerprint_props() {
 	local fingerprint_value new_fingerprint_value

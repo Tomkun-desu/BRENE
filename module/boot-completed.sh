@@ -39,9 +39,15 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     eval "$k='$v_esc'"
   done < "${PERSISTENT_DIR}/config.sh"
 fi
-# Backward compat: legacy config_spoof_fingerprint_properties=1 aliases to config_sync_device_props=1
-if [ "${config_spoof_fingerprint_properties}" = "1" ] && [ "${config_sync_device_props}" != "1" ]; then
-  config_sync_device_props=1
+# Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
+if [ "${config_spoof_fingerprint_properties}" = "1" ]; then
+  config_spoof_system_properties=1
+fi
+if [ "${config_sync_device_props}" = "1" ]; then
+  config_spoof_system_properties=1
+fi
+if [ "${config_spoof_system_properties_repeat}" = "1" ]; then
+  config_spoof_system_properties=1
 fi
 
 # Update Description
@@ -139,8 +145,8 @@ fi
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
    spoof_android_system_properties
 fi
-# Second-phase fingerprint persistence (upstream fingerprint toggle covered via sync_device_props; boot-completed is already late so no uptime gate)
-if [[ "${config_sync_device_props}" == "1" ]]; then
+# Second-phase fingerprint persistence (owned by config_spoof_system_properties; boot-completed is already late so no uptime gate)
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
    brene_spoof_fingerprint_props
 fi
 
@@ -346,6 +352,25 @@ if [[ "${config_hide_custom_recovery}" == "1" ]]; then
         [[ -e "/data/cache/recovery" ]] && brene_sus_path_loop "/data/cache/recovery"
         [[ -e "/vendor/bin/install-recovery.sh" ]] && brene_sus_path_loop "/vendor/bin/install-recovery.sh"
         [[ -e "/system/bin/install-recovery.sh" ]] && brene_sus_path_loop "/system/bin/install-recovery.sh"
+        [[ -e "/storage/emulated/0/OrangeFox" ]] && brene_sus_path_loop "/storage/emulated/0/OrangeFox"
+        [[ -e "/storage/emulated/0/PitchBlack" ]] && brene_sus_path_loop "/storage/emulated/0/PitchBlack"
+        [[ -e "/storage/emulated/0/PBRP" ]] && brene_sus_path_loop "/storage/emulated/0/PBRP"
+        [[ -e "/storage/emulated/0/SHRP" ]] && brene_sus_path_loop "/storage/emulated/0/SHRP"
+        [[ -e "/storage/emulated/0/RedWolf" ]] && brene_sus_path_loop "/storage/emulated/0/RedWolf"
+        [[ -e "/storage/emulated/0/.twrps" ]] && brene_sus_path_loop "/storage/emulated/0/.twrps"
+        [[ -e "/storage/emulated/0/OFox" ]] && brene_sus_path_loop "/storage/emulated/0/OFox"
+        [[ -e "/data/media/0/TWRP" ]] && brene_sus_path_loop "/data/media/0/TWRP"
+        [[ -e "/data/media/0/Fox" ]] && brene_sus_path_loop "/data/media/0/Fox"
+        [[ -e "/persist/ofrp" ]] && brene_sus_path_loop "/persist/ofrp"
+        [[ -e "/data/ofrp" ]] && brene_sus_path_loop "/data/ofrp"
+        [[ -e "/metadata/ofrp" ]] && brene_sus_path_loop "/metadata/ofrp"
+        [[ -e "/system_ext/bin/install-recovery.sh" ]] && brene_sus_path "/system_ext/bin/install-recovery.sh"
+        [[ -e "/vendor/etc/install-recovery.sh" ]] && brene_sus_path "/vendor/etc/install-recovery.sh"
+        [[ -e "/system/etc/install-recovery.sh" ]] && brene_sus_path "/system/etc/install-recovery.sh"
+
+        resetprop | awk -F'[][]' '{print $2}' | grep -iE "twrp|ofrp|pbrp|shrp|ro\.fox\." | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
+                resetprop -d "${prop}"
+        done
 fi
 
 # /data/local/tmp

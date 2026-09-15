@@ -26,8 +26,7 @@ config_saturation=0
 config_brene_logs=0
 config_enable_log=0
 config_hide_addon_d=0
-# sync_device_props also covers upstream Spoof Fingerprint Properties (no separate toggle).
-config_sync_device_props=1
+# Deprecated: merged into config_spoof_system_properties (old key still honored if present).
 config_usb_debugging=0
 config_developer_options=0
 config_wireless_debugging=0

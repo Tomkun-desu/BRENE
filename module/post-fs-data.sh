@@ -41,9 +41,15 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     eval "$k='$v_esc'"
   done < "${PERSISTENT_DIR}/config.sh"
 fi
-# Backward compat: legacy config_spoof_fingerprint_properties=1 aliases to config_sync_device_props=1
-if [ "${config_spoof_fingerprint_properties}" = "1" ] && [ "${config_sync_device_props}" != "1" ]; then
-  config_sync_device_props=1
+# Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
+if [ "${config_spoof_fingerprint_properties}" = "1" ]; then
+  config_spoof_system_properties=1
+fi
+if [ "${config_sync_device_props}" = "1" ]; then
+  config_spoof_system_properties=1
+fi
+if [ "${config_spoof_system_properties_repeat}" = "1" ]; then
+  config_spoof_system_properties=1
 fi
 
 mkdir -p "${PERSISTENT_DIR}"
@@ -344,7 +350,7 @@ fi
 ## the next real reboot instead. ##
 BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
 case "$BRENE_UPTIME_SEC" in ''|*[!0-9]*) BRENE_UPTIME_SEC=999;; esac
-if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
+if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
     RESETPROP=""
     for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
         [[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
