@@ -1,3 +1,20 @@
+## v0.0.66-custom.17 - 2026-09-15
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in simple bullet points:
+
+- Added a custom config file loading mechanism that parses a file, strips certain characters, and only loads specific allowed key-value pairs.
+- Modified the config file loading to be POSIX sh compatible, which is necessary because the module runs boot scripts in BusyBox ash.
+- Added a check to ensure the config file exists before trying to load it.
+- Added a message indicating that the module has completed boot.
+- Created a directory at `/data/adb/brene` if it doesn't exist.
+- Removed a comment about loading a config file that was previously commented out.
+- Added several lines of code to parse the config file, strip characters, and escape single quotes for safe evaluation.
+- Modified the echo statements to display a banner or logo.
+
 ## v0.0.66-custom.16 - 2026-09-14
 
 ### Synced from upstream BRENE
