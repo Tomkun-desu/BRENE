@@ -1,3 +1,19 @@
+## v0.0.66-custom.18 - 2026-09-15
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes:
+
+* Added code to load a customized configuration file, allowing only specific keys and values.
+* Changed the way the configuration file is loaded to strip newline characters and quotes from the values.
+* Added a check to ensure the configuration file exists before trying to load it.
+* Added code to create a directory if it doesn't exist.
+* Added a message printing a ASCII art logo to the console.
+* Removed a commented out line that was loading a configuration file.
+* No changes were made to the boot-completed.sh file other than adding a line to create a directory if it doesn't exist.
+
 ## v0.0.66-custom.17 - 2026-09-15
 
 ### Synced from upstream BRENE
