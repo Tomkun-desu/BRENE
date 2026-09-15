@@ -285,9 +285,14 @@ if [[ "${config_spoof_hosts}" == "1" ]]; then
 	${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096'
 fi
 
-# Spoof Android System Properties
+## System Property Spoofing
+# Spoof System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
-	spoof_android_system_properties
+	spoof_system_properties
+fi
+# Spoof Fingerprint Properties
+if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
+	spoof_fingerprint_properties
 fi
 
 if [[ "${config_brene_logs}" == "1" ]]; then

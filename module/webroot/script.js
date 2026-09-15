@@ -75,6 +75,7 @@ const configs = [
 	{ id: 'fix_data_local_tmp_inconsistencies' },
 	{ id: 'spoof_system_properties' },
 	{ id: 'spoof_system_properties_repeat' },
+	{ id: 'spoof_fingerprint_properties' },
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },

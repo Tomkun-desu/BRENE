@@ -17,6 +17,7 @@ config_hide_sus_mnts_for_non_su_procs=1
 config_fix_data_local_tmp_inconsistencies=1
 config_spoof_system_properties=1
 config_spoof_system_properties_repeat=0
+config_spoof_fingerprint_properties=1
 
 config_pif_props=0
 config_rom_props=0

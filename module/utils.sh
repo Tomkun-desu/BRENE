@@ -55,7 +55,7 @@ if_prop_exits_resetprop_n() {
 #   [[ "$(resetprop ${PROP_NAME})" = *"${CONTAINS_VALUE}"* ]] && resetprop -n "${PROP_NAME}" "${NEW_VALUE}"
 # }
 
-spoof_android_system_properties() {
+spoof_system_properties() {
 	if_prop_exits_resetprop_n "ro.secure" "1"
 	if_prop_exits_resetprop_n "ro.debuggable" "0"
 	if_prop_exits_resetprop_n "ro.adb.secure" "1"
@@ -92,29 +92,6 @@ spoof_android_system_properties() {
 	resetprop_n "ro.boot.vbmeta.device_state" "locked"
 	resetprop_n "ro.boot.vbmeta.invalidate_on_error" "yes"
 	resetprop_n "vendor.boot.vbmeta.device_state" "locked"
-
-	fingerprint_value=$(resetprop ro.build.fingerprint)
-	new_fingerprint_value="${fingerprint_value//userdebug/user}"
-	new_fingerprint_value="${new_fingerprint_value//evolution/}"
-	new_fingerprint_value="${new_fingerprint_value//crdroid/}"
-	new_fingerprint_value="${new_fingerprint_value//lineage/}"
-	if_prop_exits_resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
-
-	# fingerprint_value=$(resetprop ro.build.fingerprint)
-	# new_fingerprint_value="${fingerprint_value//userdebug/user}"
-	# new_fingerprint_value="${new_fingerprint_value//evolution/}"
-	# new_fingerprint_value="${new_fingerprint_value//crdroid/}"
-	# new_fingerprint_value="${new_fingerprint_value//lineage/}"
-	# resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
-	# resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
 
 	# new_date_value=$(resetprop ro.build.date)
 	# resetprop_n "ro.bootimage.build.date" "${new_date_value}"
@@ -159,6 +136,24 @@ spoof_android_system_properties() {
 	fi
 
 	resetprop -c --force
+}
+
+spoof_fingerprint_properties() {
+	fingerprint_value=$(resetprop ro.build.fingerprint)
+	new_fingerprint_value="${fingerprint_value//userdebug/user}"
+	new_fingerprint_value="${new_fingerprint_value//evolution/}"
+	new_fingerprint_value="${new_fingerprint_value//crdroid/}"
+	new_fingerprint_value="${new_fingerprint_value//lineage/}"
+	if_prop_exits_resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
 }
 
 brene_sus_path() {
