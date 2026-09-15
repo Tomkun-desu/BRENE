@@ -44,7 +44,7 @@ fi
 
 chmod +x "${MODPATH}/tools/susfs" 2>/dev/null || true
 # pinned known-good susfs hash
-SUSFS_PINNED_SHA256="db802bfbb8286d1176ae3c551ec6950eeb1046f12fc6c01182160fa35c9e491e"
+SUSFS_PINNED_SHA256="13cb301afa5f4e9b512ec6efd79d19f2bf21d67c8375b83c06ba77caa4275064"
 if command -v sha256sum >/dev/null 2>&1; then
   SUSFS_ACTUAL_SHA256="$(sha256sum "${MODPATH}/tools/susfs" 2>/dev/null | awk '{print $1}' || true)"
   if [ "${SUSFS_ACTUAL_SHA256}" != "${SUSFS_PINNED_SHA256}" ]; then

@@ -41,6 +41,10 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     eval "$k='$v_esc'"
   done < "${PERSISTENT_DIR}/config.sh"
 fi
+# Backward compat: legacy config_spoof_fingerprint_properties=1 aliases to config_sync_device_props=1
+if [ "${config_spoof_fingerprint_properties}" = "1" ] && [ "${config_sync_device_props}" != "1" ]; then
+  config_sync_device_props=1
+fi
 
 mkdir -p "${PERSISTENT_DIR}"
 # Clear logs
@@ -381,10 +385,12 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
 
         if [[ -n "${MAIN_FP}" ]]; then
             DISCOVERED_PARTS=$(getprop | grep -oE '^\[ro\.[a-z0-9_]+\.build\.fingerprint\]' | sed -E 's/^\[ro\.([a-z0-9_]+)\.build\.fingerprint\]$/\1/')
+            _brene_sync_matched=0
 
             for part in ${DISCOVERED_PARTS}; do
                 [[ "${part}" == "build" ]] && continue
                 [[ "${part}" == "bootimage" ]] && continue
+                _brene_sync_matched=1
 
                 for field in ${FIELDS}; do
                     prop_name="ro.${part}.build.${field}"
@@ -443,6 +449,12 @@ if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; 
                     fi
                 done
             done
+            # Fallback: dynamic discovery empty (or only build/bootimage) — cover
+            # upstream static 10-prop fingerprint list. No duplicate writes: only
+            # when no partition part matched above.
+            if [[ "${_brene_sync_matched}" == "0" ]]; then
+                brene_spoof_fingerprint_props
+            fi
         fi
     fi
 fi

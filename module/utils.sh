@@ -165,6 +165,28 @@ spoof_android_system_properties() {
 	resetprop -c --force
 }
 
+# Fingerprint subset fallback (mirrors upstream spoof_fingerprint_properties dcbf30f).
+# Owned by config_sync_device_props toggle — no separate toggle.
+# Same 10-prop list + same 4-string sanitize (userdebug->user, strip evolution/crdroid/lineage).
+brene_spoof_fingerprint_props() {
+	local fingerprint_value new_fingerprint_value
+	fingerprint_value=$(resetprop ro.build.fingerprint)
+	new_fingerprint_value="${fingerprint_value//userdebug/user}"
+	new_fingerprint_value="${new_fingerprint_value//evolution/}"
+	new_fingerprint_value="${new_fingerprint_value//crdroid/}"
+	new_fingerprint_value="${new_fingerprint_value//lineage/}"
+	if_prop_exits_resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.odm_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.product.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.system.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.system_dlkm.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
+	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
+}
+
 brene_sus_path() {
 	local _rc
 	${SUSFS_BIN} add_sus_path "$1"; _rc=$?

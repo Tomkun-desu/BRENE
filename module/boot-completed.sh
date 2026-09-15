@@ -39,6 +39,10 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     eval "$k='$v_esc'"
   done < "${PERSISTENT_DIR}/config.sh"
 fi
+# Backward compat: legacy config_spoof_fingerprint_properties=1 aliases to config_sync_device_props=1
+if [ "${config_spoof_fingerprint_properties}" = "1" ] && [ "${config_sync_device_props}" != "1" ]; then
+  config_sync_device_props=1
+fi
 
 # Update Description
 # Fail-loud like customize.sh: only v2* counts as healthy; missing/mismatch -> honest ❌ (no exit, boot never blocked)
@@ -134,6 +138,10 @@ fi
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
    spoof_android_system_properties
+fi
+# Second-phase fingerprint persistence (upstream fingerprint toggle covered via sync_device_props; boot-completed is already late so no uptime gate)
+if [[ "${config_sync_device_props}" == "1" ]]; then
+   brene_spoof_fingerprint_props
 fi
 
 ## First we need to wait until files are accessible in /sdcard ##
