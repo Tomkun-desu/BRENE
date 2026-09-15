@@ -381,26 +381,6 @@
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Spoof Android System Properties</span>
-							<span class="card-row__sub">Spoof some android system properties</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">[ro.build.type]: [userdebug]</span>
-							<span class="card-row__tag--code">[ro.boot.flash.locked]: [0]</span>
-						</div>
-						<md-switch icons id="spoof_system_properties"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Spoof Android System Properties Every Minute</span>
-						</div>
-						<md-switch icons id="spoof_system_properties_repeat"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
 							<span class="card-row__title">Spoof /system/etc/hosts</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">Native Detector:</span>
@@ -465,7 +445,30 @@
 					</div>
 				</div>
 
-				<p class="section-label">Spoof Android Verified Boot Hash Property</p>
+				<p class="section-label">System Property Spoofing</p>
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof System Properties</span>
+							<span class="card-row__sub">Spoof some android system properties</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">[ro.build.type]: [userdebug]</span>
+							<span class="card-row__tag--code">[ro.boot.flash.locked]: [0]</span>
+						</div>
+						<md-switch icons id="spoof_system_properties"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof System Properties Every Minute</span>
+						</div>
+						<md-switch icons id="spoof_system_properties_repeat"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+				</div>
+
+				<p class="section-label">Spoof Verified Boot Hash Property</p>
 				<div class="card-group">
 					<div class="card-row">
 						<div class="field-stack">
