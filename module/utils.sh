@@ -77,7 +77,7 @@ if_prop_exits_resetprop_n() {
 # }
 
 spoof_android_system_properties() {
-	local size sdk new_date_value new_utc_value
+	local size sdk
 	resetprop_n "init.svc.adbd" "stopped"
 	resetprop_n "init.svc_debug_pid.adbd" ""
 	resetprop_n "persist.sys.usb.config" "mtp"
@@ -114,36 +114,7 @@ spoof_android_system_properties() {
 	if_prop_exits_resetprop_n "ro.vendor.warranty_bit" "0"
 	if_prop_exits_resetprop_n "ro.boot.warranty_bit" "0"
 
-	# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)
-
-	new_date_value=$(resetprop ro.build.date)
-	if [[ -n "$new_date_value" ]]; then
-	resetprop_n "ro.bootimage.build.date" "${new_date_value}"
-	resetprop_n "ro.build.date" "${new_date_value}"
-	resetprop_n "ro.odm.build.date" "${new_date_value}"
-	resetprop_n "ro.odm_dlkm.build.date" "${new_date_value}"
-	resetprop_n "ro.product.build.date" "${new_date_value}"
-	resetprop_n "ro.system.build.date" "${new_date_value}"
-	resetprop_n "ro.system_dlkm.build.date" "${new_date_value}"
-	resetprop_n "ro.system_ext.build.date" "${new_date_value}"
-	resetprop_n "ro.vendor.build.date" "${new_date_value}"
-	resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
-	fi
-
-	new_utc_value=$(resetprop ro.build.date.utc)
-	if [[ -n "$new_utc_value" ]]; then
-	resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.odm_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.product.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
-	resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
-	resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
-	fi
+	# NOTE: fingerprint/utc/date are separate toggles (brene_spoof_fingerprint_props / brene_spoof_utc_props / brene_spoof_date_props).
 
 	## Delete some prop names for newer pixel device ##
 	resetprop -d "ro.boot.verifiedbooterror"
@@ -166,7 +137,7 @@ spoof_android_system_properties() {
 }
 
 # Fingerprint subset fallback (mirrors upstream spoof_fingerprint_properties dcbf30f).
-# Owned by config_spoof_system_properties toggle — no separate toggle (legacy sync/fingerprint keys merged in).
+# Owned by config_spoof_fingerprint_properties toggle.
 # Same 10-prop list + same 4-string sanitize (userdebug->user, strip evolution/crdroid/lineage).
 brene_spoof_fingerprint_props() {
 	local fingerprint_value new_fingerprint_value
@@ -175,6 +146,7 @@ brene_spoof_fingerprint_props() {
 	new_fingerprint_value="${new_fingerprint_value//evolution/}"
 	new_fingerprint_value="${new_fingerprint_value//crdroid/}"
 	new_fingerprint_value="${new_fingerprint_value//lineage/}"
+	[[ -z "${new_fingerprint_value}" ]] && return 0
 	if_prop_exits_resetprop_n "ro.bootimage.build.fingerprint" "${new_fingerprint_value}"
 	if_prop_exits_resetprop_n "ro.build.fingerprint" "${new_fingerprint_value}"
 	if_prop_exits_resetprop_n "ro.odm.build.fingerprint" "${new_fingerprint_value}"
@@ -185,6 +157,39 @@ brene_spoof_fingerprint_props() {
 	if_prop_exits_resetprop_n "ro.system_ext.build.fingerprint" "${new_fingerprint_value}"
 	if_prop_exits_resetprop_n "ro.vendor.build.fingerprint" "${new_fingerprint_value}"
 	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.fingerprint" "${new_fingerprint_value}"
+}
+
+brene_spoof_utc_props() {
+	local new_utc_value
+	new_utc_value=$(resetprop ro.build.date.utc)
+	[[ -z "${new_utc_value}" ]] && return 0
+	if_prop_exits_resetprop_n "ro.bootimage.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.odm.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.odm_dlkm.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.product.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.system.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.system_dlkm.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.system_ext.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.vendor.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.date.utc" "${new_utc_value}"
+	if_prop_exits_resetprop_n "persist.vendor.build.date.utc" "${new_utc_value}"
+}
+
+brene_spoof_date_props() {
+	local new_date_value
+	new_date_value=$(resetprop ro.build.date)
+	[[ -z "${new_date_value}" ]] && return 0
+	if_prop_exits_resetprop_n "ro.bootimage.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.odm.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.odm_dlkm.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.product.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.system.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.system_dlkm.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.system_ext.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.vendor.build.date" "${new_date_value}"
+	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
 }
 
 brene_sus_path() {

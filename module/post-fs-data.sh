@@ -42,9 +42,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
   done < "${PERSISTENT_DIR}/config.sh"
 fi
 # Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
-if [ "${config_spoof_fingerprint_properties}" = "1" ]; then
-  config_spoof_system_properties=1
-fi
 if [ "${config_sync_device_props}" = "1" ]; then
   config_spoof_system_properties=1
 fi
@@ -379,7 +376,12 @@ if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 12
         MAIN_MODEL=$(getprop ro.product.model)
         MAIN_NAME=$(getprop ro.product.name)
 
-        FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type"
+        # Base fields owned by Spoof System Properties; fingerprint/date/date.utc
+        # are owned by their own toggles (full control per button).
+        FIELDS="id version.release version.sdk version.incremental version.release_or_codename version.sdk_full version.security_patch tags type"
+        if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then FIELDS="fingerprint ${FIELDS}"; fi
+        if [[ "${config_spoof_date_properties}" == "1" ]]; then FIELDS="${FIELDS} date"; fi
+        if [[ "${config_spoof_utc_properties}" == "1" ]]; then FIELDS="${FIELDS} date.utc"; fi
         PRODUCT_FIELDS="brand device manufacturer model name"
 
         if [[ "${config_brene_logs}" == "1" ]]; then
@@ -458,7 +460,8 @@ if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 12
             # Fallback: dynamic discovery empty (or only build/bootimage) — cover
             # upstream static 10-prop fingerprint list. No duplicate writes: only
             # when no partition part matched above.
-            if [[ "${_brene_sync_matched}" == "0" ]]; then
+            # NOTE: granular fingerprint/utc/date toggles are applied at tail.
+            if [[ "${_brene_sync_matched}" == "0" && "${config_spoof_fingerprint_properties}" == "1" ]]; then
                 brene_spoof_fingerprint_props
             fi
         fi
@@ -554,6 +557,18 @@ fi
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
    spoof_android_system_properties
+fi
+# Spoof Fingerprint Properties
+if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
+   brene_spoof_fingerprint_props
+fi
+# Spoof UTC Properties
+if [[ "${config_spoof_utc_properties}" == "1" ]]; then
+   brene_spoof_utc_props
+fi
+# Spoof Date Properties
+if [[ "${config_spoof_date_properties}" == "1" ]]; then
+   brene_spoof_date_props
 fi
 
 # Hide Suspicious PTYs

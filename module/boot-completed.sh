@@ -40,9 +40,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
   done < "${PERSISTENT_DIR}/config.sh"
 fi
 # Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
-if [ "${config_spoof_fingerprint_properties}" = "1" ]; then
-  config_spoof_system_properties=1
-fi
 if [ "${config_sync_device_props}" = "1" ]; then
   config_spoof_system_properties=1
 fi
@@ -145,9 +142,17 @@ fi
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
    spoof_android_system_properties
 fi
-# Second-phase fingerprint persistence (owned by config_spoof_system_properties; boot-completed is already late so no uptime gate)
-if [[ "${config_spoof_system_properties}" == "1" ]]; then
+# Spoof Fingerprint Properties
+if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
    brene_spoof_fingerprint_props
+fi
+# Spoof UTC Properties
+if [[ "${config_spoof_utc_properties}" == "1" ]]; then
+   brene_spoof_utc_props
+fi
+# Spoof Date Properties
+if [[ "${config_spoof_date_properties}" == "1" ]]; then
+   brene_spoof_date_props
 fi
 
 ## First we need to wait until files are accessible in /sdcard ##
