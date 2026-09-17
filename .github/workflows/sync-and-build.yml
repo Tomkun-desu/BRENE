@@ -284,9 +284,9 @@ jobs:
           sed -i "s/^name=.*/name=.BRENE - Custom AI/" module/module.prop
           sed -i "s/^author=.*/author=rrr333nnn333, simonpunk \& KOWX712 + Community/" module/module.prop
           if grep -q "^updateJson=" module/module.prop; then
-            sed -i "s#^updateJson=.*#updateJson=https://raw.githubusercontent.com/tomkun-desu/brene/main/update.json#" module/module.prop
+            sed -i "s#^updateJson=.*#updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json#" module/module.prop
           else
-            echo "updateJson=https://raw.githubusercontent.com/tomkun-desu/brene/main/update.json" >> module/module.prop
+            echo "updateJson=https://raw.githubusercontent.com/Tomkun-desu/BRENE/main/update.json" >> module/module.prop
           fi
 
       - name: Neutralize redundant upstream fingerprint spoofing
@@ -401,14 +401,27 @@ jobs:
 
           LAST_VER=$(cat LAST_UPSTREAM_VERSION 2>/dev/null || echo "")
           PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
+          # versionCode must NEVER reset: root managers (KernelSU/Magisk/APatch)
+          # detect updates by strictly increasing versionCode, so BUILD_NUMBER
+          # only ever goes up even when the display counter restarts below.
           RUN_NUM=$((PREV_NUM + 1))
           echo "$RUN_NUM" > BUILD_NUMBER
           echo "$UPSTREAM_VER" > LAST_UPSTREAM_VERSION
 
+          # Display counter restarts at 1 on every upstream version bump.
+          PREV_CUSTOM_N=$(grep '^version=' module/module.prop | grep -oE 'custom\.[0-9]+' | grep -oE '[0-9]+' | head -1)
+          [ -z "$PREV_CUSTOM_N" ] && PREV_CUSTOM_N=0
+          if [ "$UPSTREAM_VER" != "$LAST_VER" ]; then
+            CUSTOM_N=1
+          else
+            CUSTOM_N=$((PREV_CUSTOM_N + 1))
+            [ "$CUSTOM_N" -lt 1 ] && CUSTOM_N=1
+          fi
+
           UPSTREAM_LOG=$(git log --pretty=format:"- %s" ${{ steps.pre.outputs.sha }}..${{ steps.diff.outputs.new_sha }} -- module ':!CHANGELOG.md' 2>/dev/null || echo "")
           [ -z "$UPSTREAM_LOG" ] && UPSTREAM_LOG="- (manual rebuild, no new upstream commits)"
 
-          BUILD_VERSION="${UPSTREAM_VER}-custom.${RUN_NUM}"
+          BUILD_VERSION="${UPSTREAM_VER}-custom.${CUSTOM_N}"
 
           {
             echo "## ${BUILD_VERSION} - ${DATE}"
