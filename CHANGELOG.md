@@ -1,20 +1,3 @@
-## v0.0.67-custom.19 - 2026-09-17
-
-### Synced from upstream BRENE v0.0.67
-- 45b34b8 add: new toggles "Spoof UTC Properties" and "Spoof Date Properties"
-- 6e77236 bump: version to v0.0.67
-
-### Local customizations
-- Ported upstream UTC/Date toggles 1:1 (brene_spoof_utc_props / brene_spoof_date_props, 11/10 props via if_prop_exits_resetprop_n)
-- Re-introduced Spoof Fingerprint Properties as independent toggle (owned by config_spoof_fingerprint_properties)
-- Removed date/utc inline blocks from spoof_android_system_properties (now pure system props, repeat loop unchanged like upstream)
-- WebUI: Fingerprint/UTC/Date rows restored under System Property Spoofing (System, Repeat, Fingerprint, UTC, Date)
-- Existing customize.sh auto-appends missing keys, so current users get the 3 new defaults (=1) on upgrade
-- Device Identity Sync fields distributed per-toggle: fingerprint/date/date.utc sync only when their own toggle is on (boot sync + on-demand WebUI sync); other 14 fields stay under Spoof System Properties
-- Fix: empty source prop no longer wipes targets (early-return in utc/date/fingerprint spoof fns)
-- Fix: quoted/CRLF config values now parsed same as boot loader in on-demand sync reads
-- Fix: on-demand sync fingerprint sanitize matches boot (userdebug + evolution/crdroid/lineage)
-
 ## v0.0.66-custom.18 - 2026-09-15
 
 ### Synced from upstream BRENE
