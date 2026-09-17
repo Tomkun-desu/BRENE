@@ -1,3 +1,17 @@
+## v0.0.67-custom.1 - 2026-09-17
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes summarized in simple bullet points:
+
+* Added a new way to load the config file, which includes parsing and allowing only specific keys and values, and escaping single quotes for safe evaluation.
+* Removed the original way of loading the config file.
+* Added a script to create a directory at boot time.
+* Added some ASCII art at the beginning of the action.sh script.
+* No changes were made to the boot-completed.sh script that would be noticeable to a non-technical reader.
+
 ## v0.0.66-custom.18 - 2026-09-15
 
 ### Synced from upstream BRENE
