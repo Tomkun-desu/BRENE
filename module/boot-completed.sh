@@ -115,6 +115,14 @@ fi
 if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
 	spoof_fingerprint_properties
 fi
+# Spoof UTC Properties
+if [[ "${config_spoof_utc_properties}" == "1" ]]; then
+	spoof_utc_properties
+fi
+# Spoof Date Properties
+if [[ "${config_spoof_date_properties}" == "1" ]]; then
+	spoof_date_properties
+fi
 # Spoof System Properties Every Minute
 if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
 	while true; do

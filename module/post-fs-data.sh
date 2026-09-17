@@ -294,6 +294,14 @@ fi
 if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
 	spoof_fingerprint_properties
 fi
+# Spoof UTC Properties
+if [[ "${config_spoof_utc_properties}" == "1" ]]; then
+	spoof_utc_properties
+fi
+# Spoof Date Properties
+if [[ "${config_spoof_date_properties}" == "1" ]]; then
+	spoof_date_properties
+fi
 
 if [[ "${config_brene_logs}" == "1" ]]; then
 	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
