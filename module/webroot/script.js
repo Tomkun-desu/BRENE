@@ -6,7 +6,6 @@ document.querySelector('div.preload-hidden').classList.remove('preload-hidden')
 const MODDIR = '/data/adb/modules/brene'
 const PERSISTENT_DIR = '/data/adb/brene'
 const configs = [
-	// { id: 'hide_modules_img' },
 	{
 		id: 'hide_sus_mnts_for_non_su_procs',
 		action: (enabled) => setFeature(`susfs hide_sus_mnts_for_non_su_procs ${enabled ? 1 : 0}`),

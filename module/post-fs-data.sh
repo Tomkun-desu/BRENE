@@ -121,17 +121,6 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 	fi
 fi
 
-#### Hiding the exposed /proc interface of ext4 loop and jdb2 when mounting ext4 img using sus_path ####
-# if [[ $config_hide_modules_img == 1 ]]; then
-## Hide all sus ext4 loops and jbd2 journals if they are still mounted and with jdb2 journal enabled ##
-# 	for device in $(ls -Ld /proc/fs/jbd2/loop*8 | sed 's|/proc/fs/jbd2/||; s|-8||'); do
-# 		brene_sus_path_loop /proc/fs/jbd2/${device}-8
-# 		brene_sus_path_loop /proc/fs/ext4/${device}
-# 	done
-## Also we need to spoof the nlink of /proc/fs/jbd2 to 2 ##
-# ${SUSFS_BIN} add_sus_kstat_statically '/proc/fs/jbd2' 'default' 'default' '2' 'default' 'default' 'default' 'default' 'default' 'default' 'default' 'default' 'default'
-# fi
-
 #### Enable avc log spoofing to bypass 'su' domain detection via /proc/<pid> enumeration, effective for all processes ####
 ## disable it when users want to do some debugging with the permission issue or selinux issue ##
 #ksu_susfs enable_avc_log_spoofing 0
