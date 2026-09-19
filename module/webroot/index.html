@@ -261,10 +261,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide Custom Recovery Paths</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/storage/emulated/0/Fox</span>
-							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
-							<span class="card-row__tag--code">/data/recovery</span>
 						</div>
 						<md-switch icons id="hide_custom_recovery"></md-switch>
 						<md-ripple></md-ripple>
@@ -277,8 +273,6 @@
 							<span class="card-row__sub">
 								Alarms, Android, Audiobooks, DCIM, Documents, Download, Movies, Music, Notifications, Pictures, Podcasts, Recordings, Ringtones, (MIUI)
 							</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 						</div>
 						<md-switch icons id="paths_hiding__non_standard_sdcard"></md-switch>
 						<md-ripple></md-ripple>
@@ -289,8 +283,6 @@
 							<span class="card-row__title">Hide Non-standard /storage/emulated/0/Android Paths</span>
 							<span class="card-row__sub"> Standard Paths: </span>
 							<span class="card-row__sub">data, media, obb</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/storage/emulated/0/Android/fas-rs</span>
 						</div>
 						<md-switch icons id="paths_hiding__non_standard_sdcard_android"></md-switch>
 						<md-ripple></md-ripple>
@@ -299,8 +291,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide /data/local/tmp Paths</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/data/local/tmp/DebugAssistant.log</span>
 						</div>
 						<md-switch icons id="paths_hiding__data_local_tmp"></md-switch>
 						<md-ripple></md-ripple>
@@ -320,9 +310,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide Suspicious PTYs</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Duck Detector:</span>
-							<span class="card-row__tag--code">- Found ROOT PTY</span>
 						</div>
 						<md-switch icons id="hide_suspicious_pty"></md-switch>
 						<md-ripple></md-ripple>
@@ -345,11 +332,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Spoof /system/etc/hosts</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Native Detector:</span>
-							<span class="card-row__tag--code">- Detected modified Hosts file</span>
-							<span class="card-row__tag--code">Disclosure:</span>
-							<span class="card-row__tag--code">- CRIT Why is your hosts file so big?</span>
 						</div>
 						<md-switch icons id="spoof_hosts"></md-switch>
 						<md-ripple></md-ripple>
@@ -360,9 +342,6 @@
 							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
 							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
 							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">androidboot.warranty_bit = "1"</span>
-							<span class="card-row__tag--code">androidboot.verifiedbootstate = "orange"</span>
 						</div>
 						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
 						<md-ripple></md-ripple>
@@ -373,16 +352,6 @@
 							<span class="card-row__title">Spoof Uname</span>
 							<span class="card-row__sub">Spoof uname for all processes</span>
 							<span class="card-row__sub">Only 'release' and 'version' are spoofed as others are no longer needed</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Holmes:</span>
-							<span class="card-row__tag--code">- Abnormal Environment (03)</span>
-							<span class="card-row__tag--code">Native Detector:</span>
-							<span class="card-row__tag--code">- Detected Custom Kernel</span>
-							<span class="card-row__tag--code">Disclosure:</span>
-							<span class="card-row__tag--code">- Custom kernel detected (build date...)</span>
-							<span class="card-row__tag--code">Chunqiu Native Check:</span>
-							<span class="card-row__tag--code">- Tampered kernel</span>
-							<span class="card-row__tag--code">- Third-party kernel</span>
 						</div>
 						<md-switch icons id="spoof_uname"></md-switch>
 						<md-ripple></md-ripple>
@@ -414,9 +383,6 @@
 						<div class="card-row__body">
 							<span class="card-row__title">Spoof System Properties</span>
 							<span class="card-row__sub">Spoof some android system properties</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">[ro.build.type]: [userdebug]</span>
-							<span class="card-row__tag--code">[ro.boot.flash.locked]: [0]</span>
 						</div>
 						<md-switch icons id="spoof_system_properties"></md-switch>
 						<md-ripple></md-ripple>
@@ -493,11 +459,6 @@
 							<span class="card-row__sub"
 								>Prevent zygote from caching the sus mounts in memory, and to keep them hidden from /proc/self/[mounts|mountinfo|mountstat] for non-su processes</span
 							>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Holmes:</span>
-							<span class="card-row__tag--code">- Futile Trace Hide</span>
-							<span class="card-row__tag--code">Native Test:</span>
-							<span class="card-row__tag--code">- Futile Hide (08)</span>
 						</div>
 						<md-switch icons id="hide_sus_mnts_for_non_su_procs"></md-switch>
 						<md-ripple></md-ripple>
@@ -608,11 +569,9 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide Custom ROM Paths</span>
-							<span class="card-row__sub">Important Notes:</span>
-							<span class="card-row__sub">Disable umount for your app if it does not work</span>
-							<span class="card-row__sub">Example: Web Browsers</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/system/framework/org.lineageos.platform-res.apk</span>
+							<span class="card-row__sub card-row__tag--danger">Important Notes:</span>
+							<span class="card-row__sub card-row__tag--danger">Disable umount for your app if it does not work</span>
+							<span class="card-row__sub card-row__tag--danger">Example: Web Browsers</span>
 						</div>
 						<md-switch icons id="hide_custom_rom_paths"></md-switch>
 						<md-ripple></md-ripple>
@@ -631,8 +590,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide /system/addon.d Path</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/system/addon.d/50-lineage.sh</span>
 						</div>
 						<md-switch icons id="hide_addon_d"></md-switch>
 						<md-ripple></md-ripple>
@@ -641,8 +598,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide LineageOS Strings</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">/product/etc/selinux/product_sepolicy.cil</span>
 						</div>
 						<md-switch icons id="hide_lineage_strings"></md-switch>
 						<md-ripple></md-ripple>
@@ -652,9 +607,6 @@
 						<div class="card-row__body">
 							<span class="card-row__title">Spoof /system/lib64/libstagefright.so</span>
 							<span class="card-row__sub">Some Custom ROMs use a custom libstagefright.so</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Duck Detector:</span>
-							<span class="card-row__tag--code">- Native symbol trace</span>
 						</div>
 						<md-switch icons id="spoof_libstagefright"></md-switch>
 						<md-ripple></md-ripple>
@@ -704,14 +656,6 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Fix /data/local/tmp Inconsistencies</span>
-							<span class="card-row__tag--code">Example of detections:</span>
-							<span class="card-row__tag--code">Duck Detector:</span>
-							<span class="card-row__tag--code">- Expected mode 0771 for /data/local/tmp, but found 0777.</span>
-							<span class="card-row__tag--code">- Expected shell:shell (2000:2000) for /data/local/tmp, but found 3000:3000.</span>
-							<span class="card-row__tag--code">
-								- The inode for /data/local/tmp is 137011, above the heuristic review threshold 10000. This is weaker than owner/mode drift and can also reflect deletion or
-								recreation history.</span
-							>
 						</div>
 						<md-switch icons id="fix_data_local_tmp_inconsistencies"></md-switch>
 						<md-ripple></md-ripple>
