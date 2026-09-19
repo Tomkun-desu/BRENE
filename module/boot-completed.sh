@@ -106,6 +106,10 @@ if [[ "${config_pif_props}" == "1" ]]; then
 	done
 fi
 
+#### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
+## First we need to wait until files are accessible in /storage/emulated/0/Android ##
+until [[ -e "/storage/emulated/0/Android" ]]; do sleep 1; done
+
 ## System Property Spoofing
 # Spoof System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
@@ -130,10 +134,6 @@ if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
 		spoof_system_properties
 	done &
 fi
-
-#### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
-## First we need to wait until files are accessible in /storage/emulated/0 ##
-until [[ -e "/storage/emulated/0/Android" ]]; do sleep 1; done
 
 ## Remove the '..5.u.S' leftover ##
 ## THe reason why this sus file is created is because users have grant the MANAGE_EXTERNAL_STORAGE permission for the apps that detecting sus files in /storage/emulated/0, or in /storage/emulated/0/Android/data where the apps are exploiting the unicode bugs to create files arbitrary.
