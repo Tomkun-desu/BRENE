@@ -10,7 +10,6 @@ config_spoof_uname=1
 config_spoof_hosts=1
 config_selinux_hide=1
 config_kernel_umount=1
-config_hide_injections=1
 config_hide_custom_recovery=1
 config_enable_avc_log_spoofing=1
 config_hide_sus_mnts_for_non_su_procs=1

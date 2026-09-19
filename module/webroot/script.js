@@ -59,7 +59,6 @@ const configs = [
 	{ id: 'spoof_uname' },
 	{ id: 'spoof_hosts' },
 	{ id: 'hide_addon_d' },
-	{ id: 'hide_injections' },
 	{ id: 'custom_spoof_uname' },
 	{ id: 'hide_suspicious_pty' },
 	{ id: 'hide_custom_recovery' },
