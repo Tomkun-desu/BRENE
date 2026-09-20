@@ -1,3 +1,18 @@
+## v0.0.67-custom.2 - 2026-09-20
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The customized KernelSU/SuSFS module fork added code to load a config file from a persistent directory, but instead of directly sourcing it, it uses a custom parser to allowlist specific keys.
+* The customized module added a check to strip carriage returns from the config file and surrounding single or double quotes from the values.
+* The customized module added a check to ensure only keys starting with "config_" and containing only letters, numbers, and underscores are allowed.
+* The customized module added code to escape single quotes in the values for safe evaluation.
+* The customized module added a check to create the persistent directory if it doesn't exist.
+* The customized module added some ASCII art to the action script.
+* The customized module removed the line that directly sourced the config file.
+* The customized module removed some original code from the boot-completed script.
+
 ## v0.0.67-custom.1 - 2026-09-17
 
 ### Synced from upstream BRENE
