@@ -182,17 +182,6 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 	fi
 fi
 
-#### Hiding the exposed /proc interface of ext4 loop and jdb2 when mounting ext4 img using sus_path ####
-# if [[ $config_hide_modules_img == 1 ]]; then
-## Hide all sus ext4 loops and jbd2 journals if they are still mounted and with jdb2 journal enabled ##
-# 	for device in $(ls -Ld /proc/fs/jbd2/loop*8 | sed 's|/proc/fs/jbd2/||; s|-8||'); do
-# 		brene_sus_path /proc/fs/jbd2/${device}-8
-# 		brene_sus_path /proc/fs/ext4/${device}
-# 	done
-## Also we need to spoof the nlink of /proc/fs/jbd2 to 2 ##
-# ${SUSFS_BIN} add_sus_kstat_statically '/proc/fs/jbd2' 'default' 'default' '2' 'default' 'default' 'default' 'default' 'default' 'default' 'default' 'default' 'default'
-# fi
-
 #### Enable avc log spoofing to bypass 'su' domain detection via /proc/<pid> enumeration, effective for all processes ####
 ## disable it when users want to do some debugging with the permission issue or selinux issue ##
 #ksu_susfs enable_avc_log_spoofing 0
@@ -378,10 +367,11 @@ if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 12
 
         # Base fields owned by Spoof System Properties; fingerprint/date/date.utc
         # are owned by their own toggles (full control per button).
-        FIELDS="id version.release version.sdk version.incremental version.release_or_codename version.sdk_full version.security_patch tags type"
+        FIELDS="id version.release version.sdk version.incremental version.release_or_codename version.sdk_full tags type"
         if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then FIELDS="fingerprint ${FIELDS}"; fi
         if [[ "${config_spoof_date_properties}" == "1" ]]; then FIELDS="${FIELDS} date"; fi
         if [[ "${config_spoof_utc_properties}" == "1" ]]; then FIELDS="${FIELDS} date.utc"; fi
+        if [[ "${config_spoof_os_patch_level_property}" != "1" ]]; then FIELDS="${FIELDS} version.security_patch"; fi
         PRODUCT_FIELDS="brand device manufacturer model name"
 
         if [[ "${config_brene_logs}" == "1" ]]; then
@@ -569,6 +559,10 @@ fi
 # Spoof Date Properties
 if [[ "${config_spoof_date_properties}" == "1" ]]; then
    brene_spoof_date_props
+fi
+# Spoof OS Patch Level Property
+if [[ "${config_spoof_os_patch_level_property}" == "1" ]]; then
+   brene_spoof_os_patch_props
 fi
 
 # Hide Suspicious PTYs

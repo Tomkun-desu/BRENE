@@ -192,6 +192,12 @@ brene_spoof_date_props() {
 	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
 }
 
+brene_spoof_os_patch_props() {
+    local patch_year patch_month
+    patch_year=$(date +%Y); patch_month=$(date +%m)
+    [[ -n "${patch_year}" && -n "${patch_month}" ]] && if_prop_exits_resetprop_n "ro.build.version.security_patch" "${patch_year}-${patch_month}-01"
+}
+
 brene_sus_path() {
 	local _rc
 	${SUSFS_BIN} add_sus_path "$1"; _rc=$?

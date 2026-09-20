@@ -50,11 +50,13 @@ fi
 # Update Description
 # Fail-loud like customize.sh: only v2* counts as healthy; missing/mismatch -> honest ❌ (no exit, boot never blocked)
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
+kernel_version=$(cat /proc/version 2>/dev/null | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
+kernel_version=${kernel_version:-unknown}
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
 if [[ "${susfs_ver}" == "v2"* ]]; then
-	${KSU_BIN} module config set override.description "[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}] ${description}"
+	${KSU_BIN} module config set override.description "[Module Status: ✅ | Kernel: ${kernel_version} | SuSFS Patches: ✅ ${susfs_ver}] ${description}"
 else
-	${KSU_BIN} module config set override.description "[Module Status: ❌ | SuSFS Patches: ❌] ${description}"
+	${KSU_BIN} module config set override.description "[Module Status: ❌ | Kernel: ${kernel_version} | SuSFS Patches: ❌] ${description}"
 fi
 
 # SU Compat
@@ -153,6 +155,10 @@ fi
 # Spoof Date Properties
 if [[ "${config_spoof_date_properties}" == "1" ]]; then
    brene_spoof_date_props
+fi
+# Spoof OS Patch Level Property
+if [[ "${config_spoof_os_patch_level_property}" == "1" ]]; then
+   brene_spoof_os_patch_props
 fi
 
 ## First we need to wait until files are accessible in /sdcard ##
