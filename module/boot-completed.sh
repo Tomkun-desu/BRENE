@@ -128,6 +128,10 @@ fi
 if [[ "${config_spoof_date_properties}" == "1" ]]; then
 	spoof_date_properties
 fi
+# Spoof OS Patch Level Property
+if [[ "${config_spoof_os_patch_level_property}" == "1" ]]; then
+	spoof_os_patch_level_property
+fi
 # Spoof System Properties Every Minute
 if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
 	while true; do

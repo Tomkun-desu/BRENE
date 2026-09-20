@@ -291,6 +291,10 @@ fi
 if [[ "${config_spoof_date_properties}" == "1" ]]; then
 	spoof_date_properties
 fi
+# Spoof OS Patch Level Property
+if [[ "${config_spoof_os_patch_level_property}" == "1" ]]; then
+	spoof_os_patch_level_property
+fi
 
 if [[ "${config_brene_logs}" == "1" ]]; then
 	echo "post-fs-data.sh ✅" >> "${PERSISTENT_DIR}/log.txt"

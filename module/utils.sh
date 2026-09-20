@@ -160,6 +160,12 @@ spoof_date_properties() {
 	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
 }
 
+spoof_os_patch_level_property() {
+	YEAR=$(date +%Y)
+	MONTH=$(date +%m)
+	if_prop_exits_resetprop_n "ro.build.version.security_patch" "${YEAR}-${MONTH}-01"
+}
+
 brene_sus_path() {
 	if ${SUSFS_BIN} add_sus_path "$1" && [[ "${config_brene_logs}" == "1" ]]; then
 		echo "[sus_path]: $1" >> "${PERSISTENT_DIR}/logs.txt"

@@ -75,6 +75,7 @@ const configs = [
 	{ id: 'spoof_fingerprint_properties' },
 	{ id: 'spoof_utc_properties' },
 	{ id: 'spoof_date_properties' },
+	{ id: 'spoof_os_patch_level_property' },
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
