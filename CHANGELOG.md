@@ -2,13 +2,14 @@
 
 # Supports SuSFS 2.2.0 and 2.3.0+
 
-- improve: simplify "WebUI without reboot" code
-- drop: ReSuSFS (it is dead) and Incompatible Modules, and drop "deleting modules" code (full control for users to install malware modules if they want)
-- add: webui: new section "SuSFS"
-- improve: webui: KSU Module Control
-- fix: SU Compat, Kernel Umount and Hide SELinux modification toggles can disable its feature now
-- fix: Kernel Umount toggle has full control over its feature
-- improve: update susfs binary
-- improve: webui: System Property Spoofing
-- add: new toggle "Spoof Fingerprint Properties"
-- add: new toggles "Spoof UTC Properties" and "Spoof Date Properties"
+- drop: service.sh and post-mount.sh
+- improve: run spoof props after /storage/emulated/0/Android is accessible
+- drop: dead feature "hide_modules_img"
+- drop: Umount Suspicious Mounts, not needed with SUS_MOUNT
+- drop: Hide Suspicious Injections, better use NoMount metamodule
+- add: Kernel Version to module description
+- drop: webui: Example of detections
+- add: new toggle "Spoof OS Patch Level Property"
+- add: webui: new section to see Suspicious Mounts
+- add: new toggle "Spoof Vendor Security Patch Level Property"
+- add: webui: Incompatible Modules again
