@@ -200,6 +200,26 @@ exec('ksud module list').then((result) => {
 	})
 })
 
+// Incompatible Modules
+exec('ksud module list').then((result) => {
+	if (result.errno !== 0) return
+
+	const container = document.querySelector('#incompatible-modules')
+	const modules = JSON.parse(result.stdout)
+	const moduleIds = modules.map((mod) => mod.id)
+	const cardRows = container.querySelectorAll('.card-row')
+
+	cardRows.forEach((row) => {
+		const moduleKey = row.getAttribute('data-module')
+		const statusSpan = row.querySelector('.status-text')
+
+		if (moduleIds.includes(moduleKey)) {
+			statusSpan.innerText = 'Status: Installed'
+			statusSpan.style.color = '#ff0000be'
+		}
+	})
+})
+
 // Load enabled features
 exec('susfs show enabled_features').then((result) => {
 	const container = document.getElementById('kernel-features-container')
