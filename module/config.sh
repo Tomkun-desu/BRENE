@@ -19,7 +19,8 @@ config_spoof_system_properties_repeat=0
 config_spoof_fingerprint_properties=1
 config_spoof_utc_properties=1
 config_spoof_date_properties=1
-config_spoof_os_patch_level_property=1
+config_spoof_os_security_patch_level_property=1
+config_spoof_vendor_security_patch_level_property=1
 
 config_pif_props=0
 config_rom_props=0
