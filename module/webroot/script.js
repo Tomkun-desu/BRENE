@@ -210,6 +210,17 @@ exec('susfs show enabled_features').then((result) => {
 	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
 })
 
+// Load Suspicious Mounts
+exec(`cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}'`).then((result) => {
+	const container = document.getElementById('suspicious_mounts')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load'
+		return
+	}
+	container.innerText = result.stdout
+})
+
 // Load logs
 exec(`cat ${PERSISTENT_DIR}/log.txt`).then((result) => {
 	const container = document.getElementById('logs')
