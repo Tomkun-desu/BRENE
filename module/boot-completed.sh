@@ -156,9 +156,13 @@ fi
 if [[ "${config_spoof_date_properties}" == "1" ]]; then
    brene_spoof_date_props
 fi
-# Spoof OS Patch Level Property
-if [[ "${config_spoof_os_patch_level_property}" == "1" ]]; then
-   brene_spoof_os_patch_props
+# Spoof OS Security Patch Level Property
+if [[ "${config_spoof_os_security_patch_level_property}" == "1" ]]; then
+   brene_spoof_os_security_patch_props
+fi
+# Spoof Vendor Security Patch Level Property
+if [[ "${config_spoof_vendor_security_patch_level_property}" == "1" ]]; then
+   brene_spoof_vendor_security_patch_props
 fi
 
 ## First we need to wait until files are accessible in /sdcard ##

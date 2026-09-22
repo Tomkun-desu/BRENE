@@ -73,14 +73,15 @@ const configs = [
 		action: (enabled) => {
 			if (!enabled) return
 			if (!confirm('Sync device properties now?')) return
-			return setFeature(`RESETPROP="";for c in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop;do [ -x "$c" ]&&RESETPROP="$c"&&break;done;[ -z "$RESETPROP" ]&&exit 1;FPT=$(grep -E '^config_spoof_fingerprint_properties=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");DTT=$(grep -E '^config_spoof_date_properties=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");DUT=$(grep -E '^config_spoof_utc_properties=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");SPT=$(grep -E '^config_spoof_os_patch_level_property=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");MFP=$(getprop ro.build.fingerprint);MFP="\${MFP//userdebug/user}";MFP="\${MFP//evolution/}";MFP="\${MFP//crdroid/}";MFP="\${MFP//lineage/}";MID=$(getprop ro.build.id);MREL=$(getprop ro.build.version.release);MSDK=$(getprop ro.build.version.sdk);MSDKF=$(getprop ro.build.version.sdk_full);MINC=$(getprop ro.build.version.incremental);MRC=$(getprop ro.build.version.release_or_codename);MDT=$(getprop ro.build.date);MDTU=$(getprop ro.build.date.utc);MSP=$(getprop ro.build.version.security_patch);MTG=$(getprop ro.build.tags);MTP=$(getprop ro.build.type);MBR=$(getprop ro.product.brand);MDEV=$(getprop ro.product.device);MMF=$(getprop ro.product.manufacturer);MMD=$(getprop ro.product.model);MNM=$(getprop ro.product.name);for part in $(getprop|grep -oE '^\\[ro\\.[a-z0-9_]+\\.build\\.fingerprint\\]'|sed -E 's/^\\[ro\\.([a-z0-9_]+)\\.build\\.fingerprint\\]$/\\1/');do [ "$part" = build ]&&continue;[ "$part" = bootimage ]&&continue;for f in fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type;do pn="ro.\${part}.build.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in fingerprint)[ "$FPT" = 1 ]||continue;nv="$MFP";;id)nv="$MID";;version.release)nv="$MREL";;version.sdk)nv="$MSDK";;version.incremental)nv="$MINC";;version.release_or_codename)nv="$MRC";;version.sdk_full)nv="$MSDKF";;date)[ "$DTT" = 1 ]||continue;nv="$MDT";;date.utc)[ "$DUT" = 1 ]||continue;nv="$MDTU";;version.security_patch)[ "$SPT" = 1 ]&&continue;nv="$MSP";;tags)nv="$MTG";;type)nv="$MTP";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;for f in brand device manufacturer model name;do pn="ro.product.\${part}.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in brand)nv="$MBR";;device)nv="$MDEV";;manufacturer)nv="$MMF";;model)nv="$MMD";;name)nv="$MNM";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;done;echo done`)
+			return setFeature(`RESETPROP="";for c in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop;do [ -x "$c" ]&&RESETPROP="$c"&&break;done;[ -z "$RESETPROP" ]&&exit 1;FPT=$(grep -E '^config_spoof_fingerprint_properties=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");DTT=$(grep -E '^config_spoof_date_properties=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");DUT=$(grep -E '^config_spoof_utc_properties=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");SPT=$(grep -E '^config_spoof_os_security_patch_level_property=' /data/adb/brene/config.sh 2>/dev/null|tail -n1|cut -d= -f2|tr -d '\\r'|sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//");MFP=$(getprop ro.build.fingerprint);MFP="\${MFP//userdebug/user}";MFP="\${MFP//evolution/}";MFP="\${MFP//crdroid/}";MFP="\${MFP//lineage/}";MID=$(getprop ro.build.id);MREL=$(getprop ro.build.version.release);MSDK=$(getprop ro.build.version.sdk);MSDKF=$(getprop ro.build.version.sdk_full);MINC=$(getprop ro.build.version.incremental);MRC=$(getprop ro.build.version.release_or_codename);MDT=$(getprop ro.build.date);MDTU=$(getprop ro.build.date.utc);MSP=$(getprop ro.build.version.security_patch);MTG=$(getprop ro.build.tags);MTP=$(getprop ro.build.type);MBR=$(getprop ro.product.brand);MDEV=$(getprop ro.product.device);MMF=$(getprop ro.product.manufacturer);MMD=$(getprop ro.product.model);MNM=$(getprop ro.product.name);for part in $(getprop|grep -oE '^\\[ro\\.[a-z0-9_]+\\.build\\.fingerprint\\]'|sed -E 's/^\\[ro\\.([a-z0-9_]+)\\.build\\.fingerprint\\]$/\\1/');do [ "$part" = build ]&&continue;[ "$part" = bootimage ]&&continue;for f in fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type;do pn="ro.\${part}.build.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in fingerprint)[ "$FPT" = 1 ]||continue;nv="$MFP";;id)nv="$MID";;version.release)nv="$MREL";;version.sdk)nv="$MSDK";;version.incremental)nv="$MINC";;version.release_or_codename)nv="$MRC";;version.sdk_full)nv="$MSDKF";;date)[ "$DTT" = 1 ]||continue;nv="$MDT";;date.utc)[ "$DUT" = 1 ]||continue;nv="$MDTU";;version.security_patch)[ "$SPT" = 1 ]&&continue;nv="$MSP";;tags)nv="$MTG";;type)nv="$MTP";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;for f in brand device manufacturer model name;do pn="ro.product.\${part}.\${f}";cv=$(getprop "$pn");[ -z "$cv" ]&&continue;case "$f" in brand)nv="$MBR";;device)nv="$MDEV";;manufacturer)nv="$MMF";;model)nv="$MMD";;name)nv="$MNM";;esac;[ "$cv" != "$nv" ]&&timeout 3 "$RESETPROP" "$pn" "$nv" 2>/dev/null;done;done;echo done`)
 		},
 	},
 	{ id: 'spoof_system_properties_repeat' },
 	{ id: 'spoof_fingerprint_properties' },
 	{ id: 'spoof_utc_properties' },
 	{ id: 'spoof_date_properties' },
-	{ id: 'spoof_os_patch_level_property' },
+	{ id: 'spoof_os_security_patch_level_property' },
+	{ id: 'spoof_vendor_security_patch_level_property' },
 
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
@@ -220,6 +221,26 @@ exec('ksud module list').then((result) => {
 	})
 })
 
+// Incompatible Modules
+exec('ksud module list').then((result) => {
+	if (result.errno !== 0) return
+
+	const container = document.querySelector('#incompatible-modules')
+	const modules = JSON.parse(result.stdout)
+	const moduleIds = modules.map((mod) => mod.id)
+	const cardRows = container.querySelectorAll('.card-row')
+
+	cardRows.forEach((row) => {
+		const moduleKey = row.getAttribute('data-module')
+		const statusSpan = row.querySelector('.status-text')
+
+		if (moduleIds.includes(moduleKey)) {
+			statusSpan.innerText = 'Status: Installed'
+			statusSpan.style.color = '#ff0000be'
+		}
+	})
+})
+
 // Load enabled features
 exec('susfs show enabled_features').then((result) => {
 	const container = document.getElementById('kernel-features-container')
@@ -229,6 +250,17 @@ exec('susfs show enabled_features').then((result) => {
 		return
 	}
 	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
+})
+
+// Load Suspicious Mounts
+exec(`cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}'`).then((result) => {
+	const container = document.getElementById('suspicious_mounts')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load'
+		return
+	}
+	container.innerText = result.stdout
 })
 
 // Display-only truncation: keep last full lines (drop partial first line)
