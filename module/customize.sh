@@ -113,6 +113,9 @@ else
 		# Skip empty lines or comments
 		[[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
 
+		# Renamed key: handled by the migration block below (respects explicit opt-out).
+		[[ "${key}" == "config_spoof_os_security_patch_level_property" ]] && continue
+
 		if awk -F= -v k="${key}" '$1==k{found=1; exit} END{exit !found}' "${PERSISTENT_DIR}/config.sh"; then
 			:
 		else
@@ -121,6 +124,33 @@ else
 		fi
 
 	done < "${MODPATH}/config.sh"
+
+	# Migrate renamed OS patch key, respecting explicit user opt-out (old=0 -> new=0).
+	# Vendor key goes through the normal generic loop above (=1). Old key is kept (dead keys are repo norm).
+	if ! tr -d '\r' < "${PERSISTENT_DIR}/config.sh" 2>/dev/null | grep -q '^config_spoof_os_security_patch_level_property='; then
+		_brene_old_patch_val=""
+		while IFS='=' read -r _mk _mv || [ -n "$_mk" ]; do
+			_mk=$(printf '%s' "$_mk" | tr -d '\r')
+			_mv=$(printf '%s' "$_mv" | tr -d '\r')
+			case "$_mv" in
+				\'*\'|\"*\")
+					_mv=${_mv#?}
+					_mv=${_mv%?}
+					;;
+			esac
+			if [ "${_mk}" = "config_spoof_os_patch_level_property" ]; then
+				_brene_old_patch_val="${_mv}"
+			fi
+		done < "${PERSISTENT_DIR}/config.sh"
+		if [ "${_brene_old_patch_val}" = "0" ]; then
+			echo "config_spoof_os_security_patch_level_property=0" >> "${PERSISTENT_DIR}/config.sh"
+			echo "[➕] Migrated config_spoof_os_patch_level_property=0 -> config_spoof_os_security_patch_level_property=0"
+		else
+			echo "config_spoof_os_security_patch_level_property=1" >> "${PERSISTENT_DIR}/config.sh"
+			echo "[➕] Added missing key=value: config_spoof_os_security_patch_level_property=1"
+		fi
+		_brene_old_patch_val=""; _mk=""; _mv=""
+	fi
 fi
 
 # Remove fake_files folder

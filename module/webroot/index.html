@@ -186,6 +186,33 @@
 						<md-ripple></md-ripple>
 					</div>
 				</div>
+
+				<p class="section-label">Incompatible Modules</p>
+				<div class="card-group" id="incompatible-modules">
+					<div class="card-row" data-module="susfs4ksu">
+						<div class="card-row__body">
+							<span class="card-row__title">susfs4ksu-module</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row" data-module="susfs_manager">
+						<div class="card-row__body">
+							<span class="card-row__title">SuSFS Manager</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row" data-module="rod">
+						<div class="card-row__body">
+							<span class="card-row__title">ROD-Manager</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+				</div>
 			</section>
 
 			<section class="tab-panel" data-panel="android">
@@ -466,9 +493,17 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Spoof OS Patch Level Property</span>
+							<span class="card-row__title">Spoof OS Security Patch Level Property</span>
 						</div>
-						<md-switch icons id="spoof_os_patch_level_property"></md-switch>
+						<md-switch icons id="spoof_os_security_patch_level_property"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof Vendor Security Patch Level Property</span>
+						</div>
+						<md-switch icons id="spoof_vendor_security_patch_level_property"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 				</div>
@@ -832,6 +867,11 @@
 			</section>
 
 			<section class="tab-panel" data-panel="info">
+				<p class="section-label">Suspicious Mounts</p>
+				<div class="card-group">
+					<div class="mono-block enabled-config" id="suspicious_mounts"></div>
+				</div>
+
 				<p class="section-label">BRENE Logs</p>
 				<div class="card-group">
 					<div class="mono-block enabled-config" id="logs"></div>
