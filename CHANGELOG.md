@@ -1,3 +1,18 @@
+## v0.0.68-custom.1 - 2026-09-22
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes:
+
+* In action.sh:
+  * Added code to load a config file from a persistent directory, but with security checks to prevent loading untrusted files.
+  * The config file is now parsed line by line to allow only specific key-value pairs.
+  * The code now uses POSIX sh compatible syntax to make it work with different shells.
+* In boot-completed.sh:
+  * Created a new directory in the persistent directory.
+
 ## v0.0.67-custom.2 - 2026-09-20
 
 ### Synced from upstream BRENE
