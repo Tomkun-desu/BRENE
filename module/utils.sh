@@ -27,6 +27,70 @@ brene_log() {
     return 0
 }
 
+# brene_find <find args...>: timeout-bounded find for boot-time scans.
+# Same traversal/match semantics as plain find, but a stuck or gigantic
+# partition can delay boot by at most BRENE_FIND_TIMEOUT_SEC, never stall it.
+# Always exits 0 (fail-safe); stderr suppressed, matches on stdout.
+BRENE_FIND_TIMEOUT_SEC=120
+brene_find() {
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "${BRENE_FIND_TIMEOUT_SEC:-120}" find "$@" 2>/dev/null || true
+    else
+        find "$@" 2>/dev/null || true
+    fi
+    return 0
+}
+
+# __brene_clean_hide_path <raw-line>: canonicalize one custom_*.txt line.
+# Prints the cleaned absolute path on stdout.
+#   rc=0 : valid path, exists           -> caller should hide it
+#   rc=3 : valid path, missing (warned) -> caller may still attempt it
+#   rc=2 : empty/comment                -> silent skip
+#   rc=1 : flag / non-absolute (warned) -> must skip (option-injection risk)
+__brene_clean_hide_path() {
+    local _raw="$1" _p
+    # Strip ONE trailing CR (CRLF-edited files). NOTE: $'\r' must NOT be
+    # quoted -- "...$'\r'..." would strip the literal 4 chars $'\r' instead.
+    _p=${_raw%$'\r'}
+    _p="$(printf '%s' "${_p}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+    [ -z "${_p}" ] && return 2
+    case "${_p}" in
+        \#*) return 2 ;;
+    esac
+    case "${_p}" in
+        -*) [ "${config_brene_logs}" = "1" ] && brene_log "[custom] SKIPPED (looks like a flag, not a path): ${_raw}"; return 1 ;;
+    esac
+    case "${_p}" in
+        /*) ;;
+        *) [ "${config_brene_logs}" = "1" ] && brene_log "[custom] SKIPPED (not absolute path): ${_raw}"; return 1 ;;
+    esac
+    if [ ! -e "${_p}" ]; then
+        [ "${config_brene_logs}" = "1" ] && brene_log "[custom] WARN (not found, attempting anyway): ${_p}"
+        printf '%s' "${_p}"
+        return 3
+    fi
+    printf '%s' "${_p}"
+    return 0
+}
+
+# brene_load_hide_list <file> <handler-fn>: load one custom_*.txt list.
+# Every line is validated by __brene_clean_hide_path (absolute path, no
+# flags, empty/comment skipped, missing warned); the handler (one of
+# brene_sus_map / brene_sus_path / brene_sus_path_loop / brene_sus_mount /
+# brene_kernel_umount) runs fail-safe so one bad line never stops the rest.
+brene_load_hide_list() {
+    local _file="$1" _handler="$2" _line _cleaned _rc
+    [ -e "${_file}" ] || return 0
+    while IFS= read -r _line || [ -n "${_line}" ]; do
+        _cleaned=$(__brene_clean_hide_path "${_line}"); _rc=$?
+        case "${_rc}" in
+            0|3) "${_handler}" "${_cleaned}" || true ;;
+            *) continue ;;
+        esac
+    done < "${_file}"
+    return 0
+}
+
 ## brene_clone_perm <file/or/dir/perm/to/be/changed> <file/or/dir/to/clone/from>
 brene_clone_perm() {
 	local TO=$1
@@ -287,8 +351,18 @@ brene_set_uname() {
 }
 brene_kernel_umount() {
 	local TARGET=$1
-	${KSU_BIN} kernel notify-module-mounted
-	${KSU_BIN} kernel umount add -f 2 "$TARGET" 2> /dev/null
+	# Fail-safe: option-injection + boot-never-blocked. Absolute existing
+	# paths only; every external call guarded so a missing binary or a
+	# kernel rejection can never abort the boot stage.
+	case "${TARGET}" in
+		/*) ;;
+		*) [ "${config_brene_logs}" = "1" ] && brene_log "[kernel_umount] SKIPPED (not absolute path): ${TARGET}"; return 1 ;;
+	esac
+	[ -e "${TARGET}" ] || { [ "${config_brene_logs}" = "1" ] && brene_log "[kernel_umount] WARN (not found, attempting anyway): ${TARGET}"; }
+	[ -x "${KSU_BIN}" ] || { [ "${config_brene_logs}" = "1" ] && brene_log "[kernel_umount] SKIPPED (ksud missing): ${TARGET}"; return 1; }
+	"${KSU_BIN}" kernel notify-module-mounted 2>/dev/null || true
+	"${KSU_BIN}" kernel umount add -f 2 -- "${TARGET}" 2>/dev/null || true
+	return 0
 }
 
 # Backward compatibility for existing custom_sus_mount.txt users.
@@ -304,7 +378,9 @@ brene_sus_kstat_static() {
 	[ -z "${STAT_OUT}" ] && return
 	set -f
 	set -- ${STAT_OUT}
-	[[ $# -eq 6 ]] || return 1
+	# Restore globbing BEFORE any early return: leaking `set -f` (noglob)
+	# into the caller would silently break every later unquoted expansion.
+	if [[ $# -ne 6 ]]; then set +f; return 1; fi
 	set +f
 	INO=$1; DEV=$2; NLINK=$3; SIZE=$4; BLOCKS=$5; BLKSIZE=$6
 

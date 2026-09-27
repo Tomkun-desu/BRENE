@@ -25,8 +25,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout main (full history)
-        # TODO: pin to SHA (e.g. actions/checkout@<sha>) for supply-chain hardening.
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
@@ -103,8 +102,7 @@ jobs:
 
       - name: Open issue on conflict
         if: steps.merge.outputs.conflict == 'true'
-        # TODO: pin to SHA (e.g. actions/github-script@<sha>) for supply-chain hardening.
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const TITLE_PREFIX = "Upstream sync conflict";
@@ -129,158 +127,21 @@ jobs:
       - name: Re-apply customizations onto module/
         if: steps.merge.outputs.conflict == 'false' && steps.diff.outputs.count != '0'
         run: |
-          if ! grep -q "config_sync_device_props" module/post-fs-data.sh; then
-          cat >> module/post-fs-data.sh << 'BLOCK'
-
-          #### Fully sync all build-related props (fingerprint + sub-fields) across all partitions ####
-          ## Fully device-agnostic + fail-safe: never blocks boot even if resetprop errors ##
-          ## Skipped during hot install (live session) -- live resetprop of build fingerprint fields
-          ## is unsafe while zygote/system_server are already running; it will apply normally on
-          ## the next real reboot instead. ##
-          BRENE_UPTIME_SEC=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)
-          if [[ "${config_sync_device_props}" == "1" && "${BRENE_UPTIME_SEC}" -lt 120 ]]; then
-              RESETPROP=""
-              for candidate in /data/adb/ksu/bin/resetprop /data/adb/magisk/resetprop /data/adb/ap/bin/resetprop; do
-                  [[ -x "${candidate}" ]] && RESETPROP="${candidate}" && break
-              done
-
-              if [[ -n "${RESETPROP}" ]]; then
-                  MAIN_FP=$(getprop ro.build.fingerprint)
-                  MAIN_FP="${MAIN_FP//userdebug/user}"
-                  MAIN_ID=$(getprop ro.build.id)
-                  MAIN_RELEASE=$(getprop ro.build.version.release)
-                  MAIN_SDK=$(getprop ro.build.version.sdk)
-                  MAIN_SDK_FULL=$(getprop ro.build.version.sdk_full)
-                  MAIN_INCREMENTAL=$(getprop ro.build.version.incremental)
-                  MAIN_RELEASE_CODENAME=$(getprop ro.build.version.release_or_codename)
-                  MAIN_DATE=$(getprop ro.build.date)
-                  MAIN_DATE_UTC=$(getprop ro.build.date.utc)
-                  MAIN_SECURITY_PATCH=$(getprop ro.build.version.security_patch)
-                  MAIN_TAGS=$(getprop ro.build.tags)
-                  MAIN_TYPE=$(getprop ro.build.type)
-                  MAIN_BRAND=$(getprop ro.product.brand)
-                  MAIN_DEVICE=$(getprop ro.product.device)
-                  MAIN_MANUFACTURER=$(getprop ro.product.manufacturer)
-                  MAIN_MODEL=$(getprop ro.product.model)
-                  MAIN_NAME=$(getprop ro.product.name)
-
-                  FIELDS="fingerprint id version.release version.sdk version.incremental version.release_or_codename version.sdk_full date date.utc version.security_patch tags type"
-                  PRODUCT_FIELDS="brand device manufacturer model name"
-
-                  if [[ "${config_brene_logs}" == "1" ]]; then
-                      {
-                          echo ""
-                          echo "########################"
-                          echo "Device Identity Sync"
-                          echo "########################"
-                      } >> "${PERSISTENT_DIR}/logs.txt"
-                  fi
-
-                  if [[ -n "${MAIN_FP}" ]]; then
-                      # timeout fallback: leave empty if getprop pipeline fails (fail-safe, no boot block)
-                      DISCOVERED_PARTS=$(getprop | grep -oE '^\[ro\.[a-z0-9_]+\.build\.fingerprint\]' | sed -E 's/^\[ro\.([a-z0-9_]+)\.build\.fingerprint\]$/\1/' || echo "")
-
-                      for part in ${DISCOVERED_PARTS}; do
-                          [[ "${part}" == "build" ]] && continue
-                          [[ "${part}" == "bootimage" ]] && continue
-
-                          for field in ${FIELDS}; do
-                              prop_name="ro.${part}.build.${field}"
-                              current_value=$(getprop "${prop_name}")
-
-                              if [[ -n "${current_value}" ]]; then
-                                  case "${field}" in
-                                      fingerprint) new_value="${MAIN_FP}" ;;
-                                      id) new_value="${MAIN_ID}" ;;
-                                      version.release) new_value="${MAIN_RELEASE}" ;;
-                                      version.sdk) new_value="${MAIN_SDK}" ;;
-                                      version.incremental) new_value="${MAIN_INCREMENTAL}" ;;
-                                      version.release_or_codename) new_value="${MAIN_RELEASE_CODENAME}" ;;
-                                      version.sdk_full) new_value="${MAIN_SDK_FULL}" ;;
-                                      date) new_value="${MAIN_DATE}" ;;
-                                      date.utc) new_value="${MAIN_DATE_UTC}" ;;
-                                      version.security_patch) new_value="${MAIN_SECURITY_PATCH}" ;;
-                                      tags) new_value="${MAIN_TAGS}" ;;
-                                      type) new_value="${MAIN_TYPE}" ;;
-                                  esac
-
-                                  if [[ "${current_value}" != "${new_value}" ]]; then
-                                      timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
-                                      if [[ "${config_brene_logs}" == "1" ]]; then
-                                          echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
-                                      fi
-                                  fi
-                              fi
-                          done
-
-                          for pfield in ${PRODUCT_FIELDS}; do
-                              prop_name="ro.product.${part}.${pfield}"
-                              current_value=$(getprop "${prop_name}")
-
-                              if [[ -n "${current_value}" ]]; then
-                                  case "${pfield}" in
-                                      brand) new_value="${MAIN_BRAND}" ;;
-                                      device) new_value="${MAIN_DEVICE}" ;;
-                                      manufacturer) new_value="${MAIN_MANUFACTURER}" ;;
-                                      model) new_value="${MAIN_MODEL}" ;;
-                                      name) new_value="${MAIN_NAME}" ;;
-                                  esac
-
-                                  if [[ "${current_value}" != "${new_value}" ]]; then
-                                      timeout 3 "${RESETPROP}" "${prop_name}" "${new_value}" 2>/dev/null || true
-                                      if [[ "${config_brene_logs}" == "1" ]]; then
-                                          echo "[sync_prop]: ${prop_name}: ${current_value} -> ${new_value}" >> "${PERSISTENT_DIR}/logs.txt"
-                                      fi
-                                  fi
-                              fi
-                          done
-                      done
-                  fi
-              fi
-          fi
-          BLOCK
-          else
-            echo "::warning::post-fs-data.sh anchor already present, skipping"
-          fi
-
-          if ! grep -q "config_sync_device_props" module/config.sh; then
-            echo "config_sync_device_props=0" >> module/config.sh
-          else
-            echo "::warning::config.sh anchor already present, skipping"
-          fi
-
-          if ! grep -q 'id="sync_device_props"' module/webroot/index.html; then
-            LN=$(grep -n 'card-row__title">Custom Uname Spoofing<' module/webroot/index.html | head -1 | cut -d: -f1)
-            if [ -n "$LN" ]; then
-              INS=$((LN - 2))
-              cat > /tmp/insert_card.txt << 'CARD'
-          					<div class="card-row">
-          						<div class="card-row__body">
-          							<span class="card-row__title">Device Identity Sync</span>
-          							<span class="card-row__sub">Spoof build fingerprint fields across all partitions to match the main ro.build.fingerprint</span>
-          							<span class="card-row__tag--code">Example of detections: Build Field Coherence</span>
-          						</div>
-          						<md-switch icons id="sync_device_props"></md-switch>
-          						<md-ripple></md-ripple>
-          					</div>
-
-          CARD
-              awk -v ins="$INS" -v file=/tmp/insert_card.txt '
-                NR==ins { while ((getline line < file) > 0) print line }
-                { print }
-              ' module/webroot/index.html > /tmp/index_new.html
-              mv /tmp/index_new.html module/webroot/index.html
+          # config_sync_device_props is merged into config_spoof_system_properties
+          # (OR-migration shims in post-fs-data.sh / boot-completed.sh). Verify
+          # the shims survived the merge instead of re-applying legacy code.
+          for f in module/post-fs-data.sh module/boot-completed.sh; do
+            if ! grep -q 'config_sync_device_props' "$f" || ! grep -q 'config_spoof_system_properties=1' "$f"; then
+              echo "::error::OR-migration shim missing in $f" >&2; exit 1
             fi
-          else
-            echo "::warning::index.html anchor already present, skipping"
+          done
+          if ! grep -q '^config_spoof_system_properties=1' module/config.sh; then
+            echo "::error::config_spoof_system_properties missing in module/config.sh" >&2; exit 1
           fi
 
-          if ! grep -q "'sync_device_props'" module/webroot/script.js; then
-            sed -i "s/{ id: 'enable_log' },/{ id: 'enable_log' },\n\t{ id: 'sync_device_props' },/" module/webroot/script.js
-          else
-            echo "::warning::script.js anchor already present, skipping"
+          if ! grep -q "spoof_system_properties" module/webroot/script.js; then
+            echo "::error::spoof_system_properties wiring missing in module/webroot/script.js" >&2; exit 1
           fi
-
           sed -i "s/^name=.*/name=.BRENE - Custom AI/" module/module.prop
           sed -i "s/^author=.*/author=rrr333nnn333, simonpunk \& KOWX712 + Community/" module/module.prop
           if grep -q "^updateJson=" module/module.prop; then
@@ -311,7 +172,7 @@ jobs:
               "\tresetprop_n \"ro.vendor.build.fingerprint\" \"${new_fingerprint_value}\"\n"
               "\tresetprop_n \"ro.vendor_dlkm.build.fingerprint\" \"${new_fingerprint_value}\"\n"
           )
-          new_block_fingerprint = "\t# (fingerprint sync handled by BRENE Custom AI's own sync_device_props feature in post-fs-data.sh)\n"
+          new_block_fingerprint = "\t# (fingerprint sync handled by BRENE Custom AI's config_spoof_system_properties feature)\n"
 
           old_utc = (
               "\tnew_utc_value=$(resetprop ro.build.date.utc)\n"
@@ -339,7 +200,7 @@ jobs:
 
           if old_utc in content:
               content = content.replace(old_utc, new_block_utc, 1)
-              print("Removed redundant upstream UTC date block from utils.sh (already covered by sync_device_props)")
+              print("Removed redundant upstream UTC date block from utils.sh (already covered by config_spoof_system_properties)")
               removed_any = True
           else:
               print("::warning::UTC block not found (already clean or upstream changed it) -- nothing to do")
@@ -401,6 +262,8 @@ jobs:
 
           LAST_VER=$(cat LAST_UPSTREAM_VERSION 2>/dev/null || echo "")
           PREV_NUM=$(cat BUILD_NUMBER 2>/dev/null || echo 0)
+          PREV_NUM=$(printf '%s' "$PREV_NUM" | grep -oE '[0-9]+' | head -1)
+          [ -z "$PREV_NUM" ] && PREV_NUM=0
           # versionCode must NEVER reset: root managers (KernelSU/Magisk/APatch)
           # detect updates by strictly increasing versionCode, so BUILD_NUMBER
           # only ever goes up even when the display counter restarts below.
@@ -495,8 +358,7 @@ jobs:
 
       - name: Create Release
         if: steps.merge.outputs.conflict == 'false' && github.event.inputs.publish == 'true' 
-        # TODO: pin to SHA (e.g. softprops/action-gh-release@<sha>) for supply-chain hardening.
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
           tag_name: "${{ steps.build.outputs.build_version }}"
           name: "BRENE Custom AI ${{ steps.build.outputs.build_version }}"

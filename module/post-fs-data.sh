@@ -36,9 +36,65 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     case "$k" in
       *[!A-Za-z0-9_]* ) continue ;;
     esac
-    # Escape single quotes for safe eval (single-quoted assignment = no expansion)
-    v_esc=$(printf '%s' "$v" | sed "s/'/'\\\\''/g")
-    eval "$k='$v_esc'"
+    # shellcheck disable=SC2034 # config_* values are consumed across module scripts
+    # Assign without eval (safe in BusyBox ash, dash, mksh, bash):
+    # a plain quoted 'name="$v"' assignment does no word splitting or
+    # globbing and never re-executes the value, so '$(...)', backticks
+    # and ';' inside $v stay inert. The key is already allowlisted to
+    # config_[A-Za-z0-9_]; dispatch on the name explicitly so that no
+    # dynamic variable name (and no eval) is needed. When adding a new
+    # config_ key, extend this list.
+    case "$k" in
+      config_brene_logs) config_brene_logs="$v" ;;
+      config_custom_uname_kernel_release) config_custom_uname_kernel_release="$v" ;;
+      config_custom_uname_kernel_version) config_custom_uname_kernel_version="$v" ;;
+      config_custom_uname_spoofing) config_custom_uname_spoofing="$v" ;;
+      config_developer_options) config_developer_options="$v" ;;
+      config_disable_child_process_restrictions) config_disable_child_process_restrictions="$v" ;;
+      config_enable_avc_log_spoofing) config_enable_avc_log_spoofing="$v" ;;
+      config_enable_log) config_enable_log="$v" ;;
+      config_fix_data_local_tmp_inconsistencies) config_fix_data_local_tmp_inconsistencies="$v" ;;
+      config_hide_addon_d) config_hide_addon_d="$v" ;;
+      config_hide_custom_recovery) config_hide_custom_recovery="$v" ;;
+      config_hide_custom_rom_paths) config_hide_custom_rom_paths="$v" ;;
+      config_hide_custom_rom_paths_2) config_hide_custom_rom_paths_2="$v" ;;
+      config_hide_framework_res_apk) config_hide_framework_res_apk="$v" ;;
+      config_hide_injections) config_hide_injections="$v" ;;
+      config_hide_lineage_strings) config_hide_lineage_strings="$v" ;;
+      config_hide_sus_mnts_for_non_su_procs) config_hide_sus_mnts_for_non_su_procs="$v" ;;
+      config_hide_suspicious_ptys) config_hide_suspicious_ptys="$v" ;;
+      config_kernel_umount) config_kernel_umount="$v" ;;
+      config_paths_hiding__data_local_tmp) config_paths_hiding__data_local_tmp="$v" ;;
+      config_paths_hiding__non_standard_sdcard) config_paths_hiding__non_standard_sdcard="$v" ;;
+      config_paths_hiding__non_standard_sdcard_android) config_paths_hiding__non_standard_sdcard_android="$v" ;;
+      config_paths_hiding__sdcard_android_data_media_obb) config_paths_hiding__sdcard_android_data_media_obb="$v" ;;
+      config_paths_hiding__user_ca_certs) config_paths_hiding__user_ca_certs="$v" ;;
+      config_pif_props) config_pif_props="$v" ;;
+      config_rom_props) config_rom_props="$v" ;;
+      config_saturation) config_saturation="$v" ;;
+      config_selinux) config_selinux="$v" ;;
+      config_selinux_hide) config_selinux_hide="$v" ;;
+      config_show_refresh_rate) config_show_refresh_rate="$v" ;;
+      config_spoof_cmdline_or_bootconfig) config_spoof_cmdline_or_bootconfig="$v" ;;
+      config_spoof_date_properties) config_spoof_date_properties="$v" ;;
+      config_spoof_fingerprint_properties) config_spoof_fingerprint_properties="$v" ;;
+      config_spoof_hosts) config_spoof_hosts="$v" ;;
+      config_spoof_libstagefright) config_spoof_libstagefright="$v" ;;
+      config_spoof_os_patch_level_property) config_spoof_os_patch_level_property="$v" ;;
+      config_spoof_os_security_patch_level_property) config_spoof_os_security_patch_level_property="$v" ;;
+      config_spoof_system_properties) config_spoof_system_properties="$v" ;;
+      config_spoof_system_properties_repeat) config_spoof_system_properties_repeat="$v" ;;
+      config_spoof_utc_properties) config_spoof_utc_properties="$v" ;;
+      config_spoof_vendor_security_patch_level_property) config_spoof_vendor_security_patch_level_property="$v" ;;
+      config_su_compat) config_su_compat="$v" ;;
+      config_sync_device_props) config_sync_device_props="$v" ;;
+      config_umount_suspicious_mounts) config_umount_suspicious_mounts="$v" ;;
+      config_uname_spoofing) config_uname_spoofing="$v" ;;
+      config_usb_debugging) config_usb_debugging="$v" ;;
+      config_verified_boot_hash) config_verified_boot_hash="$v" ;;
+      config_wireless_debugging) config_wireless_debugging="$v" ;;
+      *) continue ;; # unknown config_ key: ignore
+    esac
   done < "${PERSISTENT_DIR}/config.sh"
 fi
 # Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
@@ -125,9 +181,9 @@ if [[ "${config_spoof_libstagefright}" == "1" ]]; then
                 touch "${fake_file_path}"
         }
 
-        brene_clone_perm "${fake_file_path}" "${path}"
+        brene_clone_perm "${fake_file_path}" "${path}" || true
 
-        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3' 2>/dev/null || true
 fi
 
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
@@ -163,7 +219,7 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		sed -i 's/androidboot.warranty_bit = "1"/androidboot.warranty_bit = "0"/' "${FAKE_BOOTCONFIG}"
 		sed -i 's/androidboot.verifiedbootstate = "orange"/androidboot.verifiedbootstate = "green"/' "${FAKE_BOOTCONFIG}"
 		if [[ -s "${FAKE_BOOTCONFIG}" ]]; then
-			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}"
+			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}" 2>/dev/null || true
 		elif [[ "${config_brene_logs}" == "1" ]]; then
 			brene_log "[cmdline_or_bootconfig] SKIPPED (empty FAKE_BOOTCONFIG)"
 		fi
@@ -175,7 +231,7 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		sed -i 's/androidboot.warranty_bit=1/androidboot.warranty_bit=0/' "${FAKE_CMDLINE}"
 		sed -i 's/androidboot.verifiedbootstate=orange/androidboot.verifiedbootstate=green/' "${FAKE_CMDLINE}"
 		if [[ -s "${FAKE_CMDLINE}" ]]; then
-			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}"
+			${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}" 2>/dev/null || true
 		elif [[ "${config_brene_logs}" == "1" ]]; then
 			brene_log "[cmdline_or_bootconfig] SKIPPED (empty FAKE_CMDLINE)"
 		fi
@@ -186,14 +242,14 @@ fi
 ## disable it when users want to do some debugging with the permission issue or selinux issue ##
 #ksu_susfs enable_avc_log_spoofing 0
 if [[ "${config_enable_avc_log_spoofing}" == "1" ]]; then
-	${SUSFS_BIN} enable_avc_log_spoofing 1
+	${SUSFS_BIN} enable_avc_log_spoofing 1 2>/dev/null || true
 fi
 
 #### Hide all sus mounts for NON-SU processes in this stage just to prevent zygote from caching them in memory ####
 ## This should be mainly applied if you have ReZygisk enabled but without TreatWheel module ##
 ## Or it is up to you to keep it enabled since su process can still see the mounts ##
 if [[ "${config_hide_sus_mnts_for_non_su_procs}" == "1" ]]; then
-	${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 1
+	${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 1 2>/dev/null || true
 fi
 
 # Uname Spoofing
@@ -246,7 +302,7 @@ if [[ "${config_brene_logs}" == "1" ]]; then
                 fi
         fi
 
-        brene_set_uname "${final_uname_release}" "${final_uname_version}"
+        brene_set_uname "${final_uname_release}" "${final_uname_version}" || true
 
 elif [[ "${config_uname_spoofing}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
@@ -269,33 +325,34 @@ elif [[ "${config_uname_spoofing}" == "1" ]]; then
                         uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
                 fi
 
-                [[ -n "${uname_kernel_release:-}" ]] && brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}"
+                [[ -n "${uname_kernel_release:-}" ]] && brene_set_uname "${uname_kernel_release}" "${uname_kernel_version}" || true
         fi
 fi
 
 ## Disable susfs kernel log ##
 if [[ "${config_enable_log}" == "1" ]]; then
-	${SUSFS_BIN} enable_log 1
+	${SUSFS_BIN} enable_log 1 2>/dev/null || true
 elif [[ "${config_enable_log}" == "0" ]]; then
-	${SUSFS_BIN} enable_log 0
+	${SUSFS_BIN} enable_log 0 2>/dev/null || true
 fi
 
 # Hide /system/addon.d Path
 if [[ "${config_hide_addon_d}" == "1" ]]; then
-	brene_sus_map "/system/addon.d"
-    brene_sus_path_loop "/system/addon.d"
+	brene_sus_map "/system/addon.d" || true
+    brene_sus_path_loop "/system/addon.d" || true
 fi
 
 # Hide Custom ROM Paths
 if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	for i in ${CUSTOM_ROM_NAMES//|/ }; do
-		find /system /system_ext /vendor /product -iname "*${i}*" -print0 2>/dev/null | while IFS= read -r -d '' path; do
-			brene_sus_map "${path}"
-			brene_sus_path_loop "${path}"
+		brene_find /system /system_ext /vendor /product -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
+			brene_sus_map "${path}" || true
+			brene_sus_path_loop "${path}" || true
 		done
 
-		find /data -maxdepth 1 -iname "*${i}*" -print0 2>/dev/null | while IFS= read -r -d '' path; do
-			brene_sus_path_loop "${path}"
+
+		brene_find /data -maxdepth 1 -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
+			brene_sus_path_loop "${path}" || true
 		done
 	done
 fi
@@ -303,15 +360,15 @@ fi
 # Hide Custom ROM Paths (Extreme)
 if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
         for i in ${CUSTOM_ROM_NAMES//|/ }; do
-                find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" -print0 2>/dev/null | while IFS= read -r -d '' path; do
-                        brene_sus_map "${path}"
-                        brene_sus_path_loop "${path}"
+                brene_find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do
+                        brene_sus_map "${path}" || true
+                        brene_sus_path_loop "${path}" || true
                 done
         done
 fi
 # Hide LineageOS Strings
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 2>/dev/null | while IFS= read -r -d '' path; do
+	brene_find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
 		safe="$(printf '%s' "$path" | tr '/' '_')"
 		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
 
@@ -323,8 +380,8 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
                         sed -i "s/lineage//g" "${fake_file_path}"
                 fi
 
-                brene_clone_perm "${fake_file_path}" "${path}"
-		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+                brene_clone_perm "${fake_file_path}" "${path}" || true
+		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3' 2>/dev/null || true
 	done
 fi
 
@@ -474,7 +531,7 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                         brene_log "########################"
         fi
         while IFS= read -r i || [[ -n "${i}" ]]; do
-                brene_kstat_add_line "${i}"
+                brene_kstat_add_line "${i}" || true
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
 fi
 
@@ -519,7 +576,7 @@ fi
 
 # Hide LineageOS Strings in RC files
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-        find /system /system_ext /vendor /product -iname "*.rc" -print0 2>/dev/null | while IFS= read -r -d '' path; do
+        brene_find /system /system_ext /vendor /product -iname "*.rc" -print0 | while IFS= read -r -d '' path; do
                 if grep -iq "lineage" "${path}"; then
                         safe="$(printf '%s' "$path" | tr '/' '_')"
                         fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
@@ -532,8 +589,8 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
                                 sed -i "s/lineage//g" "${fake_file_path}"
                         fi
 
-                        brene_clone_perm "${fake_file_path}" "${path}"
-                        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+                        brene_clone_perm "${fake_file_path}" "${path}" || true
+                        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3' 2>/dev/null || true
                 fi
         done
 fi
@@ -541,32 +598,32 @@ fi
 # Spoof /system/etc/hosts
 if [[ "${config_spoof_hosts}" == "1" ]]; then
     path=/system/etc/hosts
-    ${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096'
+    ${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096' 2>/dev/null || true
 fi
 
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
-   spoof_android_system_properties
+   spoof_android_system_properties || true
 fi
 # Spoof Fingerprint Properties
 if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
-   brene_spoof_fingerprint_props
+   brene_spoof_fingerprint_props || true
 fi
 # Spoof UTC Properties
 if [[ "${config_spoof_utc_properties}" == "1" ]]; then
-   brene_spoof_utc_props
+   brene_spoof_utc_props || true
 fi
 # Spoof Date Properties
 if [[ "${config_spoof_date_properties}" == "1" ]]; then
-   brene_spoof_date_props
+   brene_spoof_date_props || true
 fi
 # Spoof OS Security Patch Level Property
 if [[ "${config_spoof_os_security_patch_level_property}" == "1" ]]; then
-   brene_spoof_os_security_patch_props
+   brene_spoof_os_security_patch_props || true
 fi
 # Spoof Vendor Security Patch Level Property
 if [[ "${config_spoof_vendor_security_patch_level_property}" == "1" ]]; then
-   brene_spoof_vendor_security_patch_props
+   brene_spoof_vendor_security_patch_props || true
 fi
 
 # Hide Suspicious PTYs
@@ -579,7 +636,7 @@ if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
 	fi
 
 	for i in $(seq 0 9); do
-		brene_sus_path_loop "/dev/pts/${i}"
+		brene_sus_path_loop "/dev/pts/${i}" || true
 	done
 fi
 
