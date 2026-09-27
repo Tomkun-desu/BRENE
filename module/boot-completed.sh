@@ -50,11 +50,14 @@ fi
 # Update Description
 # Fail-loud like customize.sh: only v2* counts as healthy; missing/mismatch -> honest ❌ (no exit, boot never blocked)
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
+susfs_variant=$(${SUSFS_BIN} show variant 2>/dev/null)
+susfs_features_number=$(${SUSFS_BIN} show enabled_features 2>/dev/null | wc -l)
+susfs_total_features=9
 kernel_version=$(cat /proc/version 2>/dev/null | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 kernel_version=${kernel_version:-unknown}
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
 if [[ "${susfs_ver}" == "v2"* ]]; then
-	${KSU_BIN} module config set override.description "[Module Status: ✅ | Kernel: ${kernel_version} | SuSFS Patches: ✅ ${susfs_ver}] ${description}"
+	${KSU_BIN} module config set override.description "[Module Status: ✅ | Kernel: ${kernel_version} | SuSFS Patches: ✅ ${susfs_ver} (${susfs_variant}) | SuSFS Features: ${susfs_features_number}/${susfs_total_features}] ${description}"
 else
 	${KSU_BIN} module config set override.description "[Module Status: ❌ | Kernel: ${kernel_version} | SuSFS Patches: ❌] ${description}"
 fi

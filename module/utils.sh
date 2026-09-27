@@ -85,6 +85,7 @@ spoof_android_system_properties() {
 	resetprop_n "ro.crypto.state" "encrypted"
 	resetprop_n "ro.debuggable" "0"
 	resetprop_n "ro.force.debuggable" "0"
+	if_prop_exits_resetprop_n "ro.secureboot.devicelock" "1"
 	resetprop_n "ro.secure" "1"
 	resetprop_n "ro.secureboot.lockstate" "locked"
 	resetprop_n "ro.is_ever_orange" "0"
@@ -113,6 +114,7 @@ spoof_android_system_properties() {
 	if_prop_exits_resetprop_n "ro.vendor.boot.warranty_bit" "0"
 	if_prop_exits_resetprop_n "ro.vendor.warranty_bit" "0"
 	if_prop_exits_resetprop_n "ro.boot.warranty_bit" "0"
+	if_prop_exits_resetprop_n "ro.oem_unlock_supported" "0"
 
 	# NOTE: fingerprint/utc/date are separate toggles (brene_spoof_fingerprint_props / brene_spoof_utc_props / brene_spoof_date_props).
 

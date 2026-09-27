@@ -75,7 +75,10 @@ fi
 # Reset module description
 kernel_version=$(cat /proc/version 2>/dev/null | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 kernel_version=${kernel_version:-unknown}
-${KSU_BIN} module config set override.description "[Module Status: ⏱️ | Kernel: ${kernel_version} | SuSFS Patches: ⏱️] A SuSFS/KernelSU module for SuSFS patched kernels"
+susfs_variant=$(${SUSFS_BIN} show variant 2>/dev/null)
+susfs_features_number=$(${SUSFS_BIN} show enabled_features 2>/dev/null | wc -l)
+susfs_total_features=9
+${KSU_BIN} module config set override.description "[Module Status: ⏱️ | Kernel: ${kernel_version} | SuSFS Patches: ⏱️ ${susfs_ver} (${susfs_variant}) | SuSFS Features: ${susfs_features_number}/${susfs_total_features}] A SuSFS/KernelSU module for SuSFS patched kernels"
 
 # Disable other SuSFS modules
 [[ -e "${KSU_MODULES_DIR}/susfs4ksu" ]] && {
