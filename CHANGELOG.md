@@ -1,3 +1,20 @@
+## v0.0.69-custom.1 - 2026-09-27
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added a line to strip carriage returns from file edits.
+* Added a line to strip single or double quotes from the end of a value.
+* Added a line to check if a key is in the config_allowlist before processing it.
+* Added a line to check if a key contains any characters other than letters, numbers, and underscores.
+* Changed the way the config file is sourced to make it POSIX sh compatible.
+* Changed the way the utils file is sourced to make it POSIX sh compatible.
+* Added a while loop to iterate over the key-value pairs in the config file.
+* Changed the way a value is assigned to a variable to prevent word splitting or globbing.
+
 ## v0.0.68-custom.1 - 2026-09-22
 
 ### Synced from upstream BRENE
