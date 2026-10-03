@@ -112,7 +112,7 @@ rm -rf "${MODDIR}"
 cp -rp "${MODPATH}" "${MODULES_PATH}"
 
 (
-	sleep 3
+	sleep 1
 	rm -rf "${MODPATH}"
 	rm "${MODDIR}/update"
 ) & # fork in background
