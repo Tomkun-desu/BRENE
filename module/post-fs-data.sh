@@ -64,20 +64,6 @@ true > "${PERSISTENT_DIR}/logs.txt"
 ## *Run 'ksu_susfs add_open_redirect' for more details of <uid_scheme> ##
 # ${SUSFS_BIN} add_open_redirect '/system/etc/hosts' '/data/local/tmp/my_hosts' '0'
 
-# Spoof /system/lib64/libstagefright.so
-if [[ "${config_spoof_libstagefright}" == "1" ]]; then
-	path=/system/lib64/libstagefright.so
-	file_name=$(basename "${path}")
-	fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
-
-	[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-	[[ ! -f "${fake_file_path}" ]] && {
-		touch "${fake_file_path}"
-	}
-
-	brene_open_redirect "${path}" "${fake_file_path}" '3'
-fi
-
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
 # No root process detects it for now, and this spoofing won't help much actually #
 # /proc/bootconfig #
@@ -213,35 +199,6 @@ if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
 			brene_sus_map "${path}"
 			brene_sus_path_loop "${path}"
 		done
-	done
-fi
-
-# Hide LineageOS Strings
-if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-	find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) | while read -r path; do
-		file_name=$(basename "${path}")
-		fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
-
-		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-		[[ ! -f "${fake_file_path}" ]] && {
-			touch "${fake_file_path}"
-		}
-
-		brene_open_redirect "${path}" "${fake_file_path}" '3'
-	done
-
-	find /system /system_ext /vendor /product -iname "*.rc" | while read -r path; do
-		if grep -iq "lineage" "${path}"; then
-			file_name=$(basename "${path}")
-			fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
-
-			[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-			[[ ! -f "${fake_file_path}" ]] && {
-				touch "${fake_file_path}"
-			}
-
-			brene_open_redirect "${path}" "${fake_file_path}" '3'
-		fi
 	done
 fi
 
