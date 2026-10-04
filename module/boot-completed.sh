@@ -150,6 +150,12 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 			brene_open_redirect "${path}" "${fake_file_path}" '3'
 		fi
 	done
+
+	path=/system_ext/etc/permissions/Updater.xml
+	file_name=$(basename "${path}")
+	fake_file_path="${PERSISTENT_DIR}/fake_files/${file_name}"
+	[[ ! -f "${fake_file_path}" ]] && touch "${fake_file_path}"
+	brene_open_redirect "${path}" "${fake_file_path}" '3'
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
