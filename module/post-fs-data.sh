@@ -75,8 +75,7 @@ if [[ "${config_spoof_libstagefright}" == "1" ]]; then
 		touch "${fake_file_path}"
 	}
 
-	brene_clone_perm "${fake_file_path}" "${path}"
-	${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+	brene_open_redirect "${path}" "${fake_file_path}" '3'
 fi
 
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
@@ -228,8 +227,7 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 			touch "${fake_file_path}"
 		}
 
-		brene_clone_perm "${fake_file_path}" "${path}"
-		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+		brene_open_redirect "${path}" "${fake_file_path}" '3'
 	done
 
 	find /system /system_ext /vendor /product -iname "*.rc" | while read -r path; do
@@ -242,8 +240,7 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 				touch "${fake_file_path}"
 			}
 
-			brene_clone_perm "${fake_file_path}" "${path}"
-			${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3'
+			brene_open_redirect "${path}" "${fake_file_path}" '3'
 		fi
 	done
 fi
