@@ -123,7 +123,13 @@ exec("cat /proc/version | awk '{print $3}' && uname -r").then((result) => {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = `Default: ${result.stdout.replace('\n', '\nSpoofed: ')}`
+
+	const [procVersion, uname] = result.stdout.split('\n')
+	if (procVersion === uname) {
+		container.innerText = `Default: ${procVersion}`
+	} else {
+		container.innerText = `Default: ${procVersion}\nSpoofed: ${uname}`
+	}
 })
 
 // Load Device Model Status
