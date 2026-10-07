@@ -549,6 +549,21 @@
 							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
 							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
 							<!-- SUS PATH LOOP -->
+
+							<!-- OPEN_REDIRECT -->
+							<span class="card-row__title">OPEN_REDIRECT</span>
+							<span class="card-row__sub">Redirect the target path to be opened with user defined path and pre-defined uid scheme</span>
+							<span class="card-row__sub">uid_scheme</span>
+							<span class="card-row__sub">0: Effective for non-app processes (uid &lt; 10000)</span>
+							<span class="card-row__sub">1: Effective for non-su processes of which uid is 0 (All root process but not with su domain)</span>
+							<span class="card-row__sub">2: Effective for non-su processes (Use it carefully!)</span>
+							<span class="card-row__sub">3: Effective for processes that are marked umounted with uid >= 10000 (Use it carefully!)</span>
+							<span class="card-row__sub">4: Effective for processes that are marked umounted (include most of the init spawned process, use it carefully!)</span>
+							<span class="card-row__sub">* Important Notes *</span>
+							<span class="card-row__sub">- Both target_pathname and redirected_pathname must be existed before they can be added to open_redirect</span>
+							<span class="card-row__sub">- Users have to take care of the selinux permission of both target_pathname and redirected_pathname by themselves</span>
+							<span class="card-row__sub">- Only effective for current process that matches the pre-defined uid scheme</span>
+							<!-- OPEN_REDIRECT -->
 						</div>
 						<md-ripple></md-ripple>
 					</div>
@@ -558,6 +573,7 @@
 							<md-primary-tab id="tab_sus_map" aria-controls="panel_sus_map">MAP</md-primary-tab>
 							<md-primary-tab id="tab_sus_path" aria-controls="panel_sus_path">PATH</md-primary-tab>
 							<md-primary-tab id="tab_sus_path_loop" aria-controls="panel_sus_path_loop">PATH LOOP</md-primary-tab>
+							<md-primary-tab id="tab_open_redirect" aria-controls="panel_open_redirect">OPEN_REDIRECT</md-primary-tab>
 						</md-tabs>
 
 						<div class="snap-container" id="horizontal_scroll_container">
@@ -571,6 +587,10 @@
 
 							<div class="snap-item">
 								<md-filled-text-field class="content" id="custom_sus_path_loop_text_field" type="textarea" rows="12" label="SUS PATH LOOP"></md-filled-text-field>
+							</div>
+
+							<div class="snap-item">
+								<md-filled-text-field class="content" id="custom_open_redirect_text_field" type="textarea" rows="12" label="OPEN_REDIRECT"></md-filled-text-field>
 							</div>
 						</div>
 

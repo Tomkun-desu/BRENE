@@ -460,6 +460,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	const mapField = document.getElementById('custom_sus_map_text_field')
 	const pathField = document.getElementById('custom_sus_path_text_field')
 	const loopField = document.getElementById('custom_sus_path_loop_text_field')
+	const openRedirectField = document.getElementById('custom_open_redirect_text_field')
 	const applyButton = document.getElementById('unified_apply_button')
 	const tabs = document.getElementById('sus_tabs')
 	const scrollContainer = document.getElementById('horizontal_scroll_container')
@@ -473,6 +474,9 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_loop.txt`).then((result) => {
 		loopField.value = result.errno === 0 ? `${result.stdout}` : ''
+	})
+	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
+		openRedirectField.value = result.errno === 0 ? `${result.stdout}` : ''
 	})
 
 	// Tabs and Scroll Sync
@@ -515,12 +519,16 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 				file = 'custom_sus_path_loop.txt'
 				content = loopField.value
 				break
+			case 3:
+				file = 'custom_open_redirect.txt'
+				content = openRedirectField.value
+				break
 		}
 
 		if (file) {
 			if (content === '') {
 				exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
-					toast(result.errno === 0 ? 'Success' : result.stderr)
+					toast(result.errno === 0 ? 'Success, reboot to apply' : result.stderr)
 				})
 			} else {
 				content = content.replaceAll('/sdcard', '/storage/emulated/0')
@@ -530,7 +538,7 @@ cat <<'UNIQUE_EOF' > ${PERSISTENT_DIR}/${file}
 ${content}
 UNIQUE_EOF
 				`).then((result) => {
-					toast(result.errno === 0 ? 'Success' : result.stderr)
+					toast(result.errno === 0 ? 'Success, reboot to apply' : result.stderr)
 				})
 			}
 		}
