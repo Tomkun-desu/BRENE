@@ -48,7 +48,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_brene_logs) config_brene_logs="$v" ;;
       config_custom_uname_kernel_release) config_custom_uname_kernel_release="$v" ;;
       config_custom_uname_kernel_version) config_custom_uname_kernel_version="$v" ;;
-      config_custom_uname_spoofing) config_custom_uname_spoofing="$v" ;;
+      config_custom_spoof_uname) config_custom_spoof_uname="$v" ;;
       config_developer_options) config_developer_options="$v" ;;
       config_disable_child_process_restrictions) config_disable_child_process_restrictions="$v" ;;
       config_enable_avc_log_spoofing) config_enable_avc_log_spoofing="$v" ;;
@@ -62,7 +62,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_injections) config_hide_injections="$v" ;;
       config_hide_lineage_strings) config_hide_lineage_strings="$v" ;;
       config_hide_sus_mnts_for_non_su_procs) config_hide_sus_mnts_for_non_su_procs="$v" ;;
-      config_hide_suspicious_ptys) config_hide_suspicious_ptys="$v" ;;
+      config_hide_suspicious_pty) config_hide_suspicious_pty="$v" ;;
       config_kernel_umount) config_kernel_umount="$v" ;;
       config_paths_hiding__data_local_tmp) config_paths_hiding__data_local_tmp="$v" ;;
       config_paths_hiding__non_standard_sdcard) config_paths_hiding__non_standard_sdcard="$v" ;;
@@ -89,9 +89,9 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_su_compat) config_su_compat="$v" ;;
       config_sync_device_props) config_sync_device_props="$v" ;;
       config_umount_suspicious_mounts) config_umount_suspicious_mounts="$v" ;;
-      config_uname_spoofing) config_uname_spoofing="$v" ;;
+      config_spoof_uname) config_spoof_uname="$v" ;;
       config_usb_debugging) config_usb_debugging="$v" ;;
-      config_verified_boot_hash) config_verified_boot_hash="$v" ;;
+      config_spoof_verified_boot_hash) config_spoof_verified_boot_hash="$v" ;;
       config_wireless_debugging) config_wireless_debugging="$v" ;;
       *) continue ;; # unknown config_ key: ignore
     esac
@@ -167,25 +167,6 @@ fi
 # ${SUSFS_BIN} add_open_redirect '/system/etc/hosts' '/data/local/tmp/my_hosts' '0'
 
 
-
-# Spoof /system/lib64/libstagefright.so
-if [[ "${config_spoof_libstagefright}" == "1" ]]; then
-        path=/system/lib64/libstagefright.so
-        safe="$(printf '%s' "${path}" | tr '/' '_')"
-        fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
-
-        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-        busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
-        [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
-        [[ ! -f "${fake_file_path}" ]] && {
-                touch "${fake_file_path}"
-        }
-
-        brene_clone_perm "${fake_file_path}" "${path}" || true
-
-        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3' 2>/dev/null || true
-fi
-
 #### Spoof /proc/cmdline or /proc/bootconfig, effective for all processes ####
 # No root process detects it for now, and this spoofing won't help much actually #
 # /proc/bootconfig #
@@ -259,7 +240,7 @@ fi
 # ${SUSFS_BIN} set_uname 'default' 'default'
 
 # Custom Uname has priority over Automatic Uname.
-if [[ "${config_custom_uname_spoofing}" == "1" ]]; then
+if [[ "${config_custom_spoof_uname}" == "1" ]]; then
 
 if [[ "${config_brene_logs}" == "1" ]]; then
                         brene_log ""
@@ -291,7 +272,7 @@ if [[ "${config_brene_logs}" == "1" ]]; then
                         if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
                                 auto_kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
                                 if [[ -n "${auto_kmi}" ]]; then
-                                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
+                                        auto_uname_release="${auto_kernel_version}-${auto_kmi}-$(shuf -i 1-9 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%d", rand()*9+1}')-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')-ab$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
                                 fi
                         else
                                 auto_uname_release="${auto_kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
@@ -304,7 +285,7 @@ if [[ "${config_brene_logs}" == "1" ]]; then
 
         brene_set_uname "${final_uname_release}" "${final_uname_version}" || true
 
-elif [[ "${config_uname_spoofing}" == "1" ]]; then
+elif [[ "${config_spoof_uname}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
                         brene_log ""
                         brene_log "##############"
@@ -319,7 +300,7 @@ elif [[ "${config_uname_spoofing}" == "1" ]]; then
                 if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
                         kmi=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
                         if [[ -n "${kmi}" ]]; then
-                                uname_kernel_release="${kernel_version}-${kmi}-9-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
+                                uname_kernel_release="${kernel_version}-${kmi}-$(shuf -i 1-9 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%d", rand()*9+1}')-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')-ab$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
                         fi
                 else
                         uname_kernel_release="${kernel_version}-g$(shuf -i 10000000-99999999 -n 1 2>/dev/null || awk 'BEGIN{srand();printf "%08d", rand()*90000000+10000000}')"
@@ -366,25 +347,6 @@ if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
                 done
         done
 fi
-# Hide LineageOS Strings
-if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-	brene_find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
-		safe="$(printf '%s' "$path" | tr '/' '_')"
-		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
-
-		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-		busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
-		[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
-                if [[ ! -f "${fake_file_path}" ]]; then
-                        cp "${path}" "${fake_file_path}" || continue
-                        sed -i "s/lineage//g" "${fake_file_path}"
-                fi
-
-                brene_clone_perm "${fake_file_path}" "${path}" || true
-		${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3' 2>/dev/null || true
-	done
-fi
-
 
 #### Fully sync all build-related props (fingerprint + sub-fields) across all partitions ####
 ## Fully device-agnostic + fail-safe: never blocks boot even if resetprop errors ##
@@ -574,27 +536,6 @@ if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
 
 fi
 
-# Hide LineageOS Strings in RC files
-if [[ "${config_hide_lineage_strings}" == "1" ]]; then
-        brene_find /system /system_ext /vendor /product -iname "*.rc" -print0 | while IFS= read -r -d '' path; do
-                if grep -iq "lineage" "${path}"; then
-                        safe="$(printf '%s' "$path" | tr '/' '_')"
-                        fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
-
-                        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
-                        busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
-                        [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
-                        if [[ ! -f "${fake_file_path}" ]]; then
-                                cp "${path}" "${fake_file_path}" || continue
-                                sed -i "s/lineage//g" "${fake_file_path}"
-                        fi
-
-                        brene_clone_perm "${fake_file_path}" "${path}" || true
-                        ${SUSFS_BIN} add_open_redirect "${path}" "${fake_file_path}" '3' 2>/dev/null || true
-                fi
-        done
-fi
-
 # Spoof /system/etc/hosts
 if [[ "${config_spoof_hosts}" == "1" ]]; then
     path=/system/etc/hosts
@@ -603,7 +544,7 @@ fi
 
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
-   spoof_android_system_properties || true
+   brene_spoof_system_properties || true
 fi
 # Spoof Fingerprint Properties
 if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
@@ -627,7 +568,7 @@ if [[ "${config_spoof_vendor_security_patch_level_property}" == "1" ]]; then
 fi
 
 # Hide Suspicious PTYs
-if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
+if [[ "${config_hide_suspicious_pty}" == "1" ]]; then
 	if [[ "${config_brene_logs}" == "1" ]]; then
 			brene_log ""
 			brene_log "####################"

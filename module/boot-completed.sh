@@ -46,7 +46,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_brene_logs) config_brene_logs="$v" ;;
       config_custom_uname_kernel_release) config_custom_uname_kernel_release="$v" ;;
       config_custom_uname_kernel_version) config_custom_uname_kernel_version="$v" ;;
-      config_custom_uname_spoofing) config_custom_uname_spoofing="$v" ;;
+      config_custom_spoof_uname) config_custom_spoof_uname="$v" ;;
       config_developer_options) config_developer_options="$v" ;;
       config_disable_child_process_restrictions) config_disable_child_process_restrictions="$v" ;;
       config_enable_avc_log_spoofing) config_enable_avc_log_spoofing="$v" ;;
@@ -60,7 +60,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_injections) config_hide_injections="$v" ;;
       config_hide_lineage_strings) config_hide_lineage_strings="$v" ;;
       config_hide_sus_mnts_for_non_su_procs) config_hide_sus_mnts_for_non_su_procs="$v" ;;
-      config_hide_suspicious_ptys) config_hide_suspicious_ptys="$v" ;;
+      config_hide_suspicious_pty) config_hide_suspicious_pty="$v" ;;
       config_kernel_umount) config_kernel_umount="$v" ;;
       config_paths_hiding__data_local_tmp) config_paths_hiding__data_local_tmp="$v" ;;
       config_paths_hiding__non_standard_sdcard) config_paths_hiding__non_standard_sdcard="$v" ;;
@@ -87,9 +87,9 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_su_compat) config_su_compat="$v" ;;
       config_sync_device_props) config_sync_device_props="$v" ;;
       config_umount_suspicious_mounts) config_umount_suspicious_mounts="$v" ;;
-      config_uname_spoofing) config_uname_spoofing="$v" ;;
+      config_spoof_uname) config_spoof_uname="$v" ;;
       config_usb_debugging) config_usb_debugging="$v" ;;
-      config_verified_boot_hash) config_verified_boot_hash="$v" ;;
+      config_spoof_verified_boot_hash) config_spoof_verified_boot_hash="$v" ;;
       config_wireless_debugging) config_wireless_debugging="$v" ;;
       *) continue ;; # unknown config_ key: ignore
     esac
@@ -192,6 +192,81 @@ if [[ "${config_pif_props}" == "1" ]]; then
 	done
 fi
 
+# Spoof /system/lib64/libstagefright.so
+if [[ "${config_spoof_libstagefright}" == "1" ]]; then
+        path=/system/lib64/libstagefright.so
+        safe="$(printf '%s' "${path}" | tr '/' '_')"
+        fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
+
+        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+        busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+        [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
+        [[ ! -f "${fake_file_path}" ]] && {
+                touch "${fake_file_path}"
+        }
+
+        brene_clone_perm "${fake_file_path}" "${path}" || true
+
+        brene_open_redirect "${path}" "${fake_file_path}" '3' || true
+fi
+
+# Hide LineageOS Strings
+if [[ "${config_hide_lineage_strings}" == "1" ]]; then
+	brene_find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
+		safe="$(printf '%s' "$path" | tr '/' '_')"
+		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
+
+		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+		busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+		[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
+                if [[ ! -f "${fake_file_path}" ]]; then
+                        cp "${path}" "${fake_file_path}" || continue
+                        sed -i "s/lineage//g" "${fake_file_path}"
+                fi
+
+                brene_clone_perm "${fake_file_path}" "${path}" || true
+		brene_open_redirect "${path}" "${fake_file_path}" '3' || true
+	done
+
+	brene_find /system_ext/etc/permissions -maxdepth 1 -iname "Updater.xml" -print0 | while IFS= read -r -d '' path; do
+		[ -e "${path}" ] || continue
+		safe="$(printf '%s' "${path}" | tr '/' '_')"
+			fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
+
+			[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+			busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+			[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
+			if [[ ! -f "${fake_file_path}" ]]; then
+				cp "${path}" "${fake_file_path}" || continue
+				sed -i "s/lineage//g" "${fake_file_path}"
+			fi
+
+			brene_clone_perm "${fake_file_path}" "${path}" || true
+			brene_open_redirect "${path}" "${fake_file_path}" '3' || true
+	done
+fi
+
+# Hide LineageOS Strings in RC files
+if [[ "${config_hide_lineage_strings}" == "1" ]]; then
+        brene_find /system /system_ext /vendor /product -iname "*.rc" -print0 | while IFS= read -r -d '' path; do
+                if grep -iq "lineage" "${path}"; then
+                        safe="$(printf '%s' "$path" | tr '/' '_')"
+                        fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
+
+                        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
+                        busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+                        [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
+                        if [[ ! -f "${fake_file_path}" ]]; then
+                                cp "${path}" "${fake_file_path}" || continue
+                                sed -i "s/lineage//g" "${fake_file_path}"
+                        fi
+
+                        brene_clone_perm "${fake_file_path}" "${path}" || true
+                        brene_open_redirect "${path}" "${fake_file_path}" '3' || true
+                fi
+        done
+fi
+
 # Max Saturation
 if [[ "${config_saturation}" == "1" ]]; then
 	command -v service >/dev/null 2>&1 && service call SurfaceFlinger 1022 f 2.0
@@ -204,7 +279,7 @@ fi
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
-   spoof_android_system_properties || true
+   brene_spoof_system_properties || true
 fi
 # Spoof Fingerprint Properties
 if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then
@@ -252,7 +327,7 @@ if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
             rm -f "${PERSISTENT_DIR}/spoof_repeat.pid"
             while true; do
                   sleep 60
-                  spoof_android_system_properties
+                  brene_spoof_system_properties
             done &
             echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
             ;;
@@ -263,7 +338,7 @@ if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
                # stale numeric pid (dead process) -> start a fresh single daemon
                while true; do
                   sleep 60
-                  spoof_android_system_properties
+                  brene_spoof_system_properties
                done &
                echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
             fi
@@ -678,10 +753,10 @@ fi
 
 
 # Android Verified Boot Hash Spoofing
-if [[ "${config_verified_boot_hash}" != '' ]]; then
-	case "${config_verified_boot_hash}" in
+if [[ "${config_spoof_verified_boot_hash}" != '' ]]; then
+	case "${config_spoof_verified_boot_hash}" in
 		*[!0-9a-fA-F]*|"") ;;
-		*) [ "${#config_verified_boot_hash}" -eq 64 ] && resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}" ;;
+		*) [ "${#config_spoof_verified_boot_hash}" -eq 64 ] && resetprop_n "ro.boot.vbmeta.digest" "${config_spoof_verified_boot_hash}" ;;
 	esac
 fi
 

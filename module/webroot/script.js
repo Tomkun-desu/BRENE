@@ -55,13 +55,13 @@ const configs = [
 	{ id: 'brene_logs' },
 	{ id: 'enable_log' },
 	{ id: 'hide_addon_d' },
-	{ id: 'uname_spoofing' },
+	{ id: 'spoof_uname' },
 	{ id: 'hide_injections' },
-	{ id: 'hide_suspicious_ptys' },
+	{ id: 'hide_suspicious_pty' },
 	{ id: 'hide_lineage_strings' },
 	{ id: 'hide_custom_rom_paths' },
 	{ id: 'hide_custom_rom_paths_2' },
-	{ id: 'custom_uname_spoofing' },
+	{ id: 'custom_spoof_uname' },
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'spoof_libstagefright' },
 	{ id: 'enable_avc_log_spoofing' },
@@ -141,7 +141,13 @@ exec("cat /proc/version | awk '{print $3}' && uname -r").then((result) => {
 		container.innerText = 'Failed to load'
 		return
 	}
-	container.innerText = `Default: ${result.stdout.replace('\n', '\nSpoofed: ')}`
+
+	const [procVersion, uname] = result.stdout.split('\n')
+	if (procVersion === uname) {
+		container.innerText = `Default: ${procVersion}`
+	} else {
+		container.innerText = `Default: ${procVersion}\nSpoofed: ${uname}`
+	}
 })
 
 // Load Device Model Status
@@ -359,7 +365,7 @@ function isValidConfigValue(config, value) {
 	const v = String(value)
 	if (config === 'config_custom_uname_kernel_release') return isValidUnameRelease(v)
 	if (config === 'config_custom_uname_kernel_version') return isValidUnameVersion(v)
-	if (config.indexOf('verified_boot_hash') !== -1) {
+	if (config.indexOf('spoof_verified_boot_hash') !== -1) {
 		return /^[0-9a-fA-F]{64}$/.test(v.trim())
 	}
 	return true
@@ -428,7 +434,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	document.getElementById('custom_uname_version').value = configValues['config_custom_uname_kernel_version'] ?? ''
 
 	// Verified Boot Hash
-	document.getElementById('verified_boot_hash_text_field').value = configValues['config_verified_boot_hash'] ?? ''
+	document.getElementById('vbh_text_field').value = configValues['config_spoof_verified_boot_hash'] ?? ''
 
 	// toggle
 	configs.forEach((config) => {
@@ -554,8 +560,8 @@ if (resetDialog && resetButton) {
                                         freshConfigValues['config_custom_uname_kernel_release'] ?? ''
                                 document.getElementById('custom_uname_version').value =
                                         freshConfigValues['config_custom_uname_kernel_version'] ?? ''
-                                document.getElementById('verified_boot_hash_text_field').value =
-                                        freshConfigValues['config_verified_boot_hash'] ?? ''
+                                document.getElementById('vbh_text_field').value =
+                                        freshConfigValues['config_spoof_verified_boot_hash'] ?? ''
 
                                 toast('Success')
                         })
@@ -663,8 +669,8 @@ if (resetDialog && resetButton) {
 
 // Verified Boot Hash
 ;(async () => {
-	const textField = document.getElementById('verified_boot_hash_text_field')
-	const button = document.getElementById('verified_boot_hash_button')
+	const textField = document.getElementById('vbh_text_field')
+	const button = document.getElementById('vbh_button')
 
 	button.addEventListener('click', () => {
 		const digest = textField.value.trim()
@@ -677,7 +683,7 @@ if (resetDialog && resetButton) {
 			toast('Invalid verified boot hash')
 			return
 		}
-		updateConfig2('config_verified_boot_hash', digest)
+		updateConfig2('config_spoof_verified_boot_hash', digest)
 		const safeDigest = `'${digest.replace(/'/g, "'\\''")}'`
 		exec(`resetprop -n ro.boot.vbmeta.digest ${safeDigest}`).then((result) => {
                         if (result.errno === 0) {

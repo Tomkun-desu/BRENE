@@ -205,13 +205,6 @@
 						<md-ripple></md-ripple>
 					</div>
 
-					<div class="card-row" data-module="rod">
-						<div class="card-row__body">
-							<span class="card-row__title">ROD-Manager</span>
-							<span class="card-row__sub status-text">Status: Not installed</span>
-						</div>
-						<md-ripple></md-ripple>
-					</div>
 				</div>
 			</section>
 
@@ -375,7 +368,7 @@
 						<div class="card-row__body">
 							<span class="card-row__title">Hide Suspicious PTYs</span>
 						</div>
-						<md-switch icons id="hide_suspicious_ptys"></md-switch>
+						<md-switch icons id="hide_suspicious_pty"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
@@ -425,7 +418,7 @@
 							<span class="card-row__sub">Spoof uname for all processes</span>
 							<span class="card-row__sub">Only 'release' and 'version' are spoofed as others are no longer needed</span>
 						</div>
-						<md-switch icons id="uname_spoofing"></md-switch>
+						<md-switch icons id="spoof_uname"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 					<div class="card-row">
@@ -433,7 +426,7 @@
 							<span class="card-row__title">Custom Uname Spoofing</span>
 							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
 						</div>
-						<md-switch icons id="custom_uname_spoofing"></md-switch>
+						<md-switch icons id="custom_spoof_uname"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 					<div class="card-row">
@@ -513,14 +506,14 @@
 					<div class="card-row">
 						<div class="field-stack">
 							<md-outlined-text-field
-								id="verified_boot_hash_text_field"
+								id="vbh_text_field"
 								type="textarea"
 								label="Verified Boot Hash"
 								rows="3"
 								placeholder="e.g. df2352c282aa56e1489a3e220305ab827e54ba65a1293ab7409f2d46a3666b5a (64 digits)"
 							></md-outlined-text-field>
 							<div class="btn-row">
-								<md-filled-button id="verified_boot_hash_button">APPLY</md-filled-button>
+								<md-filled-button id="vbh_button">APPLY</md-filled-button>
 							</div>
 						</div>
 					</div>
@@ -626,6 +619,8 @@
 							<span class="card-row__tag--code">Format (TAB-separated, one line per entry):</span>
 							<span class="card-row__tag--code">src [TAB] dst [TAB] uid_scheme<br />Example (one line in the file, split here for readability):<br />/system/etc/hosts [TAB]<br />/data/adb/brene/fake_files/hosts [TAB]<br />3</span>
 							<span class="card-row__sub">uid_scheme (default 3):<br />0 - non-app processes (uid &lt; 10000)<br />1 - non-su processes with uid 0 (root without su domain)<br />2 - non-su processes (use carefully)<br />3 - umounted processes with uid &gt;= 10000 (default, use carefully)<br />4 - umounted processes, including most init-spawned ones (use carefully)</span>
+							<span class="card-row__sub">2: Effective for non-su processes</span>
+							<span class="card-row__sub">Only effective for current process that matches the pre-defined uid scheme</span>
 							<!-- OPEN REDIRECT -->
 						</div>
 						<md-ripple></md-ripple>

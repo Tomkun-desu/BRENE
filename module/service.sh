@@ -44,7 +44,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_brene_logs) config_brene_logs="$v" ;;
       config_custom_uname_kernel_release) config_custom_uname_kernel_release="$v" ;;
       config_custom_uname_kernel_version) config_custom_uname_kernel_version="$v" ;;
-      config_custom_uname_spoofing) config_custom_uname_spoofing="$v" ;;
+      config_custom_spoof_uname) config_custom_spoof_uname="$v" ;;
       config_developer_options) config_developer_options="$v" ;;
       config_disable_child_process_restrictions) config_disable_child_process_restrictions="$v" ;;
       config_enable_avc_log_spoofing) config_enable_avc_log_spoofing="$v" ;;
@@ -58,7 +58,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_injections) config_hide_injections="$v" ;;
       config_hide_lineage_strings) config_hide_lineage_strings="$v" ;;
       config_hide_sus_mnts_for_non_su_procs) config_hide_sus_mnts_for_non_su_procs="$v" ;;
-      config_hide_suspicious_ptys) config_hide_suspicious_ptys="$v" ;;
+      config_hide_suspicious_pty) config_hide_suspicious_pty="$v" ;;
       config_kernel_umount) config_kernel_umount="$v" ;;
       config_paths_hiding__data_local_tmp) config_paths_hiding__data_local_tmp="$v" ;;
       config_paths_hiding__non_standard_sdcard) config_paths_hiding__non_standard_sdcard="$v" ;;
@@ -85,9 +85,9 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_su_compat) config_su_compat="$v" ;;
       config_sync_device_props) config_sync_device_props="$v" ;;
       config_umount_suspicious_mounts) config_umount_suspicious_mounts="$v" ;;
-      config_uname_spoofing) config_uname_spoofing="$v" ;;
+      config_spoof_uname) config_spoof_uname="$v" ;;
       config_usb_debugging) config_usb_debugging="$v" ;;
-      config_verified_boot_hash) config_verified_boot_hash="$v" ;;
+      config_spoof_verified_boot_hash) config_spoof_verified_boot_hash="$v" ;;
       config_wireless_debugging) config_wireless_debugging="$v" ;;
       *) continue ;; # unknown config_ key: ignore
     esac

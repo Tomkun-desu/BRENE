@@ -116,8 +116,10 @@ else
 		# Skip empty lines or comments
 		[[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
 
-		# Renamed key: handled by the migration block below (respects explicit opt-out).
-		[[ "${key}" == "config_spoof_os_security_patch_level_property" ]] && continue
+		# Renamed keys: handled by the migration blocks below (old value wins over defaults).
+		case "${key}" in
+			config_spoof_os_security_patch_level_property|config_spoof_uname|config_custom_spoof_uname|config_hide_suspicious_pty|config_spoof_verified_boot_hash) continue ;;
+		esac
 
 		if awk -F= -v k="${key}" '$1==k{found=1; exit} END{exit !found}' "${PERSISTENT_DIR}/config.sh"; then
 			:
@@ -154,7 +156,71 @@ else
 		fi
 		_brene_old_patch_val=""; _mk=""; _mv=""
 	fi
+
+	# Migrate renamed keys to upstream names (old value wins over shipped defaults).
+	# Old keys are kept (dead keys are repo norm). The generic loop above skips
+	# new keys, so defaults are handled here when no old value exists.
+	for _brene_pair in \
+		"config_uname_spoofing config_spoof_uname" \
+		"config_custom_uname_spoofing config_custom_spoof_uname" \
+		"config_hide_suspicious_ptys config_hide_suspicious_pty" \
+		"config_verified_boot_hash config_spoof_verified_boot_hash"; do
+		_brene_old_key="${_brene_pair%% *}"
+		_brene_new_key="${_brene_pair##* }"
+		if tr -d '\r' < "${PERSISTENT_DIR}/config.sh" 2>/dev/null | grep -q "^${_brene_new_key}="; then
+			continue
+		fi
+		_brene_old_val=""
+		while IFS='=' read -r _mk _mv || [ -n "$_mk" ]; do
+			_mk=$(printf '%s' "$_mk" | tr -d '\r')
+			_mv=$(printf '%s' "$_mv" | tr -d '\r')
+			case "$_mv" in
+				\'*\'|\"*\")
+					_mv=${_mv#?}
+					_mv=${_mv%?}
+					;;
+			esac
+			if [ "${_mk}" = "${_brene_old_key}" ]; then
+				_brene_old_val="${_mv}"
+			fi
+		done < "${PERSISTENT_DIR}/config.sh"
+		if [ -n "${_brene_old_val}" ]; then
+			echo "${_brene_new_key}=${_brene_old_val}" >> "${PERSISTENT_DIR}/config.sh"
+			echo "[➕] Migrated ${_brene_old_key}=${_brene_old_val} -> ${_brene_new_key}=${_brene_old_val}"
+		else
+			_brene_def_val=$(grep -E "^${_brene_new_key}=" "${MODPATH}/config.sh" 2>/dev/null | tail -n 1 | cut -d= -f2- | tr -d '\r')
+			if [ -n "${_brene_def_val}" ]; then
+				echo "${_brene_new_key}=${_brene_def_val}" >> "${PERSISTENT_DIR}/config.sh"
+				echo "[➕] Added missing key=value: ${_brene_new_key}=${_brene_def_val}"
+			fi
+		fi
+	done
+	_brene_pair=""; _brene_old_key=""; _brene_new_key=""; _brene_old_val=""; _brene_def_val=""
 fi
 
 # Remove fake_files folder
 [[ -d "${PERSISTENT_DIR}/fake_files" ]] && rm -rf "${PERSISTENT_DIR}/fake_files"
+
+# Enable WebUI without reboot (keep id in sync with module.prop)
+MODDIR="/data/adb/modules/brene"
+MODULES_PATH="/data/adb/modules"
+
+# Copy first, drop the old install only on success (never rm before a verified copy)
+if [ -n "${MODPATH}" ] && [ -d "${MODPATH}" ]; then
+	rm -rf "${MODDIR}.bak"
+	[ -d "${MODDIR}" ] && mv "${MODDIR}" "${MODDIR}.bak"
+	if cp -rp "${MODPATH}" "${MODULES_PATH}"; then
+		rm -rf "${MODDIR}.bak"
+		(
+			sleep 1
+			rm -rf "${MODPATH}"
+			rm -f "${MODDIR}/update"
+		) & # fork in background
+		echo '[✅] WebUI is ready!'
+	else
+		[ -d "${MODDIR}.bak" ] && mv "${MODDIR}.bak" "${MODDIR}"
+		echo '[⚠️] WebUI copy failed, reboot to apply'
+	fi
+else
+	echo '[⚠️] MODPATH missing, reboot to apply'
+fi

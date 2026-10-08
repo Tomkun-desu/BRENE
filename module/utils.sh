@@ -140,7 +140,7 @@ if_prop_exits_resetprop_n() {
 #   [[ "$(resetprop ${PROP_NAME})" = *"${CONTAINS_VALUE}"* ]] && resetprop -n "${PROP_NAME}" "${NEW_VALUE}"
 # }
 
-spoof_android_system_properties() {
+brene_spoof_system_properties() {
 	local size sdk
 	resetprop_n "init.svc.adbd" "stopped"
 	resetprop_n "init.svc_debug_pid.adbd" ""
@@ -259,15 +259,49 @@ brene_spoof_date_props() {
 }
 
 brene_spoof_os_security_patch_props() {
-    local patch_year patch_month
-    patch_year=$(date +%Y); patch_month=$(date +%m)
-    [[ -n "${patch_year}" && -n "${patch_month}" ]] && if_prop_exits_resetprop_n "ro.build.version.security_patch" "${patch_year}-${patch_month}-01"
+    local patch_year patch_month patch_day patch_month_num prev_month prev_year
+    if command -v busybox >/dev/null 2>&1; then
+        patch_year=$(busybox date +%Y); patch_month=$(busybox date +%m); patch_day=$(busybox date +%d)
+    else
+        patch_year=$(date +%Y); patch_month=$(date +%m); patch_day=$(date +%d)
+    fi
+    [ -n "${patch_year}" ] && [ -n "${patch_month}" ] && [ -n "${patch_day}" ] || return 0
+    # Strip one leading zero (POSIX; $((10#..)) is rejected by ash/dash)
+    patch_month_num=${patch_month#0}; patch_day=${patch_day#0}
+    [ -z "${patch_month_num}" ] && patch_month_num=0
+    [ -z "${patch_day}" ] && patch_day=0
+    if [ "${patch_day}" -ge 5 ]; then
+        if_prop_exits_resetprop_n "ro.build.version.security_patch" "${patch_year}-${patch_month}-01"
+    elif [ "${patch_month_num}" -ge 2 ]; then
+        prev_month=$(printf "%02d" "$((patch_month_num - 1))")
+        if_prop_exits_resetprop_n "ro.build.version.security_patch" "${patch_year}-${prev_month}-01"
+    else
+        prev_year=$((patch_year - 1))
+        if_prop_exits_resetprop_n "ro.build.version.security_patch" "${prev_year}-12-01"
+    fi
 }
 
 brene_spoof_vendor_security_patch_props() {
-    local patch_year patch_month
-    patch_year=$(date +%Y); patch_month=$(date +%m)
-    [[ -n "${patch_year}" && -n "${patch_month}" ]] && if_prop_exits_resetprop_n "ro.vendor.build.security_patch" "${patch_year}-${patch_month}-05"
+    local patch_year patch_month patch_day patch_month_num prev_month prev_year
+    if command -v busybox >/dev/null 2>&1; then
+        patch_year=$(busybox date +%Y); patch_month=$(busybox date +%m); patch_day=$(busybox date +%d)
+    else
+        patch_year=$(date +%Y); patch_month=$(date +%m); patch_day=$(date +%d)
+    fi
+    [ -n "${patch_year}" ] && [ -n "${patch_month}" ] && [ -n "${patch_day}" ] || return 0
+    # Strip one leading zero (POSIX; $((10#..)) is rejected by ash/dash)
+    patch_month_num=${patch_month#0}; patch_day=${patch_day#0}
+    [ -z "${patch_month_num}" ] && patch_month_num=0
+    [ -z "${patch_day}" ] && patch_day=0
+    if [ "${patch_day}" -ge 5 ]; then
+        if_prop_exits_resetprop_n "ro.vendor.build.security_patch" "${patch_year}-${patch_month}-05"
+    elif [ "${patch_month_num}" -ge 2 ]; then
+        prev_month=$(printf "%02d" "$((patch_month_num - 1))")
+        if_prop_exits_resetprop_n "ro.vendor.build.security_patch" "${patch_year}-${prev_month}-05"
+    else
+        prev_year=$((patch_year - 1))
+        if_prop_exits_resetprop_n "ro.vendor.build.security_patch" "${prev_year}-12-05"
+    fi
 }
 
 brene_sus_path() {
