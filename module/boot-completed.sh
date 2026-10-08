@@ -663,16 +663,6 @@ if [[ -e "${PERSISTENT_DIR}/custom_kernel_umount.txt" ]]; then
         done < "${PERSISTENT_DIR}/custom_kernel_umount.txt"
 fi
 
-# Load custom_open_redirect.txt
-if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
-	while read -r path new_path uid_scheme; do
-		# Skip empty lines or comments
-		[[ -z "${path}" || "${path}" == "#"* ]] && continue
-
-		brene_open_redirect "${path}" "${new_path}" "${uid_scheme}"
-	done < "${PERSISTENT_DIR}/custom_open_redirect.txt"
-fi
-
 #### Hide the mmapped real file from various maps in /proc/self/, effective only for processes that are marked umounted with uid >= 10000 ####
 ## - *Please note that it is better to do it in boot-completed starge
 ##   Since some target path may be mounted by ksu, and make sure the
