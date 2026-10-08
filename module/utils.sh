@@ -383,6 +383,12 @@ brene_set_uname() {
 	fi
 	return "${_rc}"
 }
+brene_open_redirect() {
+	brene_clone_perm "$2" "$1"
+	if ${SUSFS_BIN} add_open_redirect "$1" "$2" "$3" && [[ "${config_brene_logs}" == "1" ]]; then
+		echo "[open_redirect]: $1 $2 $3" >> "${PERSISTENT_DIR}/logs.txt"
+	fi
+}
 brene_kernel_umount() {
 	local TARGET=$1
 	# Fail-safe: option-injection + boot-never-blocked. Absolute existing

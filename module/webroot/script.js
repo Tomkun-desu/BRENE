@@ -963,6 +963,9 @@ if (resetDialog && resetButton) {
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) out = out.slice(-MAX) + '\n…(truncated)'
 		openRedirectLog.value = result.errno === 0 && out ? out : '(no open redirect log entries yet)'
 	})
+	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
+		openRedirectField.value = result.errno === 0 ? `${result.stdout}` : ''
+	})
 
 	// Tabs and Scroll Sync
 	tabs.addEventListener('change', () => {
@@ -1031,6 +1034,10 @@ if (resetDialog && resetButton) {
 				truncatedKey = 'redirect'
 				content = serializeOpenRedirectEntries()
 				if (content === null) return
+				break
+			case 3:
+				file = 'custom_open_redirect.txt'
+				content = openRedirectField.value
 				break
 		}
 
