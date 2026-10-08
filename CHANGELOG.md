@@ -1,3 +1,17 @@
+## v0.0.70-custom.1 - 2026-10-08
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in plain, simple bullet points:
+
+- The script now loads the utils in a POSIX compatible way.
+- The script now loads the config in a POSIX compatible way, with added security checks to prevent loading untrusted files.
+- The script now strips carriage returns from config file lines and removes surrounding quotes from config values.
+- The script now only allows certain keys in the config file (those starting with "config_") to be loaded and used.
+- The script now uses a more secure way to assign config values to variables, without using eval or dynamic variable names.
+
 ## v0.0.69-custom.1 - 2026-09-27
 
 ### Synced from upstream BRENE
