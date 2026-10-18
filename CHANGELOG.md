@@ -1,3 +1,20 @@
+## v0.0.71-custom.1 - 2026-10-18
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in bullet points:
+
+* Added a new variable `CUSTOM_ROM_NAMES` with a list of custom ROM names.
+* Modified the way `utils.sh` is loaded to be POSIX compatible.
+* Modified the way `config.sh` is loaded to be POSIX compatible and to strip any CRLF characters and quotes from the values.
+* Added a while loop to parse the `config.sh` file and strip any CRLF characters and quotes from the values.
+* Added checks to ensure that the keys in `config.sh` are valid and only allow certain characters.
+* Modified the way values are assigned from `config.sh` to be safe in various shells.
+* Removed the `[[ -e ]] && source` syntax in favor of a more POSIX compatible `if [ -e ] && .` syntax.
+* Removed a comment about loading utils.
+
 ## v0.0.70-custom.1 - 2026-10-08
 
 ### Synced from upstream BRENE
