@@ -172,6 +172,12 @@ if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
         resetprop -n -p persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null || true
 fi
 
+# Set logcat and logd buffer to 64K
+if [[ "${config_shrink_buffer_size}" == "1" ]]; then
+	logcat -G 64K
+	resetprop -n -p persist.logd.size 65536
+fi
+
 # SELinux Enforcing
 if [[ "${config_selinux}" == "1" ]] && command -v getenforce >/dev/null 2>&1 && command -v setenforce >/dev/null 2>&1; then
 	[[ "$(getenforce)" != "Enforcing" ]] && setenforce 1

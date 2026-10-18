@@ -25,12 +25,14 @@ config_spoof_utc_properties=1
 config_spoof_date_properties=1
 config_spoof_os_security_patch_level_property=1
 config_spoof_vendor_security_patch_level_property=1
+config_disable_child_process_restrictions=1
 
 config_pif_props=0
 config_rom_props=0
 config_saturation=0
 config_brene_logs=0
 config_enable_log=0
+config_spoof_hosts=0
 config_hide_addon_d=0
 # Deprecated: merged into config_spoof_system_properties (old key still honored if present).
 config_usb_debugging=0

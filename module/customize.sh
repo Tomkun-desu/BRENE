@@ -88,7 +88,7 @@ ${KSU_BIN} module config set override.description "[Module Status: ⏱️ | Kern
 	touch "${KSU_MODULES_DIR}/susfs_manager/disable" && echo '[✅] Disabling other SuSFS module'
 }
 
-echo '[✅] Preparing brene persistent directory (/data/adb/brene)'
+echo "[✅] Preparing brene persistent directory (${PERSISTENT_DIR})"
 mkdir -p "${PERSISTENT_DIR}"
 chmod 700 "${PERSISTENT_DIR}" || true
 
