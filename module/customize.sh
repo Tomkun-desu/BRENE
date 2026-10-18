@@ -198,8 +198,9 @@ else
 	_brene_pair=""; _brene_old_key=""; _brene_new_key=""; _brene_old_val=""; _brene_def_val=""
 fi
 
-# Remove fake_files folder
+# Reset fake_files folder (recreated so the boot scripts always find it)
 [[ -d "${PERSISTENT_DIR}/fake_files" ]] && rm -rf "${PERSISTENT_DIR}/fake_files"
+mkdir -p "${PERSISTENT_DIR}/fake_files"
 
 # Enable WebUI without reboot (keep id in sync with module.prop)
 MODDIR="/data/adb/modules/brene"

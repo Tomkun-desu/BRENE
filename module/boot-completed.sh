@@ -5,7 +5,7 @@ KSU_BIN=/data/adb/ksud
 KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
-mkdir -p "${PERSISTENT_DIR}"
+mkdir -p "${PERSISTENT_DIR}" "${PERSISTENT_DIR}/fake_files"
 DEST_BIN_DIR=/data/adb/ksu/bin
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
 
@@ -73,6 +73,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_selinux) config_selinux="$v" ;;
       config_selinux_hide) config_selinux_hide="$v" ;;
       config_show_refresh_rate) config_show_refresh_rate="$v" ;;
+      config_shrink_buffer_size) config_shrink_buffer_size="$v" ;;
       config_spoof_cmdline_or_bootconfig) config_spoof_cmdline_or_bootconfig="$v" ;;
       config_spoof_date_properties) config_spoof_date_properties="$v" ;;
       config_spoof_fingerprint_properties) config_spoof_fingerprint_properties="$v" ;;
@@ -167,7 +168,8 @@ fi
 
 # Disable Child Process Restrictions
 if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
-        resetprop_n persist.sys.fflag.override.settings_enable_monitor_phantom_procs false
+        # -p so the override survives reboot (same as upstream)
+        resetprop -n -p persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null || true
 fi
 
 # SELinux Enforcing
@@ -197,8 +199,6 @@ if [[ "${config_spoof_libstagefright}" == "1" ]]; then
         path=/system/lib64/libstagefright.so
         safe="$(printf '%s' "${path}" | tr '/' '_')"
         fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
-
-        [[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
         busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
         [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
         [[ ! -f "${fake_file_path}" ]] && {
@@ -215,8 +215,6 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 	brene_find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
 		safe="$(printf '%s' "$path" | tr '/' '_')"
 		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
-
-		[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
 		busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
 		[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
                 if [[ ! -f "${fake_file_path}" ]]; then
@@ -232,8 +230,6 @@ if [[ "${config_hide_lineage_strings}" == "1" ]]; then
 		[ -e "${path}" ] || continue
 		safe="$(printf '%s' "${path}" | tr '/' '_')"
 			fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
-
-			[[ ! -d "${PERSISTENT_DIR}/fake_files" ]] && mkdir -p "${PERSISTENT_DIR}/fake_files"
 			busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
 			[ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
 			if [[ ! -f "${fake_file_path}" ]]; then
@@ -276,10 +272,22 @@ if [[ "${config_show_refresh_rate}" == "1" ]]; then
     command -v service >/dev/null 2>&1 && service call SurfaceFlinger 1034 i32 1
 fi
 
+# Set logcat and logd buffer to 64K
+# Smaller ring buffers cut CPU overhead and battery drain; -p makes the
+# persist.logd.size override survive reboot.
+if [[ "${config_shrink_buffer_size}" == "1" ]]; then
+    command -v logcat >/dev/null 2>&1 && logcat -G 64K 2>/dev/null || true
+    resetprop -n -p persist.logd.size 65536 2>/dev/null || true
+fi
+
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 # Spoof Android System Properties
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
    brene_spoof_system_properties || true
+
+   # Set after vold has settled so the encrypted transition still reaches
+   # vendor init triggers (upstream fix).
+   if_prop_exits_resetprop_n "ro.crypto.state" "encrypted"
 fi
 # Spoof Fingerprint Properties
 if [[ "${config_spoof_fingerprint_properties}" == "1" ]]; then

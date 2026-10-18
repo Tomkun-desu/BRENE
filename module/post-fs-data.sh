@@ -6,7 +6,7 @@ KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
-mkdir -p "${PERSISTENT_DIR}"
+mkdir -p "${PERSISTENT_DIR}" "${PERSISTENT_DIR}/fake_files"
 [[ -x "${SUSFS_BIN}" ]] || { echo "[!] susfs missing, hiding DISABLED" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true; }
 SUSFS_VARIANT=$(${SUSFS_BIN} show variant 2>/dev/null)
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
@@ -537,9 +537,23 @@ if [[ -e "${PERSISTENT_DIR}/custom_open_redirect.txt" ]]; then
 fi
 
 # Spoof /system/etc/hosts
+# Serve a stock-looking hosts file through open_redirect (instead of only
+# faking its stat), then report the faked stat with size 56 like upstream.
 if [[ "${config_spoof_hosts}" == "1" ]]; then
     path=/system/etc/hosts
-    ${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '64' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096' 2>/dev/null || true
+    safe="$(printf '%s' "${path}" | tr '/' '_')"
+    fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
+
+    busybox chcon --reference="${path}" "${PERSISTENT_DIR}/fake_files" 2>/dev/null || true
+    [ -L "${fake_file_path}" ] && rm -f -- "${fake_file_path}"
+    if [[ ! -f "${fake_file_path}" ]]; then
+        printf '127.0.0.1       localhost\n::1             ip6-localhost\n' > "${fake_file_path}"
+    fi
+
+    brene_clone_perm "${fake_file_path}" "${path}" || true
+    brene_open_redirect "${path}" "${fake_file_path}" '3' || true
+
+    ${SUSFS_BIN} add_sus_kstat_statically "${path}" '100' 'default' 'default' '56' 'default' 'default' 'default' 'default' 'default' 'default' '1' '4096' 2>/dev/null || true
 fi
 
 # Spoof Android System Properties

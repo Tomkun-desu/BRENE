@@ -110,6 +110,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/rrr333nnn333/BreZygisk">BreZygisk</a>
+								-
+								<a href="https://t.me/rrr333nnn333channel">Telegram</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -120,6 +122,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/rrr333nnn333/BreWheel">BreWheel</a>
+								-
+								<a href="https://t.me/rrr333nnn333channel">Telegram</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -140,6 +144,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/JingMatrix/Vector">Vector</a>
+								-
+								<a href="https://github.com/JingMatrix/Vector/releases">Canary</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -150,6 +156,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/JingMatrix/TEESimulator">TEESimulator</a>
+								-
+								<a href="https://github.com/JingMatrix/TEESimulator/releases">Canary</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -180,6 +188,18 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/maxsteeel/nomount">NoMount</a>
+								-
+								<a href="https://t.me/nomount">Telegram</a>
+							</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row" data-module="cq_uid_seccomp">
+						<div class="card-row__body">
+							<span class="card-row__title">
+								<a href="https://github.com/longze777/UID-">UID Filter</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -214,7 +234,7 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Developer Options</span>
-							<span class="card-row__sub">Enable or disable developer options</span>
+							<span class="card-row__sub">Options for developers</span>
 						</div>
 						<md-switch icons id="developer_options"></md-switch>
 						<md-ripple></md-ripple>
@@ -223,7 +243,7 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">USB Debugging</span>
-							<span class="card-row__sub">Enable or disable USB debugging</span>
+							<span class="card-row__sub">Debug mode when USB is connected</span>
 						</div>
 						<md-switch icons id="usb_debugging"></md-switch>
 						<md-ripple></md-ripple>
@@ -232,7 +252,7 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Wireless Debugging</span>
-							<span class="card-row__sub">Enable or disable wireless debugging</span>
+							<span class="card-row__sub">Debug mode when Wi-Fi is connected</span>
 						</div>
 						<md-switch icons id="wireless_debugging"></md-switch>
 						<md-ripple></md-ripple>
@@ -241,7 +261,7 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Disable Child Process Restrictions</span>
-							<span class="card-row__sub">Enable or disable child process restrictions</span>
+							<span class="card-row__sub">Disable restrictions on the system resource usage of the app child processes</span>
 						</div>
 						<md-switch icons id="disable_child_process_restrictions"></md-switch>
 						<md-ripple></md-ripple>
@@ -262,6 +282,15 @@
 							<span class="card-row__sub">Show the current display refresh rate</span>
 						</div>
 						<md-switch icons id="show_refresh_rate"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Set logcat and logd buffer to 64K</span>
+							<span class="card-row__sub">Reduce CPU overhead and battery drain by shrinking buffer size</span>
+						</div>
+						<md-switch icons id="shrink_buffer_size"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 				</div>
@@ -288,7 +317,7 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Hide Non-standard /storage/emulated/0 Paths</span>
+							<span class="card-row__title">Hide Non-standard /sdcard Paths</span>
 							<span class="card-row__sub">Standard Paths:</span>
 							<span class="card-row__sub">
 								Alarms, Android, Audiobooks, DCIM, Documents, Download, Movies, Music, Notifications, Pictures, Podcasts, Recordings, Ringtones, (MIUI)
@@ -300,7 +329,7 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Hide Non-standard /storage/emulated/0/Android Paths</span>
+							<span class="card-row__title">Hide Non-standard /sdcard/Android Paths</span>
 							<span class="card-row__sub"> Standard Paths: </span>
 							<span class="card-row__sub">data, media, obb</span>
 						</div>
@@ -396,14 +425,6 @@
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Spoof /system/etc/hosts</span>
-						</div>
-						<md-switch icons id="spoof_hosts"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
 							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
 							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
 							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
@@ -420,24 +441,6 @@
 						</div>
 						<md-switch icons id="spoof_uname"></md-switch>
 						<md-ripple></md-ripple>
-					</div>
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Custom Uname Spoofing</span>
-							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
-						</div>
-						<md-switch icons id="custom_spoof_uname"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-					<div class="card-row">
-						<div class="field-stack">
-							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 6.1.145-android14-9-g00000000" id="custom_uname_release"></md-outlined-text-field>
-							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2025" id="custom_uname_version"></md-outlined-text-field>
-							<div class="btn-row">
-								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
-								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
-							</div>
-						</div>
 					</div>
 				</div>
 
@@ -608,7 +611,7 @@
 							<span class="card-row__sub">It does not check whether the path exists, only whether the string is empty, so be careful what to add.</span>
 							<span class="card-row__sub">For paths that are frequently modified, add them via 'add_sus_path_loop'.</span>
 							<span class="card-row__tag--code">Example:</span>
-							<span class="card-row__tag--code">/storage/emulated/0/TWRP</span>
+							<span class="card-row__tag--code">/sdcard/TWRP</span>
 							<span class="card-row__tag--code">/data/local/tmp/main.jar</span>
 							<!-- SUS PATH LOOP -->
 
@@ -674,6 +677,25 @@
 							<md-filled-button id="unified_apply_button" disabled>APPLY</md-filled-button>
 						</div>
 					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Custom Uname Spoofing</span>
+							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
+						</div>
+						<md-switch icons id="custom_spoof_uname"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row">
+						<div class="field-stack">
+							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 6.1.145-android14" id="custom_uname_release"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2025" id="custom_uname_version"></md-outlined-text-field>
+							<div class="btn-row">
+								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
+								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</section>
 
@@ -714,6 +736,14 @@
 							<span class="card-row__title">Hide LineageOS Strings</span>
 						</div>
 						<md-switch icons id="hide_lineage_strings"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof /system/etc/hosts</span>
+						</div>
+						<md-switch icons id="spoof_hosts"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
