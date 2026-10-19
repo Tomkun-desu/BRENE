@@ -99,6 +99,10 @@
 						<div class="card-row__body">
 							<span class="card-row__tag--code">- Global Umount modules enabled</span>
 							<span class="card-row__tag--code">- Use a file manager with root access or not umounted</span>
+							<span class="card-row__tag--code"
+								>-
+								<a href="https://keybox.kowx712.cc/">Strong Keyboxes</a>
+							</span>
 						</div>
 						<md-ripple></md-ripple>
 					</div>
@@ -134,6 +138,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/frknkrc44/HMA-OSS">HMA-OSS</a>
+								-
+								<a href="https://t.me/aerathfuns">Telegram</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -168,6 +174,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/KOWX712/Tricky-Addon-Update-Target-List">Tricky Addon</a>
+								-
+								<a href="https://nightly.link/KOWX712/Tricky-Addon-Update-Target-List/workflows/build/main?preview">Latest CI (nightly.link)</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -177,7 +185,9 @@
 					<div class="card-row" data-module="playintegrityfix">
 						<div class="card-row__body">
 							<span class="card-row__title">
-								<a href="https://github.com/KOWX712/PlayIntegrityFix">Play Integrity Fix</a>
+								<a href="https://github.com/osm0sis/PlayIntegrityFork">Play Integrity Fork</a>
+								-
+								<a href="https://nightly.link/osm0sis/PlayIntegrityFork/workflows/android/main?preview">Latest CI (nightly.link)</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -200,6 +210,8 @@
 						<div class="card-row__body">
 							<span class="card-row__title">
 								<a href="https://github.com/longze777/UID-">UID Filter</a>
+								-
+								<a href="https://t.me/Suxiaomingpd">Telegram</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -310,7 +322,8 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Hide Custom Recovery Paths</span>
+							<span class="card-row__title">Hide Custom Recovery</span>
+							<span class="card-row__sub">TWRP, OrangeFox</span>
 						</div>
 						<md-switch icons id="hide_custom_recovery"></md-switch>
 						<md-ripple></md-ripple>
@@ -426,21 +439,21 @@
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
-							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
-							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
-						</div>
-						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
 							<span class="card-row__title">Uname Spoofing</span>
 							<span class="card-row__sub">Spoof uname for all processes</span>
 							<span class="card-row__sub">Only 'release' and 'version' are spoofed as others are no longer needed</span>
 						</div>
 						<md-switch icons id="spoof_uname"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Spoof /proc/cmdline or /proc/bootconfig</span>
+							<span class="card-row__sub">Spoof the output of /proc/cmdline (non-gki) or /proc/bootconfig (gki) from a text file</span>
+							<span class="card-row__sub">No root process detects it for now, and this spoofing won't help much actually</span>
+						</div>
+						<md-switch icons id="spoof_cmdline_or_bootconfig"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 				</div>
@@ -453,14 +466,6 @@
 							<span class="card-row__sub">Spoof some android system properties</span>
 						</div>
 						<md-switch icons id="spoof_system_properties"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Spoof System Properties Every Minute</span>
-						</div>
-						<md-switch icons id="spoof_system_properties_repeat"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
@@ -575,6 +580,27 @@
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
+							<span class="card-row__title">Custom Uname Spoofing</span>
+							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
+						</div>
+						<md-switch icons id="custom_spoof_uname"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row">
+						<div class="field-stack">
+							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 6.1.145-android14" id="custom_uname_release"></md-outlined-text-field>
+							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2025" id="custom_uname_version"></md-outlined-text-field>
+							<div class="btn-row">
+								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
+								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="card-group">
+					<div class="card-row">
+						<div class="card-row__body">
 							<span class="card-row__title">Important Notes:</span>
 							<span class="card-row__sub">Only effective for umounted process with uid ≥ 10.000</span>
 
@@ -677,26 +703,6 @@
 							<md-filled-button id="unified_apply_button" disabled>APPLY</md-filled-button>
 						</div>
 					</div>
-
-					<div class="card-row">
-						<div class="card-row__body">
-							<span class="card-row__title">Custom Uname Spoofing</span>
-							<span class="card-row__sub">Spoof uname for all processes, set string to 'default' to imply the function to use original string</span>
-						</div>
-						<md-switch icons id="custom_spoof_uname"></md-switch>
-						<md-ripple></md-ripple>
-					</div>
-					<div class="card-row">
-						<div class="field-stack">
-							<md-outlined-text-field label="Kernel Release" placeholder="e.g. 6.1.145-android14" id="custom_uname_release"></md-outlined-text-field>
-							<md-outlined-text-field label="Kernel Version" placeholder="e.g. #1 SMP PREEMPT Wed Jun 9 03:20:30 UTC 2025" id="custom_uname_version"></md-outlined-text-field>
-							<div class="btn-row">
-								<md-outlined-button id="button_custom_uname_reset">RESET</md-outlined-button>
-								<md-filled-button id="button_custom_uname_apply">APPLY</md-filled-button>
-							</div>
-						</div>
-					</div>
-
 				</div>
 			</section>
 

@@ -80,7 +80,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_spoof_os_patch_level_property) config_spoof_os_patch_level_property="$v" ;;
       config_spoof_os_security_patch_level_property) config_spoof_os_security_patch_level_property="$v" ;;
       config_spoof_system_properties) config_spoof_system_properties="$v" ;;
-      config_spoof_system_properties_repeat) config_spoof_system_properties_repeat="$v" ;;
       config_spoof_utc_properties) config_spoof_utc_properties="$v" ;;
       config_spoof_vendor_security_patch_level_property) config_spoof_vendor_security_patch_level_property="$v" ;;
       config_su_compat) config_su_compat="$v" ;;

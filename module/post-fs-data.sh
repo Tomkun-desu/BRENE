@@ -7,6 +7,25 @@ SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
 mkdir -p "${PERSISTENT_DIR}" "${PERSISTENT_DIR}/fake_files"
+
+# Restore the shared SuSFS binary if another module removed it (upstream 5457b3a).
+# Only when it is missing: never overwrite a working binary, otherwise a newer
+# binary shipped by KernelSU would be silently downgraded on every boot.
+if [ ! -x "${DEST_BIN_DIR}/susfs" ]; then
+  if [ -x "${MODDIR}/tools/susfs" ]; then
+    cp -pf "${MODDIR}/tools/susfs" "${DEST_BIN_DIR}/susfs" 2>/dev/null || true
+  elif [ -f "${PERSISTENT_DIR}/susfs" ]; then
+    cp -pf "${PERSISTENT_DIR}/susfs" "${DEST_BIN_DIR}/susfs" 2>/dev/null || true
+  fi
+fi
+# Make sure it is present and runnable before the SUSFS probe below, then
+# re-create the compatibility symlinks customize.sh installs (if wiped).
+if [ -f "${DEST_BIN_DIR}/susfs" ]; then
+  chmod 755 "${DEST_BIN_DIR}/susfs" 2>/dev/null || true
+  [ -e "${DEST_BIN_DIR}/sus" ] || ln -sf "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2>/dev/null || true
+  [ -e "${DEST_BIN_DIR}/ksu_susfs" ] || ln -sf "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2>/dev/null || true
+fi
+
 [[ -x "${SUSFS_BIN}" ]] || { echo "[!] susfs missing, hiding DISABLED" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true; }
 SUSFS_VARIANT=$(${SUSFS_BIN} show variant 2>/dev/null)
 CUSTOM_ROM_NAMES="lineage|infinity|evolution|crdroid|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|clover|yaap|aospa"
@@ -83,7 +102,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_spoof_os_patch_level_property) config_spoof_os_patch_level_property="$v" ;;
       config_spoof_os_security_patch_level_property) config_spoof_os_security_patch_level_property="$v" ;;
       config_spoof_system_properties) config_spoof_system_properties="$v" ;;
-      config_spoof_system_properties_repeat) config_spoof_system_properties_repeat="$v" ;;
       config_spoof_utc_properties) config_spoof_utc_properties="$v" ;;
       config_spoof_vendor_security_patch_level_property) config_spoof_vendor_security_patch_level_property="$v" ;;
       config_su_compat) config_su_compat="$v" ;;
@@ -99,9 +117,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
 fi
 # Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
 if [ "${config_sync_device_props}" = "1" ]; then
-  config_spoof_system_properties=1
-fi
-if [ "${config_spoof_system_properties_repeat}" = "1" ]; then
   config_spoof_system_properties=1
 fi
 

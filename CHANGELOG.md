@@ -1145,4 +1145,3 @@ Here's a summary of the changes in simple bullet points:
 * A new setting was added to the web interface to control the build prop syncing feature.
 * A new setting was added to the web interface to control custom uname spoofing.
 * The list of settings in the web interface was updated to include the new settings.
-

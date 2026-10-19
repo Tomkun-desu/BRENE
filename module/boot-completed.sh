@@ -82,7 +82,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_spoof_os_patch_level_property) config_spoof_os_patch_level_property="$v" ;;
       config_spoof_os_security_patch_level_property) config_spoof_os_security_patch_level_property="$v" ;;
       config_spoof_system_properties) config_spoof_system_properties="$v" ;;
-      config_spoof_system_properties_repeat) config_spoof_system_properties_repeat="$v" ;;
       config_spoof_utc_properties) config_spoof_utc_properties="$v" ;;
       config_spoof_vendor_security_patch_level_property) config_spoof_vendor_security_patch_level_property="$v" ;;
       config_su_compat) config_su_compat="$v" ;;
@@ -98,9 +97,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
 fi
 # Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
 if [ "${config_sync_device_props}" = "1" ]; then
-  config_spoof_system_properties=1
-fi
-if [ "${config_spoof_system_properties_repeat}" = "1" ]; then
   config_spoof_system_properties=1
 fi
 
@@ -168,8 +164,9 @@ fi
 
 # Disable Child Process Restrictions
 if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
-        # -p so the override survives reboot (same as upstream)
-        resetprop -n -p persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null || true
+        # No -p (--persistent): upstream e6bcf86 removed it because a persistent
+        # resetprop broke this override on some devices.
+        resetprop -n persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null || true
 fi
 
 # SELinux Enforcing
@@ -273,11 +270,12 @@ if [[ "${config_show_refresh_rate}" == "1" ]]; then
 fi
 
 # Set logcat and logd buffer to 64K
-# Smaller ring buffers cut CPU overhead and battery drain; -p makes the
-# persist.logd.size override survive reboot.
+# Smaller ring buffers cut CPU overhead and battery drain. No -p: upstream
+# e6bcf86 dropped it because a persistent resetprop made the override revert
+# after reboot on some devices.
 if [[ "${config_shrink_buffer_size}" == "1" ]]; then
     command -v logcat >/dev/null 2>&1 && logcat -G 64K 2>/dev/null || true
-    resetprop -n -p persist.logd.size 65536 2>/dev/null || true
+    resetprop -n persist.logd.size 65536 2>/dev/null || true
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
@@ -324,40 +322,6 @@ brene_wait_for_nonempty_listing() {
 	done
 	return 1
 }
-# Spoof Android System Properties Every Minute
-if [[ "${config_spoof_system_properties_repeat}" == "1" ]]; then
-   if mkdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null; then
-      trap 'rmdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null' EXIT INT TERM
-      _spoof_pid="$(cat "${PERSISTENT_DIR}/spoof_repeat.pid" 2>/dev/null)"
-      case "${_spoof_pid}" in
-         ''|*[!0-9]*)
-            # stale pidfile (empty/non-numeric) -> drop it and start a fresh single daemon
-            rm -f "${PERSISTENT_DIR}/spoof_repeat.pid"
-            while true; do
-                  sleep 60
-                  brene_spoof_system_properties
-            done &
-            echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
-            ;;
-         *)
-            if kill -0 "${_spoof_pid}" 2>/dev/null; then
-               :
-            else
-               # stale numeric pid (dead process) -> start a fresh single daemon
-               while true; do
-                  sleep 60
-                  brene_spoof_system_properties
-               done &
-               echo $! > "${PERSISTENT_DIR}/spoof_repeat.pid"
-            fi
-            ;;
-      esac
-      rmdir "${PERSISTENT_DIR}/spoof_repeat.pid.lock" 2>/dev/null
-      trap - EXIT INT TERM
-   fi
-fi
-
-
 
 ## Remove the '..5.u.S' leftover ##
 ## THe reason why this sus file is created is because users have grant the MANAGE_EXTERNAL_STORAGE permission for the apps that detecting sus files in /sdcard, or in /sdcard/Android/data where the apps are exploiting the unicode bugs to create files arbitrary.
@@ -501,7 +465,7 @@ if [[ "${config_hide_custom_recovery}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
                         brene_log ""
                         brene_log "########################"
-                        brene_log "Hide Custom Recovery Paths"
+                        brene_log "Hide Custom Recovery"
                         brene_log "########################"
         fi
 

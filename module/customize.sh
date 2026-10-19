@@ -19,7 +19,11 @@ echo "╚═════╝ ╚═╝  ╚═╝╚══════╝╚═�
 echo ""
 
 # Hot Install Support
-export MODULE_HOT_INSTALL_REQUEST="true"
+# Only ask for a hot install when the manager can actually perform one
+# (upstream 6c9a43d). Otherwise the verified copy further down takes over.
+if [[ "${KSU_HAS_HOT_INSTALL}" == "true" ]]; then
+	export MODULE_HOT_INSTALL_REQUEST="true"
+fi
 
 # Check Compatibility
 if [[ -z "${KSU}" ]]; then
@@ -91,6 +95,10 @@ ${KSU_BIN} module config set override.description "[Module Status: ⏱️ | Kern
 echo "[✅] Preparing brene persistent directory (${PERSISTENT_DIR})"
 mkdir -p "${PERSISTENT_DIR}"
 chmod 700 "${PERSISTENT_DIR}" || true
+
+# Back up the installed shared SuSFS binary so post-fs-data.sh can restore it
+# when another module removes it (upstream 5457b3a).
+[ -f "${DEST_BIN_DIR}/susfs" ] && cp -pf "${DEST_BIN_DIR}/susfs" "${PERSISTENT_DIR}/susfs" 2>/dev/null || true
 
 files="
 custom_sus_map.txt
@@ -206,6 +214,11 @@ mkdir -p "${PERSISTENT_DIR}/fake_files"
 MODDIR="/data/adb/modules/brene"
 MODULES_PATH="/data/adb/modules"
 
+# Skipped when the manager hot-installs the module itself (see Hot Install above)
+if [[ "${MODULE_HOT_INSTALL_REQUEST}" == "true" ]]; then
+	echo '[✅] Hot-install requested from the module manager'
+else
+
 # Copy first, drop the old install only on success (never rm before a verified copy)
 if [ -n "${MODPATH}" ] && [ -d "${MODPATH}" ]; then
 	rm -rf "${MODDIR}.bak"
@@ -224,4 +237,5 @@ if [ -n "${MODPATH}" ] && [ -d "${MODPATH}" ]; then
 	fi
 else
 	echo '[⚠️] MODPATH missing, reboot to apply'
+fi
 fi
