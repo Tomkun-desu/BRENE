@@ -1,3 +1,20 @@
+## v0.0.72-custom.1 - 2026-10-19
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added a new variable `DEST_BIN_DIR` with the value `/data/adb/ksu/bin`.
+* Added a long string of custom ROM names to the `CUSTOM_ROM_NAMES` variable.
+* Changed the way the `utils.sh` file is loaded, making it POSIX compatible.
+* Changed the way the `config.sh` file is loaded, adding a parser to ensure only allowlisted keys are used, and making it POSIX compatible.
+* Added code to strip carriage returns from file inputs and strip quotes from values.
+* Added code to allow only specific key formats in the `config.sh` file.
+* Added a comment to disable a specific shellcheck warning.
+* Added code to assign values to variables in a way that prevents word splitting or globbing.
+
 ## v0.0.71-custom.1 - 2026-10-18
 
 ### Synced from upstream BRENE
