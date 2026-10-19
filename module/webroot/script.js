@@ -99,11 +99,16 @@ const configs = [
 ]
 
 // Open URLs
+// NB: a host allowlist used to sit here (github/gitlab/raw.githubusercontent only)
+// and it silently swallowed every other link -- Telegram, nightly.link, keybox,
+// ... clicked, preventDefault() ran, and nothing happened. Only the scheme needs
+// a check: that is what keeps am start from being handed a tg:/intent:/javascript:
+// URL. element.href already resolves relative hrefs to absolute ones.
 document.querySelectorAll('a[href]').forEach((element) => {
 	element.addEventListener('click', (event) => {
 		event.preventDefault()
 		const url = element.href
-		if (!/^https:\/\/(github\.com|gitlab\.com|raw\.githubusercontent\.com)\//.test(url)) return
+		if (!/^https?:\/\//i.test(url)) return
 		const safeUrl = `'${url.replace(/'/g, "'\\''")}'`
 		exec(`am start -a android.intent.action.VIEW -d ${safeUrl}`)
 	})
