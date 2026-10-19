@@ -1,3 +1,19 @@
+## v0.0.72-custom.2 - 2026-10-19
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes summarized in simple bullet points:
+
+* Added a new variable `DEST_BIN_DIR` to specify the directory for the kernel module's binary files.
+* Modified the `CUSTOM_ROM_NAMES` variable to include additional custom ROM names.
+* Changed the way the `utils.sh` script is loaded, making it POSIX compatible.
+* Changed the way the `config.sh` script is loaded, making it POSIX compatible and adding input validation to prevent loading untrusted files.
+* Modified the way configuration variables are read from `config.sh`, adding input validation and stripping unnecessary characters.
+* Added a check to ensure that configuration keys are valid and only allow certain characters.
+* Changed the way configuration variables are assigned, making it safe in various shell environments.
+
 ## v0.0.72-custom.1 - 2026-10-19
 
 ### Synced from upstream BRENE
