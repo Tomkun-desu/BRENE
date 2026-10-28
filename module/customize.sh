@@ -48,11 +48,11 @@ fi
 
 chmod +x "${MODPATH}/tools/susfs" 2>/dev/null || true
 # pinned known-good susfs hash
-SUSFS_PINNED_SHA256="13cb301afa5f4e9b512ec6efd79d19f2bf21d67c8375b83c06ba77caa4275064"
+SUSFS_PINNED_SHA256="cb16825fb8c949775c1bf692263d9f59a52f12127fdcacc531b6a612e258a831"
 if command -v sha256sum >/dev/null 2>&1; then
   SUSFS_ACTUAL_SHA256="$(sha256sum "${MODPATH}/tools/susfs" 2>/dev/null | awk '{print $1}' || true)"
   if [ "${SUSFS_ACTUAL_SHA256}" != "${SUSFS_PINNED_SHA256}" ]; then
-    abort "[❌] SuSFS hash mismatch! هش susfs نامعتبر است!"
+    abort "[❌] SuSFS hash mismatch! Invalid susfs binary!"
   fi
 fi
 src_susfs_ver=$("${MODPATH}/tools/susfs" show version 2>/dev/null)
