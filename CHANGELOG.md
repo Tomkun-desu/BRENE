@@ -1,3 +1,21 @@
+## v0.0.73-custom.2 - 2026-10-28
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in bullet points:
+
+* The script now loads utils from the module directory, but in a POSIX compatible way.
+* The script now loads config from the persistent directory, but with additional checks to prevent untrusted files from being sourced.
+* The config loading process now strips carriage returns and quotes from the key-value pairs.
+* The config loading process now only allows keys that start with "config_" and contain only letters, numbers, and underscores.
+* The config loading process now assigns values to variables without using eval, which makes it safer in BusyBox ash and other shells.
+* The config loading process now uses a while loop to iterate over the key-value pairs, rather than relying on bash's [[ ]] syntax.
+* The config loading process now uses a case statement to handle single or double quotes around values.
+* The script now uses the POSIX compatible '. ' command to source the utils script, rather than 'source'.
+* The script now uses the POSIX compatible 'if' statement to check if the config file exists, rather than relying on bash's [[ ]] syntax.
+
 ## v0.0.73-custom.1 - 2026-10-28
 
 ### Synced from upstream BRENE
