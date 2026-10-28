@@ -64,6 +64,7 @@ fi
 
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}" || abort "[❌] Failed to copy susfs binary!"
 chmod +x "${MODPATH}/inotify.sh"
+chmod +x "${MODPATH}/remove_ksu_directory.sh"
 chmod +x "${MODPATH}/post-fs-data.sh" "${MODPATH}/service.sh" "${MODPATH}/boot-completed.sh" "${MODPATH}/action.sh" 2>/dev/null || true
 chmod 755 "${DEST_BIN_DIR}/susfs" || abort "[❌] Failed to chmod susfs binary!"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development

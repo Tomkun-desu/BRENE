@@ -6,7 +6,6 @@ config_paths_hiding__non_standard_sdcard_android=1
 config_paths_hiding__sdcard_android_data_media_obb=1
 config_paths_hiding__user_ca_certs=1
 
-config_selinux=1
 config_su_compat=1
 config_selinux_hide=1
 config_kernel_umount=1
@@ -46,6 +45,8 @@ config_custom_uname_kernel_release='default'
 config_custom_uname_kernel_version='default'
 config_spoof_hosts=0
 config_hide_custom_recovery=1
+config_hide_ksu_directories=1
+config_hide_third_party_apps=1
 config_fix_data_local_tmp_inconsistencies=1
 config_show_refresh_rate=0
 config_disable_child_process_restrictions=1

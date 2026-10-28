@@ -35,10 +35,6 @@ const configs = [
 		action: (enabled) => setFeature(`settings put global adb_wifi_enabled ${enabled ? 1 : 0}`),
 	},
 	{
-		id: 'selinux',
-		action: (enabled) => setFeature(`setenforce ${enabled ? 1 : 0}`),
-	},
-	{
 		id: 'saturation',
 		action: (enabled) => setFeature(`service call SurfaceFlinger 1022 f ${enabled ? 2.0 : 1.0}`),
 	},
@@ -65,6 +61,8 @@ const configs = [
 	{ id: 'custom_spoof_uname' },
 	{ id: 'hide_framework_res_apk' },
 	{ id: 'spoof_libstagefright' },
+	{ id: 'hide_ksu_directories' },
+	{ id: 'hide_third_party_apps' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'spoof_cmdline_or_bootconfig' },
@@ -257,7 +255,7 @@ exec('susfs show enabled_features').then((result) => {
 	const container = document.getElementById('kernel-features-container')
 
 	if (result.errno !== 0) {
-		container.innerText = 'Failed to load enabled features'
+		container.innerText = 'Failed to load'
 		return
 	}
 	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
@@ -308,7 +306,7 @@ function cutToLastFullLines(s, max) {
 
         const r1 = await exec(`cat ${PERSISTENT_DIR}/log.txt`)
         if (r1.errno !== 0) {
-                container.textContent += 'Failed to load logs'
+                container.textContent += 'Failed to load'
                 return
         }
         let out1 = r1.stdout || ''
@@ -319,7 +317,7 @@ function cutToLastFullLines(s, max) {
 
         const r2 = await exec(`cat ${PERSISTENT_DIR}/logs.txt`)
         if (r2.errno !== 0) {
-                container.textContent += 'Failed to load logs'
+                container.textContent += 'Failed to load'
                 return
         }
 	let out2 = r2.stdout || ''
@@ -336,7 +334,7 @@ exec(`grep "^version=" ${MODDIR}/module.prop | cut -d'=' -f2`).then((result) => 
 // Load susfs version
 exec('susfs show version').then((result) => {
 	const element = document.getElementById('susfs-version')
-	element.innerText = result.errno === 0 ? `${result.stdout}+` : 'unknown'
+	element.innerText = result.errno === 0 ? `${result.stdout}` : 'unknown'
 })
 
 // Helper function to update config
@@ -404,7 +402,7 @@ function updateConfig2(config, value) {
 // Helper function to set config immedialtely that no need to reboot
 function setFeature(cmd) {
 	return exec(cmd).then((result) => {
-		toast(result.errno === 0 ? 'No need to reboot' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
+		toast(result.errno === 0 ? 'Reboot not required' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
 		return result
 	})
 }
@@ -692,7 +690,7 @@ if (resetDialog && resetButton) {
 		const safeDigest = `'${digest.replace(/'/g, "'\\''")}'`
 		exec(`resetprop -n ro.boot.vbmeta.digest ${safeDigest}`).then((result) => {
                         if (result.errno === 0) {
-                                toast('No need to reboot')
+                                toast('Reboot not required')
                         } else {
                                 toast('Failed to update prop')
                         }

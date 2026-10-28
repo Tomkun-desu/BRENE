@@ -58,6 +58,8 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_custom_rom_paths_2) config_hide_custom_rom_paths_2="$v" ;;
       config_hide_framework_res_apk) config_hide_framework_res_apk="$v" ;;
       config_hide_injections) config_hide_injections="$v" ;;
+      config_hide_ksu_directories) config_hide_ksu_directories="$v" ;;
+      config_hide_third_party_apps) config_hide_third_party_apps="$v" ;;
       config_hide_lineage_strings) config_hide_lineage_strings="$v" ;;
       config_hide_sus_mnts_for_non_su_procs) config_hide_sus_mnts_for_non_su_procs="$v" ;;
       config_hide_suspicious_pty) config_hide_suspicious_pty="$v" ;;
@@ -70,7 +72,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_pif_props) config_pif_props="$v" ;;
       config_rom_props) config_rom_props="$v" ;;
       config_saturation) config_saturation="$v" ;;
-      config_selinux) config_selinux="$v" ;;
       config_selinux_hide) config_selinux_hide="$v" ;;
       config_show_refresh_rate) config_show_refresh_rate="$v" ;;
       config_shrink_buffer_size) config_shrink_buffer_size="$v" ;;
@@ -167,11 +168,6 @@ if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
         # No -p (--persistent): upstream e6bcf86 removed it because a persistent
         # resetprop broke this override on some devices.
         resetprop -n persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null || true
-fi
-
-# SELinux Enforcing
-if [[ "${config_selinux}" == "1" ]] && command -v getenforce >/dev/null 2>&1 && command -v setenforce >/dev/null 2>&1; then
-	[[ "$(getenforce)" != "Enforcing" ]] && setenforce 1
 fi
 
 # Remove Custom ROM Properties
@@ -342,6 +338,14 @@ for t in "${TARGET1}" "${TARGET2}" "${TARGET3}" "${TARGET4}"; do
 	rm -rf -- "$t"
 done
 pgrep -x inotifyd >/dev/null 2>&1 || inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
+
+# Hide KernelSU directories
+if [[ "${config_hide_ksu_directories}" == "1" ]]; then
+	sh "${MODDIR}/remove_ksu_directory.sh"
+	inotifyd "${MODDIR}/remove_ksu_directory.sh" /storage/emulated/0/Android/data:n &
+	inotifyd "${MODDIR}/remove_ksu_directory.sh" /storage/emulated/0/Android/media:n &
+	inotifyd "${MODDIR}/remove_ksu_directory.sh" /storage/emulated/0/Android/obb:n &
+fi
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
 ## Be reminded that without HMA's vold app data enabled, added sus_paths are still vulnerable to zwc exploit, so in this case users also have to add its underlying path as well ##
@@ -730,6 +734,12 @@ if [[ "${config_spoof_verified_boot_hash}" != '' ]]; then
 		*[!0-9a-fA-F]*|"") ;;
 		*) [ "${#config_spoof_verified_boot_hash}" -eq 64 ] && resetprop_n "ro.boot.vbmeta.digest" "${config_spoof_verified_boot_hash}" ;;
 	esac
+fi
+
+# Hide third party apps
+if [[ "${config_hide_third_party_apps}" == "1" ]]; then
+	packages=$(pm list packages -3 | awk -F: '{out = out (out ? "," : "") $2} END {print out}')
+	${SUSFS_BIN} set_priority_uid_filter "${packages}"
 fi
 
 resetprop -c --force 2>/dev/null || true

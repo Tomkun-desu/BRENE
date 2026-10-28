@@ -32,7 +32,7 @@ jobs:
       - name: Verify susfs binary hash
         run: |
           # pinned known-good susfs hash
-          PINNED_SUSFS_SHA256="13cb301afa5f4e9b512ec6efd79d19f2bf21d67c8375b83c06ba77caa4275064"
+          PINNED_SUSFS_SHA256="cb16825fb8c949775c1bf692263d9f59a52f12127fdcacc531b6a612e258a831"
           sha256sum module/tools/susfs* 2>/dev/null | tee /tmp/susfs.sha256 || exit 1
           [ -s module/tools/susfs ] || exit 1
           ACTUAL_SUSFS_SHA256="$(sha256sum module/tools/susfs | awk '{print $1}')"

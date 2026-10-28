@@ -56,6 +56,8 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_custom_rom_paths_2) config_hide_custom_rom_paths_2="$v" ;;
       config_hide_framework_res_apk) config_hide_framework_res_apk="$v" ;;
       config_hide_injections) config_hide_injections="$v" ;;
+      config_hide_ksu_directories) config_hide_ksu_directories="$v" ;;
+      config_hide_third_party_apps) config_hide_third_party_apps="$v" ;;
       config_hide_lineage_strings) config_hide_lineage_strings="$v" ;;
       config_hide_sus_mnts_for_non_su_procs) config_hide_sus_mnts_for_non_su_procs="$v" ;;
       config_hide_suspicious_pty) config_hide_suspicious_pty="$v" ;;
@@ -68,7 +70,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_pif_props) config_pif_props="$v" ;;
       config_rom_props) config_rom_props="$v" ;;
       config_saturation) config_saturation="$v" ;;
-      config_selinux) config_selinux="$v" ;;
       config_selinux_hide) config_selinux_hide="$v" ;;
       config_show_refresh_rate) config_show_refresh_rate="$v" ;;
       config_spoof_cmdline_or_bootconfig) config_spoof_cmdline_or_bootconfig="$v" ;;
