@@ -1,3 +1,19 @@
+## v0.0.73-custom.1 - 2026-10-28
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a line to strip carriage returns from keys and values in the config file.
+* Added a line to strip surrounding single or double quotes from values in the config file.
+* Added a line to check if a key starts with 'config_' and contains only letters, numbers, and underscores before assigning its value.
+* Added a line to check if a key contains any characters other than letters, numbers, and underscores before assigning its value.
+* Changed the way the config file is sourced, using a while loop and IFS to read key-value pairs instead of sourcing the file directly.
+* Changed the way variables are assigned from the config file, using a plain quoted assignment to avoid word splitting or globbing.
+* Changed the way the utils script is sourced, using a POSIX-compatible syntax.
+* Removed lines that sourced the utils and config scripts directly.
+* Removed comments that mentioned loading utils and config scripts.
+
 ## v0.0.72-custom.2 - 2026-10-19
 
 ### Synced from upstream BRENE
