@@ -739,7 +739,11 @@ fi
 # Hide third party apps
 if [[ "${config_hide_third_party_apps}" == "1" ]]; then
 	packages=$(pm list packages -3 | awk -F: '{out = out (out ? "," : "") $2} END {print out}')
-	${SUSFS_BIN} set_priority_uid_filter "${packages}"
+	if ! hide_out=$(${SUSFS_BIN} set_priority_uid_filter "${packages}" 2>&1); then
+		echo "hide_third_party_apps failed (${#packages} bytes): ${hide_out:-no output}" >> "${PERSISTENT_DIR}/log.txt"
+	elif [[ "${config_brene_logs}" == "1" ]]; then
+		echo "hide_third_party_apps ok (${#packages} bytes)" >> "${PERSISTENT_DIR}/log.txt"
+	fi
 fi
 
 resetprop -c --force 2>/dev/null || true
