@@ -273,7 +273,7 @@ exec(`cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}'`)
 	if (result.stdout.length > 0) {
 		container.innerText = result.stdout
 	} else {
-		container.innerText = '0'
+		container.innerText = 'No mounts'
 	}
 })
 
