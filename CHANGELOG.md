@@ -1,3 +1,19 @@
+## v0.0.73-custom.3 - 2026-10-28
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes:
+
+* Added a custom destination directory for binaries: /data/adb/ksu/bin.
+* Added a list of custom ROM names.
+* Changed the way utilities are loaded: the code now checks if the file exists and then uses the POSIX-compliant `. ${MODDIR}/utils.sh` syntax.
+* Changed the way the config file is loaded: the code now reads the file line by line, strips any CR characters, and allows only config_* variables.
+* Added input validation to ensure that only allowlisted keys are assigned.
+* Changed the syntax for assigning variables from the config file to prevent word splitting or globbing.
+* Removed the original loading of utils and config files.
+
 ## v0.0.73-custom.2 - 2026-10-28
 
 ### Synced from upstream BRENE
