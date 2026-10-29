@@ -117,3 +117,19 @@ if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
                 brene_kstat_update_line "${i}" || true
         done < "${PERSISTENT_DIR}/custom_sus_kstat.txt"
 fi
+
+# The manager does not run boot-completed.sh on every ROM/boot, so apply the
+# getpriority uid filter here too: wait for boot to complete, then let
+# apply_uid_filter.sh build the list (PackageManager is ready by then).
+if [ "${config_hide_third_party_apps}" = "1" ] && [ -f "${MODDIR}/apply_uid_filter.sh" ]; then
+	(
+		i=0
+		while [ "$(getprop sys.boot_completed 2>/dev/null)" != "1" ] && [ "$i" -lt 150 ]; do
+			sleep 2
+			i=$((i + 1))
+		done
+		[ "$i" -lt 150 ] || exit 0
+		sleep 5
+		sh "${MODDIR}/apply_uid_filter.sh"
+	) >/dev/null 2>&1 &
+fi
