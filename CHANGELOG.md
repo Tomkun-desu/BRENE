@@ -1,3 +1,17 @@
+## v0.0.73-custom.10 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The local version of `module/action.sh` loads the `utils.sh` file by sourcing it.
+* The local version loads the `config.sh` file by sourcing it, but the upstream version does not.
+* The local version loads the `config.sh` file in a more secure way by stripping CR characters, trimming spaces, and removing quotes from the key-value pairs.
+* The local version of `module/action.sh` uses a more secure way to parse the `config.sh` file, allowing only `config_` followed by letters, numbers, and underscores.
+* The local version uses a case statement to strip quotes from the value of each key-value pair in the `config.sh` file.
+* The local version uses a case statement to allowlist the keys of the `config.sh` file, only allowing keys that start with `config_`.
+* The local version of `module/action.sh` checks for the existence of the `PERSISTENT_DIR` directory before trying to load the `config.sh` file.
+
 ## v0.0.73-custom.9 - 2026-10-29
 
 ### Synced from upstream BRENE
