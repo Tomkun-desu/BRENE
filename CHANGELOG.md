@@ -1,3 +1,18 @@
+## v0.0.73-custom.9 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a new variable `CUSTOM_ROM_NAMES` with a list of custom ROM names.
+* Changed the way the `utils.sh` script is loaded to make it POSIX compliant.
+* Changed the way the `config.sh` script is loaded to parse it safely and make it POSIX compliant.
+* Added code to strip carriage returns and trim spaces from the config file.
+* Added code to strip single or double quotes from the config file values.
+* Added an allowlist to only allow specific config keys to be loaded.
+* Added comments to explain the code and its reasoning.
+* Changed the way the config file values are assigned to variables to make it safe and POSIX compliant.
+
 ## v0.0.73-custom.8 - 2026-10-29
 
 ### Synced from upstream BRENE
