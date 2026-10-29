@@ -260,6 +260,65 @@ brene_spoof_date_props() {
 	if_prop_exits_resetprop_n "ro.vendor_dlkm.build.date" "${new_date_value}"
 }
 
+# Log one fingerprint-tail correction; the header is printed once per stage.
+__brene_fp_tail_note() {
+	local _hdr="$1" _msg="$2"
+	[[ "${config_brene_logs}" == "1" ]] || return 0
+	if [[ "${_BRENE_FP_TAIL_N:-0}" -eq 0 ]]; then
+		brene_log ""
+		brene_log "########################"
+		brene_log "${_hdr}"
+		brene_log "########################"
+		brene_log "[fingerprint_tail]: ro.build.fingerprint: ${_BRENE_FP_TAIL_FP}"
+		_BRENE_FP_TAIL_N=1
+	fi
+	brene_log "[fingerprint_tail]: ${_msg}"
+}
+
+# Align the props encoded in ro.build.fingerprint back to its own tail
+# (brand/product/device:release/id/incremental:type/tags). A build.id or
+# incremental that disagrees with the fingerprint is a known integrity signal,
+# so the late stage re-checks it after the fingerprint spoofing settled.
+# Only derivable fields are touched and equal values are skipped; never fails.
+brene_align_fingerprint_tail() {
+	local _hdr="$1" _fp _rest _id _incr _type _prod _cur
+	_BRENE_FP_TAIL_N=0
+	_fp=$(resetprop ro.build.fingerprint 2>/dev/null)
+	_BRENE_FP_TAIL_FP="${_fp}"
+	[[ -n "${_fp}" ]] || return 0
+	_rest=${_fp#*:}; _rest=${_rest#*/}
+	_id=${_rest%%/*}; _rest=${_rest#*/}
+	_incr=${_rest%%:*}; _type=${_rest#*:}; _type=${_type%%/*}
+	_prod=${_fp%%:*}; _prod=${_prod##*/}
+	# A fingerprint with no incremental part repeats the id: then nothing to set.
+	[[ "${_id}" == "${_incr}" ]] && _incr=""
+	case "${_id}" in ""|*[!A-Za-z0-9._-]*) _id="" ;; esac
+	case "${_incr}" in ""|*[!A-Za-z0-9._-]*) _incr="" ;; esac
+	case "${_type}" in user|userdebug|eng) ;; *) _type="" ;; esac
+	if [[ -n "${_id}" ]]; then
+		_cur=$(resetprop ro.build.id 2>/dev/null)
+		if [[ -n "${_cur}" && "${_cur}" != "${_id}" ]]; then
+			resetprop_n ro.build.id "${_id}"
+			__brene_fp_tail_note "${_hdr}" "ro.build.id: ${_cur} -> ${_id}"
+		fi
+	fi
+	if [[ -n "${_incr}" ]]; then
+		_cur=$(resetprop ro.build.version.incremental 2>/dev/null)
+		if [[ -n "${_cur}" && "${_cur}" != "${_incr}" ]]; then
+			resetprop_n ro.build.version.incremental "${_incr}"
+			__brene_fp_tail_note "${_hdr}" "ro.build.version.incremental: ${_cur} -> ${_incr}"
+		fi
+	fi
+	if [[ -n "${_type}" && -n "${_prod}" ]]; then
+		_cur=$(resetprop ro.build.flavor 2>/dev/null)
+		if [[ -n "${_cur}" && "${_cur}" != "${_prod}-${_type}" ]]; then
+			resetprop_n ro.build.flavor "${_prod}-${_type}"
+			__brene_fp_tail_note "${_hdr}" "ro.build.flavor: ${_cur} -> ${_prod}-${_type}"
+		fi
+	fi
+	return 0
+}
+
 brene_spoof_os_security_patch_props() {
     local patch_year patch_month patch_day patch_month_num prev_month prev_year
     if command -v busybox >/dev/null 2>&1; then
@@ -272,6 +331,9 @@ brene_spoof_os_security_patch_props() {
     patch_month_num=${patch_month#0}; patch_day=${patch_day#0}
     [ -z "${patch_month_num}" ] && patch_month_num=0
     [ -z "${patch_day}" ] && patch_day=0
+    # Bogus clock (1970-01-01 at boot): leave the real patch level alone instead
+    # of publishing a 1970 date that is a stronger signal than no spoof at all.
+    [ "${patch_year}" -ge 2024 ] 2>/dev/null || return 0
     if [ "${patch_day}" -ge 5 ]; then
         if_prop_exits_resetprop_n "ro.build.version.security_patch" "${patch_year}-${patch_month}-01"
     elif [ "${patch_month_num}" -ge 2 ]; then
@@ -295,6 +357,9 @@ brene_spoof_vendor_security_patch_props() {
     patch_month_num=${patch_month#0}; patch_day=${patch_day#0}
     [ -z "${patch_month_num}" ] && patch_month_num=0
     [ -z "${patch_day}" ] && patch_day=0
+    # Bogus clock (1970-01-01 at boot): leave the real patch level alone instead
+    # of publishing a 1970 date that is a stronger signal than no spoof at all.
+    [ "${patch_year}" -ge 2024 ] 2>/dev/null || return 0
     if [ "${patch_day}" -ge 5 ]; then
         if_prop_exits_resetprop_n "ro.vendor.build.security_patch" "${patch_year}-${patch_month}-05"
     elif [ "${patch_month_num}" -ge 2 ]; then

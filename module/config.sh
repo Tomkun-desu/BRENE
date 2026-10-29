@@ -51,3 +51,16 @@ config_fix_data_local_tmp_inconsistencies=1
 config_show_refresh_rate=0
 config_disable_child_process_restrictions=1
 config_hide_custom_rom_paths_2=0
+
+# Per-property overrides for the device identity (empty = keep the real value).
+# Only used while config_spoof_system_properties=1. Allowed characters: A-Za-z0-9_.-
+# (no spaces), otherwise the value is ignored. Edit config.sh, there is no WebUI row.
+config_spoof_brand=''
+config_spoof_device=''
+config_spoof_manufacturer=''
+config_spoof_model=''
+config_spoof_device_name=''
+# Keep ro.build.id / version.incremental / flavor consistent with the tail of
+# ro.build.fingerprint once the late stage runs (mismatched id is a common
+# integrity signal).
+config_align_fingerprint_tail=1

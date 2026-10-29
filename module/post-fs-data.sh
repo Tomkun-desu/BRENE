@@ -95,11 +95,16 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_saturation) config_saturation="$v" ;;
       config_selinux_hide) config_selinux_hide="$v" ;;
       config_show_refresh_rate) config_show_refresh_rate="$v" ;;
+      config_spoof_brand) config_spoof_brand="$v" ;;
       config_spoof_cmdline_or_bootconfig) config_spoof_cmdline_or_bootconfig="$v" ;;
       config_spoof_date_properties) config_spoof_date_properties="$v" ;;
+      config_spoof_device) config_spoof_device="$v" ;;
+      config_spoof_device_name) config_spoof_device_name="$v" ;;
       config_spoof_fingerprint_properties) config_spoof_fingerprint_properties="$v" ;;
       config_spoof_hosts) config_spoof_hosts="$v" ;;
       config_spoof_libstagefright) config_spoof_libstagefright="$v" ;;
+      config_spoof_manufacturer) config_spoof_manufacturer="$v" ;;
+      config_spoof_model) config_spoof_model="$v" ;;
       config_spoof_os_patch_level_property) config_spoof_os_patch_level_property="$v" ;;
       config_spoof_os_security_patch_level_property) config_spoof_os_security_patch_level_property="$v" ;;
       config_spoof_system_properties) config_spoof_system_properties="$v" ;;
@@ -126,7 +131,13 @@ mkdir -p "${PERSISTENT_DIR}"
 true > "${PERSISTENT_DIR}/log.txt"
 true > "${PERSISTENT_DIR}/logs.txt"
 # Boot header (truncate behavior preserved: header is written AFTER truncate)
-_brene_boot_ts="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo unknown)"
+_brene_boot_ts="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || true)"
+# post-fs-data runs before the clock is set, so the header is often 1970/unknown.
+# Tag those with the boot id; boot-completed.sh rewrites the line once NTP is up.
+case "${_brene_boot_ts%%-*}" in
+  [0-9][0-9][0-9][0-9]) [[ "${_brene_boot_ts%%-*}" -ge 2024 ]] || _brene_boot_ts="${_brene_boot_ts:-unknown} [$(cut -c1-8 /proc/sys/kernel/random/boot_id 2>/dev/null)]" ;;
+  *) _brene_boot_ts="unknown [$(cut -c1-8 /proc/sys/kernel/random/boot_id 2>/dev/null)]" ;;
+esac
 echo "=== BRENE boot ${_brene_boot_ts} ===" >> "${PERSISTENT_DIR}/log.txt" 2>/dev/null || true
 if command -v brene_log >/dev/null 2>&1; then
   brene_log "=== BRENE boot ${_brene_boot_ts} ==="
@@ -399,6 +410,32 @@ if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 12
         MAIN_MANUFACTURER=$(getprop ro.product.manufacturer)
         MAIN_MODEL=$(getprop ro.product.model)
         MAIN_NAME=$(getprop ro.product.name)
+
+        # Optional identity overrides from config.sh (empty = keep the real value).
+        # Restricted to [A-Za-z0-9_.-]: no spaces, no option injection, and the
+        # value goes straight into resetprop.
+        for _brene_ov in brand device manufacturer model name; do
+            case "${_brene_ov}" in
+                brand) _brene_ov_val="${config_spoof_brand:-}" ;;
+                device) _brene_ov_val="${config_spoof_device:-}" ;;
+                manufacturer) _brene_ov_val="${config_spoof_manufacturer:-}" ;;
+                model) _brene_ov_val="${config_spoof_model:-}" ;;
+                name) _brene_ov_val="${config_spoof_device_name:-}" ;;
+            esac
+            case "${_brene_ov_val}" in
+                ""|-*|*[!A-Za-z0-9_.-]*) continue ;;
+            esac
+            case "${_brene_ov}" in
+                brand) MAIN_BRAND="${_brene_ov_val}" ;;
+                device) MAIN_DEVICE="${_brene_ov_val}" ;;
+                manufacturer) MAIN_MANUFACTURER="${_brene_ov_val}" ;;
+                model) MAIN_MODEL="${_brene_ov_val}" ;;
+                name) MAIN_NAME="${_brene_ov_val}" ;;
+            esac
+            if_prop_exits_resetprop_n "ro.product.${_brene_ov}" "${_brene_ov_val}"
+            [[ "${config_brene_logs}" == "1" ]] && brene_log "[sync_prop]: ${_brene_ov} override -> ${_brene_ov_val}"
+        done
+        unset _brene_ov _brene_ov_val
 
         # Base fields owned by Spoof System Properties; fingerprint/date/date.utc
         # are owned by their own toggles (full control per button).

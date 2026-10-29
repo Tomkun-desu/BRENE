@@ -41,6 +41,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     # dynamic variable name (and no eval) is needed. When adding a new
     # config_ key, extend this list.
     case "$k" in
+      config_align_fingerprint_tail) config_align_fingerprint_tail="$v" ;;
       config_brene_logs) config_brene_logs="$v" ;;
       config_custom_uname_kernel_release) config_custom_uname_kernel_release="$v" ;;
       config_custom_uname_kernel_version) config_custom_uname_kernel_version="$v" ;;
@@ -99,6 +100,11 @@ if [[ "${config_brene_logs}" == "1" ]]; then
         echo "service.sh ✅" >> "${PERSISTENT_DIR}/log.txt"
 fi
 
+# Fingerprint tail re-check: the spoofed fingerprint is final by now.
+if [[ "${config_align_fingerprint_tail}" == "1" ]]; then
+        brene_align_fingerprint_tail "Fingerprint Tail (recheck)" || true
+fi
+
 # Best-effort update for custom kstat entries at a later stage.
 # Mapping (see brene_kstat_update_line in utils.sh):
 #   normal (bare path) -> update_sus_kstat
@@ -106,7 +112,8 @@ fi
 #   static (13-field line) -> update_sus_kstat (completes the static add
 #     after mounts are up, per susfs docs; same as brene_sus_kstat_static)
 # Every outcome is logged as [custom_sus_kstat:update*]: OK / FAILED rc=N.
-if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]]; then
+# Skip the whole stage when the list has no real line (comments/blank only).
+if [[ -e "${PERSISTENT_DIR}/custom_sus_kstat.txt" ]] && grep -qEv '^[[:space:]]*(#|$)' "${PERSISTENT_DIR}/custom_sus_kstat.txt"; then
         if [[ "${config_brene_logs}" == "1" ]]; then
                         brene_log ""
                         brene_log "########################"
