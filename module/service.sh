@@ -107,7 +107,7 @@ fi
 # on the Spoof System Properties toggle instead of a key of its own. A
 # mismatched ro.build.id vs the fingerprint is an integrity signal.
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
-        brene_align_fingerprint_tail "Fingerprint Tail (recheck)" || true
+        brene_align_fingerprint_tail "Build Props Spoofing (late recheck)" || true
 fi
 
 # Best-effort update for custom kstat entries at a later stage.

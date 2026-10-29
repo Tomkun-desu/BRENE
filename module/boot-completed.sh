@@ -323,7 +323,7 @@ fi
 # Fingerprint tail re-check: the spoofed fingerprint is final by now. It rides
 # on the Spoof System Properties toggle instead of a key of its own.
 if [[ "${config_spoof_system_properties}" == "1" ]]; then
-   brene_align_fingerprint_tail "Fingerprint Tail (recheck)" || true
+   brene_align_fingerprint_tail "Build Props Spoofing (late recheck)" || true
 fi
 
 ## First we need to wait until files are accessible in /sdcard ##

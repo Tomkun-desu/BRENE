@@ -269,10 +269,10 @@ __brene_fp_tail_note() {
 		brene_log "########################"
 		brene_log "${_hdr}"
 		brene_log "########################"
-		brene_log "[fingerprint_tail]: ro.build.fingerprint: ${_BRENE_FP_TAIL_FP}"
+		brene_log "  [fingerprint_tail]: ro.build.fingerprint: ${_BRENE_FP_TAIL_FP}"
 		_BRENE_FP_TAIL_N=1
 	fi
-	brene_log "[fingerprint_tail]: ${_msg}"
+	brene_log "  [fingerprint_tail]: ${_msg}"
 }
 
 # Align the props encoded in ro.build.fingerprint back to its own tail
