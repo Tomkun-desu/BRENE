@@ -738,7 +738,7 @@ fi
 
 # Hide third party apps
 if [[ "${config_hide_third_party_apps}" == "1" ]]; then
-	[ -f "${MODDIR}/apply_uid_filter.sh" ] && sh "${MODDIR}/apply_uid_filter.sh"
+	[ -f "${MODDIR}/apply_uid_filter.sh" ] && config_brene_logs="${config_brene_logs}" sh "${MODDIR}/apply_uid_filter.sh"
 fi
 
 resetprop -c --force 2>/dev/null || true

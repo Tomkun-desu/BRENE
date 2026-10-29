@@ -130,6 +130,6 @@ if [ "${config_hide_third_party_apps}" = "1" ] && [ -f "${MODDIR}/apply_uid_filt
 		done
 		[ "$i" -lt 150 ] || exit 0
 		sleep 5
-		sh "${MODDIR}/apply_uid_filter.sh"
+		config_brene_logs="${config_brene_logs}" sh "${MODDIR}/apply_uid_filter.sh"
 	) >/dev/null 2>&1 &
 fi
