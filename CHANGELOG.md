@@ -1,3 +1,18 @@
+## v0.0.73-custom.12 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* The local version of the script loads the "utils.sh" file, but does it in a POSIX compatible way.
+* The local version of the script loads the "config.sh" file, but does it in a way that allows for parsing and stripping of special characters.
+* The local version of the script adds a check to ensure that the key in the config file is a valid config_* variable.
+* The local version of the script adds a check to ensure that the value in the config file does not contain any non-alphanumeric characters.
+* The local version of the script removes the loading of the "utils.sh" file at the top of the script.
+* The local version of the script adds code to strip CR (carriage return) characters from the key and value pairs in the config file.
+* The local version of the script adds code to trim spaces around the key and value pairs in the config file.
+* The local version of the script adds code to strip single or double quotes from the value pairs in the config file.
+
 ## v0.0.73-custom.11 - 2026-10-29
 
 ### Synced from upstream BRENE
