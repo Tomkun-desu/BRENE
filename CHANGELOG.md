@@ -1,3 +1,19 @@
+## v0.0.73-custom.11 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in simple bullet points:
+
+* The script now loads a utils file in a POSIX way, using a dot (.) instead of source.
+* The config file is now loaded with additional parsing to handle non-standard line endings and trim spaces around key-value pairs.
+* The config file is now allowed to only contain specific keys (config_*).
+* The script now checks if the config file exists before trying to load it.
+* The script now removes quotes from the config values.
+* The script now checks if the key is valid (contains only letters, numbers, and underscores) before loading it.
+* The script now disables a shellcheck warning for a specific variable.
+
 ## v0.0.73-custom.10 - 2026-10-29
 
 ### Synced from upstream BRENE
