@@ -1,3 +1,19 @@
+## v0.0.73-custom.7 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added code to strip carriage returns from input lines.
+* Added code to remove single or double quotes from the end of input values.
+* Added a check to ensure config keys only contain letters, numbers, and underscores.
+* Changed how the script loads the utils and config files to be POSIX compatible.
+* Added a while loop to safely parse the config file.
+* Changed the way the script sources the config file to prevent potential security risks.
+* Added comments to explain the purpose of certain code sections.
+* Changed the way the script assigns values to variables to prevent potential security risks.
+* Removed the use of bashisms (e.g. [[, printf -v, ${v:1:-1}) to make the script compatible with BusyBox ash.
+
 ## v0.0.73-custom.6 - 2026-10-29
 
 ### Synced from upstream BRENE
