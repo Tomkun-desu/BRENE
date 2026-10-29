@@ -59,7 +59,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     # dynamic variable name (and no eval) is needed. When adding a new
     # config_ key, extend this list.
     case "$k" in
-      config_align_fingerprint_tail) config_align_fingerprint_tail="$v" ;;
       config_brene_logs) config_brene_logs="$v" ;;
       config_custom_uname_kernel_release) config_custom_uname_kernel_release="$v" ;;
       config_custom_uname_kernel_version) config_custom_uname_kernel_version="$v" ;;
@@ -321,8 +320,9 @@ if [[ "${config_spoof_vendor_security_patch_level_property}" == "1" ]]; then
    brene_spoof_vendor_security_patch_props || true
 fi
 
-# Fingerprint tail re-check: the spoofed fingerprint is final by now.
-if [[ "${config_align_fingerprint_tail}" == "1" ]]; then
+# Fingerprint tail re-check: the spoofed fingerprint is final by now. It rides
+# on the Spoof System Properties toggle instead of a key of its own.
+if [[ "${config_spoof_system_properties}" == "1" ]]; then
    brene_align_fingerprint_tail "Fingerprint Tail (recheck)" || true
 fi
 

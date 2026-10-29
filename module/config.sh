@@ -60,7 +60,3 @@ config_spoof_device=''
 config_spoof_manufacturer=''
 config_spoof_model=''
 config_spoof_device_name=''
-# Keep ro.build.id / version.incremental / flavor consistent with the tail of
-# ro.build.fingerprint once the late stage runs (mismatched id is a common
-# integrity signal).
-config_align_fingerprint_tail=1
