@@ -205,6 +205,12 @@ fi
 
 # Spoof /system/lib64/libstagefright.so
 if [[ "${config_spoof_libstagefright}" == "1" ]]; then
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                brene_log ""
+                brene_log "########################"
+                brene_log "Spoof libstagefright"
+                brene_log "########################"
+        fi
         path=/system/lib64/libstagefright.so
         safe="$(printf '%s' "${path}" | tr '/' '_')"
         fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
@@ -221,6 +227,12 @@ fi
 
 # Hide LineageOS Strings
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
+	if [[ "${config_brene_logs}" == "1" ]]; then
+		brene_log ""
+		brene_log "########################"
+		brene_log "Hide LineageOS Strings"
+		brene_log "########################"
+	fi
 	brene_find /system /system_ext /vendor /product \( -iname "*sepolicy.cil" -o -iname "*file_contexts" \) -print0 | while IFS= read -r -d '' path; do
 		safe="$(printf '%s' "$path" | tr '/' '_')"
 		fake_file_path="${PERSISTENT_DIR}/fake_files/${safe}"
@@ -253,6 +265,12 @@ fi
 
 # Hide LineageOS Strings in RC files
 if [[ "${config_hide_lineage_strings}" == "1" ]]; then
+        if [[ "${config_brene_logs}" == "1" ]]; then
+                brene_log ""
+                brene_log "########################"
+                brene_log "Hide LineageOS Strings (RC)"
+                brene_log "########################"
+        fi
         brene_find /system /system_ext /vendor /product -iname "*.rc" -print0 | while IFS= read -r -d '' path; do
                 if grep -iq "lineage" "${path}"; then
                         safe="$(printf '%s' "$path" | tr '/' '_')"
@@ -479,6 +497,12 @@ else
    _pgrep_rc=$?
    if [[ "${_pgrep_rc}" -eq 1 || "${_pgrep_rc}" -eq 127 ]]; then
       ( sleep 60
+        if [[ "${config_brene_logs}" == "1" ]]; then
+          brene_log ""
+          brene_log "########################"
+          brene_log "Late Sdcard Retry"
+          brene_log "########################"
+        fi
         [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]] && __brene_hide_nonstandard_sdcard_once
         [[ "${config_paths_hiding__non_standard_sdcard_android}" == "1" ]] && __brene_hide_nonstandard_sdcard_android_once
         [[ "${config_brene_logs}" == "1" ]] && brene_log "[retry] late sdcard hide pass done"

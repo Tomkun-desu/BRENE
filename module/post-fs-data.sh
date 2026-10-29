@@ -430,14 +430,13 @@ if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 12
                 ""|-*|*[!A-Za-z0-9_.-]*) continue ;;
             esac
             case "${_brene_ov}" in
-                brand) MAIN_BRAND="${_brene_ov_val}" ;;
-                device) MAIN_DEVICE="${_brene_ov_val}" ;;
-                manufacturer) MAIN_MANUFACTURER="${_brene_ov_val}" ;;
-                model) MAIN_MODEL="${_brene_ov_val}" ;;
-                name) MAIN_NAME="${_brene_ov_val}" ;;
+                brand) MAIN_BRAND="${_brene_ov_val}"; _brene_ov_brand=1 ;;
+                device) MAIN_DEVICE="${_brene_ov_val}"; _brene_ov_device=1 ;;
+                manufacturer) MAIN_MANUFACTURER="${_brene_ov_val}"; _brene_ov_manufacturer=1 ;;
+                model) MAIN_MODEL="${_brene_ov_val}"; _brene_ov_model=1 ;;
+                name) MAIN_NAME="${_brene_ov_val}"; _brene_ov_name=1 ;;
             esac
             if_prop_exits_resetprop_n "ro.product.${_brene_ov}" "${_brene_ov_val}"
-            [[ "${config_brene_logs}" == "1" ]] && brene_log "[sync_prop]: ${_brene_ov} override -> ${_brene_ov_val}"
         done
         unset _brene_ov _brene_ov_val
 
@@ -455,6 +454,17 @@ if [[ "${config_spoof_system_properties}" == "1" && "${BRENE_UPTIME_SEC}" -lt 12
                 brene_log "########################"
                 brene_log "Build Props Spoofing"
                 brene_log "########################"
+                [[ -n "${_brene_ov_brand:-}" ]] && _s=override || _s=auto
+                brene_log "[sync_prop]: brand ${_s} -> ${MAIN_BRAND}"
+                [[ -n "${_brene_ov_device:-}" ]] && _s=override || _s=auto
+                brene_log "[sync_prop]: device ${_s} -> ${MAIN_DEVICE}"
+                [[ -n "${_brene_ov_manufacturer:-}" ]] && _s=override || _s=auto
+                brene_log "[sync_prop]: manufacturer ${_s} -> ${MAIN_MANUFACTURER}"
+                [[ -n "${_brene_ov_model:-}" ]] && _s=override || _s=auto
+                brene_log "[sync_prop]: model ${_s} -> ${MAIN_MODEL}"
+                [[ -n "${_brene_ov_name:-}" ]] && _s=override || _s=auto
+                brene_log "[sync_prop]: device-name ${_s} -> ${MAIN_NAME}"
+                unset _s _brene_ov_brand _brene_ov_device _brene_ov_manufacturer _brene_ov_model _brene_ov_name
         fi
 
         if [[ -n "${MAIN_FP}" ]]; then
