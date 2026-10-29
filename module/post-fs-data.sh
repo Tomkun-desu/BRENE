@@ -40,6 +40,10 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
     # Strip CR (handle CRLF-edited files)
     k=$(printf '%s' "$k" | tr -d '\r')
     v=$(printf '%s' "$v" | tr -d '\r')
+    # Trim spaces around the pair: a hand-edited "key = value" line must not be
+    # dropped by the allowlist below (it strips anything outside [A-Za-z0-9_]).
+    k=${k#"${k%%[![:space:]]*}"}; k=${k%"${k##*[![:space:]]}"}
+    v=${v#"${v%%[![:space:]]*}"}; v=${v%"${v##*[![:space:]]}"}
     # Strip one pair of surrounding single or double quotes
     case "$v" in
       \'*\'|\"*\")
