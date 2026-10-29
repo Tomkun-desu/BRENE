@@ -1,3 +1,20 @@
+## v0.0.73-custom.5 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+* Added a new variable CUSTOM_ROM_NAMES with a list of custom ROM names.
+* Changed the way the utils script is loaded to make it POSIX compliant.
+* Changed the way the config script is loaded to make it POSIX compliant and to prevent loading untrusted files.
+* Added a loop to parse the config script and strip any carriage returns and quotes from the key-value pairs.
+* Added a check to ensure that only config_* keys with alphanumeric and underscore characters are loaded.
+* Changed the way config_* values are assigned to make it safe for use in BusyBox ash, dash, mksh, and bash.
+* Removed the source command for the utils script and replaced it with a dot (.) command.
+* Added a comment explaining why the source command was removed.
+
 ## v0.0.73-custom.4 - 2026-10-29
 
 ### Synced from upstream BRENE
