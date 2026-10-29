@@ -738,12 +738,15 @@ fi
 
 # Hide third party apps
 if [[ "${config_hide_third_party_apps}" == "1" ]]; then
-	packages=$(pm list packages -3 | awk -F: '{out = out (out ? "," : "") $2} END {print out}')
-	# Extra system apps to hide as well; appended only when their data dir exists,
-	# because a single unresolvable name fails the whole set_priority_uid_filter call.
-	for extra in com.xiaomi.aicr com.milink.service; do
-		[ -d "/data/data/${extra}" ] && packages="${packages},${extra}"
-	done
+	# Blanket policy: every package whose uid sits in the app range (10000-19999),
+	# system or data app. The kernel resolves each name from /data/data/<pkg>, so a
+	# single unresolvable name fails the whole call; skip the ones without a data dir.
+	packages=""
+	while read -r name uid; do
+		(( uid >= 10000 && uid <= 19999 )) || continue
+		[ -d "/data/data/${name}" ] || continue
+		packages="${packages}${packages:+,}${name}"
+	done <<< "$(pm list packages -U | sed -n 's/^package:\([^ ]*\) uid:\([0-9]*\)$/\1 \2/p')"
 	if ! hide_out=$(${SUSFS_BIN} set_priority_uid_filter "${packages}" 2>&1); then
 		echo "hide_third_party_apps failed (${#packages} bytes): ${hide_out:-no output}" >> "${PERSISTENT_DIR}/log.txt"
 	elif [[ "${config_brene_logs}" == "1" ]]; then
