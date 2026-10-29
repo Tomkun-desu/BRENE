@@ -1,3 +1,21 @@
+## v0.0.73-custom.6 - 2026-10-29
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes:
+
+* The script now uses POSIX sh syntax instead of bash syntax to make it compatible with BusyBox ash.
+* The script now strips carriage returns and surrounding quotes from the config file values.
+* The script now only allows config keys that start with "config_" and contain only letters, numbers, and underscores.
+* The script now uses a while loop to iterate over the config file key-value pairs.
+* The script now uses a case statement to check the config key and value, and only assigns the value to a variable if it's allowed.
+* The script now uses a plain assignment (e.g. "name=$v") instead of eval to assign the value to a variable, making it safer.
+* The script now checks for and ignores dynamic variable names and eval in the config file values.
+* The script now uses a more secure way to parse the config file and assign the values to variables.
+* The script now has additional comments and shellcheck directives to ensure it's secure and compatible with different shells.
+
 ## v0.0.73-custom.5 - 2026-10-29
 
 ### Synced from upstream BRENE
