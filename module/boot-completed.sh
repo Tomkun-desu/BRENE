@@ -739,6 +739,11 @@ fi
 # Hide third party apps
 if [[ "${config_hide_third_party_apps}" == "1" ]]; then
 	packages=$(pm list packages -3 | awk -F: '{out = out (out ? "," : "") $2} END {print out}')
+	# Extra system apps to hide as well; appended only when their data dir exists,
+	# because a single unresolvable name fails the whole set_priority_uid_filter call.
+	for extra in com.xiaomi.aicr com.milink.service; do
+		[ -d "/data/data/${extra}" ] && packages="${packages},${extra}"
+	done
 	if ! hide_out=$(${SUSFS_BIN} set_priority_uid_filter "${packages}" 2>&1); then
 		echo "hide_third_party_apps failed (${#packages} bytes): ${hide_out:-no output}" >> "${PERSISTENT_DIR}/log.txt"
 	elif [[ "${config_brene_logs}" == "1" ]]; then
