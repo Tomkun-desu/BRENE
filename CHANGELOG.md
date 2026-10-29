@@ -1,3 +1,16 @@
+## v0.0.73-custom.4 - 2026-10-29
+
+### Synced from upstream BRENE
+- Merge remote-tracking branch 'upstream/main'
+- fix: Hide KernelSU directories: KernelSU manager crash
+
+### Local customizations
+* The script now loads a utils file using a POSIX compatible syntax.
+* The script now loads a config file, but with additional security checks to prevent malicious code execution.
+* The script now strips carriage returns and quotes from config file values.
+* The script now only loads key-value pairs from the config file where the key starts with "config_" and only contains letters, numbers, and underscores.
+* The script now assigns config values to variables without using eval, which makes it safer to use in BusyBox ash, dash, mksh, and bash.
+
 ## v0.0.73-custom.3 - 2026-10-28
 
 ### Synced from upstream BRENE
