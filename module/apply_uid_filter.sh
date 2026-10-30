@@ -8,7 +8,7 @@ PERSISTENT_DIR=/data/adb/brene
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 LOG="${PERSISTENT_DIR}/log.txt"
 
-candidates=$(pm list packages -U 2>/dev/null | sed -n 's/^package:\([^ ]*\) uid:\([0-9]*\)$/\1:\2/p')
+candidates=$(cmd package list packages -U 2>/dev/null | sed -n 's/^package:\([^ ]*\) uid:\([0-9]*\)$/\1:\2/p')
 
 packages=""
 for entry in $candidates; do
