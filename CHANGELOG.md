@@ -1,3 +1,11 @@
+## v0.0.73-custom.15 - 2026-10-30
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+- Not compared this run (built without an upstream sync).
+
 ## v0.0.73-custom.14 - 2026-10-30
 
 ### Synced from upstream BRENE
