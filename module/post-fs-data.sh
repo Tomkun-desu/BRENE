@@ -101,13 +101,6 @@ if [[ "${config_spoof_cmdline_or_bootconfig}" == "1" ]]; then
 		sed -i 's/androidboot.warranty_bit = "1"/androidboot.warranty_bit = "0"/' "${FAKE_BOOTCONFIG}"
 		sed -i 's/androidboot.verifiedbootstate = "orange"/androidboot.verifiedbootstate = "green"/' "${FAKE_BOOTCONFIG}"
 		${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_BOOTCONFIG}"
-	else
-		FAKE_CMDLINE="${PERSISTENT_DIR}/fake_cmdline"
-
-		cat /proc/cmdline > "${FAKE_CMDLINE}"
-		sed -i 's/androidboot.warranty_bit=1/androidboot.warranty_bit=0/' "${FAKE_CMDLINE}"
-		sed -i 's/androidboot.verifiedbootstate=orange/androidboot.verifiedbootstate=green/' "${FAKE_CMDLINE}"
-		${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}"
 	fi
 fi
 
