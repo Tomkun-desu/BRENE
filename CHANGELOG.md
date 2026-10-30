@@ -1,3 +1,22 @@
+## v0.0.73-custom.16 - 2026-10-30
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in simple bullet points:
+
+* Added a line to specify the destination binary directory as /data/adb/ksu/bin.
+* Added a list of custom ROM names to the CUSTOM_ROM_NAMES variable.
+* Removed the loading of utils.sh from the MODDIR directory.
+* Removed the loading of config.sh from the PERSISTENT_DIR directory.
+* Added a new way to load utils.sh from the MODDIR directory, using POSIX syntax.
+* Added a new way to load config.sh from the PERSISTENT_DIR directory, using POSIX syntax and adding checks to ensure the file is trusted and parsed correctly.
+* Added a while loop to parse the config.sh file and strip any unnecessary characters.
+* Added checks to ensure the config_* values are allowed and only contain valid characters.
+* Added a comment to disable a shellcheck warning.
+* Changed the way variables are assigned from config_* values to use POSIX syntax and avoid using eval.
+
 ## v0.0.73-custom.15 - 2026-10-30
 
 ### Synced from upstream BRENE
