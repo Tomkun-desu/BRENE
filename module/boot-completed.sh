@@ -586,14 +586,17 @@ if [[ "${config_paths_hiding__user_ca_certs}" == "1" ]]; then
 			brene_log "###############################"
 	fi
 
-        for i in /data/misc/user/*/cacerts-added/*; do
-                [[ -e "${i}" ]] || continue
-		brene_sus_path_loop "${i}"
+	# App processes read conscrypt's default store at /data/misc/keychain/cacerts-added,
+	# not the framework's /data/misc/user/<id>/cacerts-added. Hide both roots.
+	for _ca_root in /data/misc/user/*/cacerts-added /data/misc/keychain/cacerts-added; do
+		[[ -d "${_ca_root}" ]] || continue
+		for i in "${_ca_root}"/*; do
+			[[ -e "${i}" ]] || continue
+			brene_sus_path_loop "${i}"
+		done
+		brene_sus_kstat_static "${_ca_root}"
 	done
-
-	for d in /data/misc/user/*/cacerts-added; do
-		brene_sus_kstat_static "${d}"
-	done
+	unset _ca_root i
 fi
 
 # /sdcard/Android/[data | media | obb]

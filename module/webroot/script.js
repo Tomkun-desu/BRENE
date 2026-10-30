@@ -90,7 +90,7 @@ const configs = [
 		id: 'paths_hiding__user_ca_certs',
 		action: (enabled) => {
 			if (!enabled) return
-			setFeature(`for i in /data/misc/user/*/cacerts-added/*; do [ -e "$i" ] && /data/adb/ksu/bin/susfs add_sus_path_loop "$i"; done; for d in /data/misc/user/*/cacerts-added; do [ -d "$d" ] || continue; s=$(stat -c "%i %d %h %s %b %B" "$d" 2>/dev/null); [ -z "$s" ] && continue; set -- $s; /data/adb/ksu/bin/susfs add_sus_kstat_statically "$d" "$1" "$2" "$3" "$4" default default default default default default "$5" "$6"; /data/adb/ksu/bin/susfs update_sus_kstat "$d"; done; echo done`)
+			setFeature(`for i in /data/misc/user/*/cacerts-added/* /data/misc/keychain/cacerts-added/*; do [ -e "$i" ] && /data/adb/ksu/bin/susfs add_sus_path_loop "$i"; done; for d in /data/misc/user/*/cacerts-added /data/misc/keychain/cacerts-added; do [ -d "$d" ] || continue; s=$(stat -c "%i %d %h %s %b %B" "$d" 2>/dev/null); [ -z "$s" ] && continue; set -- $s; /data/adb/ksu/bin/susfs add_sus_kstat_statically "$d" "$1" "$2" "$3" "$4" default default default default default default "$5" "$6"; /data/adb/ksu/bin/susfs update_sus_kstat "$d"; done; echo done`)
 		},
 	},
 	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
