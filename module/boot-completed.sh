@@ -588,8 +588,11 @@ if [[ "${config_paths_hiding__user_ca_certs}" == "1" ]]; then
 
 	# App processes read conscrypt's default store at /data/misc/keychain/cacerts-added,
 	# not the framework's /data/misc/user/<id>/cacerts-added. Hide both roots.
+	# Detectors open and list the directory itself, so its path is hidden too: hiding only
+	# the entries inside leaves opendir() succeeding and readdir() as the only defence.
 	for _ca_root in /data/misc/user/*/cacerts-added /data/misc/keychain/cacerts-added; do
 		[[ -d "${_ca_root}" ]] || continue
+		brene_sus_path_loop "${_ca_root}"
 		for i in "${_ca_root}"/*; do
 			[[ -e "${i}" ]] || continue
 			brene_sus_path_loop "${i}"
