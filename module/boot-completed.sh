@@ -422,7 +422,7 @@ fi
 
 # Hide third party apps
 if [[ "${config_hide_third_party_apps}" == "1" ]]; then
-	packages=$(pm list packages -3 | awk -F: '{out = out (out ? "," : "") $2} END {print out}')
+	packages=$(cmd package list packages -3 | awk -F: '{out = out (out ? "," : "") $2} END {print out}')
 	${SUSFS_BIN} set_priority_uid_filter "${packages}"
 fi
 
