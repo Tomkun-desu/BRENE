@@ -442,6 +442,11 @@ brene_open_redirect() {
 	fi
 	return "${_or_rc}"
 }
+brene_uname_build_stamp() {
+	# ro.build.date carries the OEM timezone token (CST, +0800). Detectors read that
+	# token as UTC, which shifts the day by one, so emit an explicit UTC stamp.
+	resetprop ro.build.date 2>/dev/null | tr -s ' ' | sed 's/ [A-Za-z][A-Za-z]* \([0-9][0-9][0-9][0-9]\)$/ UTC \1/; s/ [-+][0-9][0-9][0-9][0-9] \([0-9][0-9][0-9][0-9]\)$/ UTC \1/'
+}
 brene_set_uname() {
 	local _rc
 	${SUSFS_BIN} set_uname "$1" "$2"; _rc=$?

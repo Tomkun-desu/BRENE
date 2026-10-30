@@ -297,7 +297,7 @@ if [[ "${config_brene_logs}" == "1" ]]; then
         # Preserve BRENE's custom 'default' fallback behavior.
         if [[ "${final_uname_release}" == "default" || "${final_uname_version}" == "default" ]]; then
                 auto_kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
-                auto_uname_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
+                auto_uname_version="#1 SMP PREEMPT $(brene_uname_build_stamp)"
 
                 if [[ -n "${auto_kernel_version}" ]]; then
                         if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
@@ -325,7 +325,7 @@ elif [[ "${config_spoof_uname}" == "1" ]]; then
         fi
 
         kernel_version=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
-        uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date | tr -s ' ')"
+        uname_kernel_version="#1 SMP PREEMPT $(brene_uname_build_stamp)"
 
         if [[ -n "${kernel_version}" ]]; then
                 if [[ "${SUSFS_VARIANT}" == "GKI" ]]; then
