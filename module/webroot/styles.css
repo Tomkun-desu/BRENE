@@ -158,6 +158,11 @@ md-tabs {
 	color: var(--md-sys-color-on-surface);
 }
 
+.tab-btn:focus-visible {
+	outline: 2px solid var(--md-sys-color-primary);
+	outline-offset: -2px;
+}
+
 .tab-btn.active {
 	color: var(--md-sys-color-primary);
 	border-bottom-color: var(--md-sys-color-primary);
@@ -169,7 +174,11 @@ md-tabs {
 	font-size: 1.6em;
 	font-weight: 600;
 	color: var(--md-sys-color-primary);
-	margin: 12px 0px;
+	margin: 20px 0 8px;
+}
+
+.tab-panel > .section-label:first-child {
+	margin-top: 2px;
 }
 
 .card-group {
@@ -244,10 +253,11 @@ md-tabs {
 .sus-card {
 	display: flex;
 	flex-direction: column;
+	gap: 6px;
 }
 
 .sus-footer {
-	padding: 8px 0px;
+	padding: 10px 16px 4px;
 	display: flex;
 }
 
@@ -346,19 +356,4 @@ md-tabs {
 .card-row__tag--code {
 	overflow-wrap: break-word;
 	word-break: break-word;
-}
-
-/* Rounded corners for Additional Hiding */
-.additional-hiding-group {
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-/* Round Additional Hiding outer card corners */
-.additional-hiding-group > .card-row:first-child {
-    border-radius: 16px 16px 0 0;
-}
-
-.additional-hiding-group > .card-row:last-child {
-    border-radius: 0 0 16px 16px;
 }
