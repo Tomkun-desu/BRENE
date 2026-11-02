@@ -108,7 +108,7 @@ document.querySelectorAll('a[href]').forEach((element) => {
 		const url = element.href
 		if (!/^https?:\/\//i.test(url)) return
 		const safeUrl = `'${url.replace(/'/g, "'\\''")}'`
-		exec(`am start -a android.intent.action.VIEW -d ${safeUrl}`)
+		exec(`cmd activity start -a android.intent.action.VIEW -d ${safeUrl}`)
 	})
 })
 
@@ -242,6 +242,16 @@ exec('ksud module list').then((result) => {
 	cardRows.forEach((row) => {
 		const moduleKey = row.getAttribute('data-module')
 		const statusSpan = row.querySelector('.status-text')
+
+		// Integrity Box ships under the same module id as PlayIntegrityFork,
+		// so detect it by its module name instead (upstream 3ea96a6).
+		if (moduleKey === 'integrity_box') {
+			if (result.stdout.includes('Integrity-Box')) {
+				statusSpan.innerText = 'Status: Installed'
+				statusSpan.style.color = '#ff0000be'
+			}
+			return
+		}
 
 		if (moduleIds.includes(moduleKey)) {
 			statusSpan.innerText = 'Status: Installed'
@@ -459,6 +469,25 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 			}
 		})
 	})
+	// Check Play Integrity API (upstream 891cb10, e66af9e)
+	const checkPiBtn = document.getElementById('check_piapi')
+	if (checkPiBtn) checkPiBtn.addEventListener('click', () => {
+		const PKG = 'gr.nikolasspyr.integritycheck'
+		exec(`cmd package path ${PKG}`).then((res) => {
+			const APP_URL = `https://play.google.com/store/apps/details?id=${PKG}`
+			if (res.stdout.includes('package:')) {
+				exec(`
+					cmd activity force-stop ${PKG}
+					cmd activity start ${PKG}/.MainActivity
+					input keyevent KEYCODE_TAB
+					input keyevent KEYCODE_ENTER
+				`)
+			} else {
+				exec(`cmd activity start -a android.intent.action.VIEW -d ${APP_URL}`)
+			}
+		})
+	})
+
 	document.querySelectorAll('md-switch').forEach((el) => { el.disabled = false })
 }).catch(() => { document.querySelectorAll('md-switch').forEach((el) => { el.disabled = false }) })
 

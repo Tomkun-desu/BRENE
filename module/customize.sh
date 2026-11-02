@@ -34,13 +34,20 @@ if [[ "${ARCH}" != "arm64" ]]; then
 	abort '[❌] Only arm64 is supported!'
 fi
 
-[[ -z "${KSU_KERNEL_VER_CODE}" ]] && abort '[x] KSU_KERNEL_VER_CODE unset!'
-case "${KSU_KERNEL_VER_CODE}" in ''|*[!0-9]*) abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!";; esac
-if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
-	echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
-else
-	abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
-fi
+# Upstream v0.0.75 dropped this gate: several managers no longer export
+# KSU_KERNEL_VER_CODE. Enforce the lower bound only when a number is available.
+case "${KSU_KERNEL_VER_CODE}" in
+	''|*[!0-9]*)
+		echo "[!] KernelSU kernel version unavailable (${KSU_KERNEL_VER_CODE:-unset}); skipping version gate"
+		;;
+	*)
+		if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
+			echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
+		else
+			abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
+		fi
+		;;
+esac
 
 if [[ ! -d "${DEST_BIN_DIR}" ]]; then
 	abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
@@ -71,18 +78,23 @@ ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true     
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
 
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
-if [[ "${susfs_ver}" == "v2"* ]]; then
-        echo "[✅] Installed SuSFS version: ${susfs_ver}"
-else
-        abort "[❌] Not supported SuSFS version ${susfs_ver}!"
-fi
+# Upstream v0.0.75: only these kernel/ABI versions are supported. 2.4.x is
+# accepted because upstream's README states "2.4.0+".
+case "${susfs_ver}" in
+	v2.2.0|v2.3.0|v2.4.*)
+		echo "[✅] Installed SuSFS version: ${susfs_ver}"
+		;;
+	*)
+		abort "[❌] Not supported SuSFS version ${susfs_ver}!"
+		;;
+esac
 
 # Reset module description
 kernel_version=$(cat /proc/version 2>/dev/null | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 kernel_version=${kernel_version:-unknown}
 susfs_variant=$(${SUSFS_BIN} show variant 2>/dev/null)
 susfs_features_number=$(${SUSFS_BIN} show enabled_features 2>/dev/null | wc -l)
-susfs_total_features=9
+susfs_total_features=10
 ${KSU_BIN} module config set override.description "[Module Status: ⏱️ | Kernel: ${kernel_version} | SuSFS Patches: ⏱️ ${susfs_ver} (${susfs_variant}) | SuSFS Features: ${susfs_features_number}/${susfs_total_features}] A SuSFS/KernelSU module for SuSFS patched kernels"
 
 # Disable other SuSFS modules
@@ -91,6 +103,9 @@ ${KSU_BIN} module config set override.description "[Module Status: ⏱️ | Kern
 }
 [[ -e "${KSU_MODULES_DIR}/susfs_manager" ]] && {
 	touch "${KSU_MODULES_DIR}/susfs_manager/disable" && echo '[✅] Disabling other SuSFS module'
+}
+[[ -e "${KSU_MODULES_DIR}/ReSuSFS" ]] && {
+	touch "${KSU_MODULES_DIR}/ReSuSFS/disable" && echo '[✅] Disabling other SuSFS module'
 }
 
 echo "[✅] Preparing brene persistent directory (${PERSISTENT_DIR})"

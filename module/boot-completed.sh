@@ -123,7 +123,7 @@ fi
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null || true)
 susfs_variant=$(${SUSFS_BIN} show variant 2>/dev/null || true)
 susfs_features_number=$(${SUSFS_BIN} show enabled_features 2>/dev/null | wc -l)
-susfs_total_features=9
+susfs_total_features=10
 kernel_version=$(cat /proc/version 2>/dev/null | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 kernel_version=${kernel_version:-unknown}
 susfs_ver=${susfs_ver:-missing}
