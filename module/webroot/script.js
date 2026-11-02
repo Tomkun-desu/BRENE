@@ -239,7 +239,7 @@ exec('ksud module list').then((result) => {
 	const moduleIds = modules.map((mod) => mod.id)
 	const cardRows = container.querySelectorAll('.card-row')
 
-	for (const row of cardRows) {
+	cardRows.forEach((row) => {
 		const moduleKey = row.getAttribute('data-module')
 		const statusSpan = row.querySelector('.status-text')
 
@@ -257,7 +257,7 @@ exec('ksud module list').then((result) => {
 			statusSpan.innerText = 'Status: Installed'
 			statusSpan.style.color = '#ff0000be'
 		}
-	}
+	})
 })
 
 // Load enabled features
