@@ -1,3 +1,19 @@
+## v0.0.75-custom.1 - 2026-11-02
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+- Added code to strip carriage returns from file contents.
+- Changed the way the script loads the 'utils.sh' file to make it POSIX compliant.
+- Changed the way the script loads the 'config.sh' file to make it POSIX compliant and to strip unwanted characters.
+- Added code to allowlist valid configuration keys and values.
+- Added code to trim spaces around key-value pairs in the 'config.sh' file.
+- Changed the way the script assigns values to variables from the 'config.sh' file to make it safe for various shell types.
+- Removed two lines of code that loaded the 'utils.sh' and 'config.sh' files.
+
 ## v0.0.73-custom.16 - 2026-10-30
 
 ### Synced from upstream BRENE
