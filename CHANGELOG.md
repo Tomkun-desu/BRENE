@@ -1,3 +1,19 @@
+## v0.0.75-custom.2 - 2026-11-02
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* Added a custom ROM names list to a variable named CUSTOM_ROM_NAMES.
+* Modified the way the script loads the utils.sh file by using a POSIX compatible dot (.) command instead of source.
+* Modified the way the script loads the config.sh file to include parsing and sanitizing of the file's contents.
+* Added a check to ensure the config.sh file exists before attempting to load it.
+* Modified the way the script handles the contents of the config.sh file to remove any CR characters, trim spaces, and remove any surrounding quotes.
+* Added an allowlist to ensure only specific keys (config_*) are loaded from the config.sh file.
+* Modified the way the script assigns values from the config.sh file to variables to ensure they are safe to use in BusyBox ash.
+
 ## v0.0.75-custom.1 - 2026-11-02
 
 ### Synced from upstream BRENE
