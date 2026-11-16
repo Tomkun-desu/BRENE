@@ -287,6 +287,34 @@
 						</div>
 						<md-ripple></md-ripple>
 					</div>
+					<div class="card-row" data-module="zygisksu">
+						<div class="card-row__body">
+							<span class="card-row__title">Zygisk Next, NeoZygisk, NyaZygisk</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row" data-module="zygisk_lsposed">
+						<div class="card-row__body">
+							<span class="card-row__title">LSPosed, ReLSPosed, LSPosed-Irena</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row" data-module="onyxzygisk">
+						<div class="card-row__body">
+							<span class="card-row__title">OnyxZygisk</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+					<div class="card-row" data-module="yukizygisk">
+						<div class="card-row__body">
+							<span class="card-row__title">YukiZygisk</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
 					<div class="card-row" data-module="zygisknextsu">
 						<div class="card-row__body">
 							<span class="card-row__title">ZNNext</span>
@@ -458,6 +486,31 @@
 							<span class="card-row__sub">Hide them using set_priority_uid_filter, HMA-OSS is needed for userspace side</span>
 						</div>
 						<md-switch icons id="hide_third_party_apps"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide all apps with uid >= 10000</span>
+							<span class="card-row__sub">Hide them using set_priority_uid_filter, HMA-OSS is needed for userspace side</span>
+						</div>
+						<md-switch icons id="hide_all_apps_with_uid_10000_and_above"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide OEM unlocking toggle</span>
+						</div>
+						<md-switch icons id="hide_oem_unlocking_toggle"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide Vector Injection (Xposed Framework)</span>
+						</div>
+						<md-switch icons id="hide_vector_injection"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
@@ -779,6 +832,14 @@
 							<span class="card-row__sub">2: Effective for non-su processes</span>
 							<span class="card-row__sub">Only effective for current process that matches the pre-defined uid scheme</span>
 							<!-- OPEN REDIRECT -->
+
+							<!-- SUS_PATH_UID_FILTER -->
+							<span class="card-row__title">SUS_PATH_UID_FILTER</span>
+							<span class="card-row__sub">Only the uids of the added packages see sus paths, and vice versa. One package name per line, resolved from /data/system/packages.list.</span>
+							<span class="card-row__sub">Needs SUSFS 2.4.0+; harmless when the kernel lacks the feature.</span>
+							<span class="card-row__tag--code">Example:</span>
+							<span class="card-row__tag--code">com.brave.browser</span>
+							<!-- SUS_PATH_UID_FILTER -->
 						</div>
 						<md-ripple></md-ripple>
 					</div>
@@ -790,6 +851,7 @@
 							<md-primary-tab id="tab_sus_path_loop" aria-controls="panel_sus_path_loop">PATH LOOP</md-primary-tab>
 							<md-primary-tab id="tab_sus_kstat" aria-controls="panel_sus_kstat">KSTAT</md-primary-tab>
 							<md-primary-tab id="tab_sus_open_redirect" aria-controls="panel_sus_open_redirect">REDIRECT</md-primary-tab>
+							<md-primary-tab id="tab_sus_path_uid_filter" aria-controls="panel_sus_path_uid_filter">UID FILTER</md-primary-tab>
 						</md-tabs>
 
 						<div class="snap-container" id="horizontal_scroll_container">
@@ -823,6 +885,9 @@
 								<div style="border:1px solid var(--md-sys-color-outline, #79747E); border-radius:12px; padding:12px; margin-top:16px;">
 									<md-filled-text-field class="content" id="open_redirect_log_display" type="textarea" rows="6" label="OPEN REDIRECT LOG" readonly></md-filled-text-field>
 								</div>
+							</div>
+							<div class="snap-item" id="panel_sus_path_uid_filter">
+								<md-filled-text-field class="content" id="custom_sus_path_uid_filter_field" type="textarea" rows="12" label="SUS_PATH_UID_FILTER (one package per line)"></md-filled-text-field>
 							</div>
 						</div>
 

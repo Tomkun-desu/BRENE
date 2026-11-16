@@ -55,7 +55,7 @@ fi
 
 chmod +x "${MODPATH}/tools/susfs" 2>/dev/null || true
 # pinned known-good susfs hash
-SUSFS_PINNED_SHA256="cb16825fb8c949775c1bf692263d9f59a52f12127fdcacc531b6a612e258a831"
+SUSFS_PINNED_SHA256="9ee2c20931d21fdecc656d4cc376e36333900169ed94565bb16c05892ccec945"
 if command -v sha256sum >/dev/null 2>&1; then
   SUSFS_ACTUAL_SHA256="$(sha256sum "${MODPATH}/tools/susfs" 2>/dev/null | awk '{print $1}' || true)"
   if [ "${SUSFS_ACTUAL_SHA256}" != "${SUSFS_PINNED_SHA256}" ]; then
@@ -124,6 +124,7 @@ custom_sus_path_loop.txt
 custom_sus_kstat.txt
 custom_kernel_umount.txt
 custom_open_redirect.txt
+custom_sus_path_uid_filter.txt
 "
 for file in ${files}; do
 	if [[ ! -f "${PERSISTENT_DIR}/${file}" ]]; then

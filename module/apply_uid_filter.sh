@@ -8,7 +8,13 @@ PERSISTENT_DIR=/data/adb/brene
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 LOG="${PERSISTENT_DIR}/log.txt"
 
-candidates=$(cmd package list packages -U 2>/dev/null | sed -n 's/^package:\([^ ]*\) uid:\([0-9]*\)$/\1:\2/p')
+if [ "${config_hide_all_apps_with_uid_10000_and_above}" = "1" ]; then
+	candidates=$(awk '$1 !~ /^#/ && $2 >= 10000 && $2 <= 19999 {print $1 ":" $2}' /data/system/packages.list 2>/dev/null)
+	label="hide_all_apps"
+else
+	candidates=$(cmd package list packages -U 2>/dev/null | sed -n 's/^package:\([^ ]*\) uid:\([0-9]*\)$/\1:\2/p')
+	label="hide_third_party_apps"
+fi
 
 packages=""
 for entry in $candidates; do
@@ -23,8 +29,8 @@ done
 [ -n "$packages" ] || exit 0
 
 if out=$("$SUSFS_BIN" set_priority_uid_filter "$packages" 2>&1); then
-	[ "${config_brene_logs}" = "1" ] && echo "hide_third_party_apps ok (${#packages} bytes)" >> "$LOG"
+	[ "${config_brene_logs}" = "1" ] && echo "${label} ok (${#packages} bytes)" >> "$LOG"
 else
-	echo "hide_third_party_apps failed (${#packages} bytes): ${out:-no output}" >> "$LOG"
+	echo "${label} failed (${#packages} bytes): ${out:-no output}" >> "$LOG"
 fi
 exit 0

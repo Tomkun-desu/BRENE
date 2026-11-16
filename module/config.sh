@@ -39,6 +39,7 @@ config_hide_custom_rom_paths=0
 config_custom_spoof_uname=0
 config_hide_framework_res_apk=0
 config_spoof_libstagefright=0
+config_hide_all_apps_with_uid_10000_and_above=0
 
 config_spoof_verified_boot_hash=''
 config_custom_uname_kernel_release='default'
@@ -50,6 +51,8 @@ config_hide_third_party_apps=1
 config_fix_data_local_tmp_inconsistencies=1
 config_show_refresh_rate=0
 config_disable_child_process_restrictions=1
+config_hide_oem_unlocking_toggle=1
+config_hide_vector_injection=1
 config_hide_custom_rom_paths_2=0
 
 # Per-property overrides for the device identity (empty = keep the real value).

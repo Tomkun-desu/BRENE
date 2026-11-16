@@ -81,6 +81,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_spoof_fingerprint_properties) config_spoof_fingerprint_properties="$v" ;;
       config_spoof_hosts) config_spoof_hosts="$v" ;;
       config_spoof_libstagefright) config_spoof_libstagefright="$v" ;;
+      config_hide_all_apps_with_uid_10000_and_above) config_hide_all_apps_with_uid_10000_and_above="$v" ;;
       config_spoof_os_patch_level_property) config_spoof_os_patch_level_property="$v" ;;
       config_spoof_os_security_patch_level_property) config_spoof_os_security_patch_level_property="$v" ;;
       config_spoof_system_properties) config_spoof_system_properties="$v" ;;
@@ -133,7 +134,7 @@ fi
 # The manager does not run boot-completed.sh on every ROM/boot, so apply the
 # getpriority uid filter here too: wait for boot to complete, then let
 # apply_uid_filter.sh build the list (PackageManager is ready by then).
-if [ "${config_hide_third_party_apps}" = "1" ] && [ -f "${MODDIR}/apply_uid_filter.sh" ]; then
+if { [ "${config_hide_third_party_apps}" = "1" ] || [ "${config_hide_all_apps_with_uid_10000_and_above}" = "1" ]; } && [ -f "${MODDIR}/apply_uid_filter.sh" ]; then
 	(
 		i=0
 		while [ "$(getprop sys.boot_completed 2>/dev/null)" != "1" ] && [ "$i" -lt 150 ]; do
@@ -142,6 +143,6 @@ if [ "${config_hide_third_party_apps}" = "1" ] && [ -f "${MODDIR}/apply_uid_filt
 		done
 		[ "$i" -lt 150 ] || exit 0
 		sleep 5
-		config_brene_logs="${config_brene_logs}" sh "${MODDIR}/apply_uid_filter.sh"
+		config_brene_logs="${config_brene_logs}" config_hide_all_apps_with_uid_10000_and_above="${config_hide_all_apps_with_uid_10000_and_above}" sh "${MODDIR}/apply_uid_filter.sh"
 	) >/dev/null 2>&1 &
 fi

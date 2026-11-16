@@ -63,6 +63,7 @@ const configs = [
 	{ id: 'spoof_libstagefright' },
 	{ id: 'hide_ksu_directories' },
 	{ id: 'hide_third_party_apps' },
+	{ id: 'hide_all_apps_with_uid_10000_and_above' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
 	{ id: 'spoof_cmdline_or_bootconfig' },
@@ -84,6 +85,11 @@ const configs = [
 	{ id: 'paths_hiding__non_standard_sdcard' },
 	{ id: 'paths_hiding__non_standard_sdcard_android' },
 	{ id: 'hide_custom_recovery' },
+	{ id: 'hide_vector_injection' },
+	{
+		id: 'hide_oem_unlocking_toggle',
+		action: (enabled) => setFeature(`resetprop -n ro.oem_unlock_supported ${enabled ? 0 : 1}`),
+	},
 	{ id: 'paths_hiding__data_local_tmp' },
      { id: 'fix_data_local_tmp_inconsistencies' },
 	{
@@ -733,6 +739,7 @@ if (resetDialog && resetButton) {
 	const mountField = document.getElementById('custom_sus_mount_text_field')
 	const pathField = document.getElementById('custom_sus_path_text_field')
 	const loopField = document.getElementById('custom_sus_path_loop_text_field')
+	const uidFilterField = document.getElementById('custom_sus_path_uid_filter_field')
 	const kstatContainer = document.getElementById('kstat_entries_container')
 	const addKstatButton = document.getElementById('add_kstat_entry_button')
 	const kstatFieldNames = ['ino', 'dev', 'nlink', 'size', 'atime', 'atime_nsec', 'mtime', 'mtime_nsec', 'ctime', 'ctime_nsec', 'blocks', 'blksize']
@@ -954,9 +961,9 @@ if (resetDialog && resetButton) {
 	const applyButton = document.getElementById('unified_apply_button')
 	const tabs = document.getElementById('sus_tabs')
 	const scrollContainer = document.getElementById('horizontal_scroll_container')
-	let truncated = { map: false, mount: false, path: false, loop: false, kstat: false, redirect: false }
+	let truncated = { map: false, mount: false, path: false, loop: false, kstat: false, redirect: false, uidfilter: false }
 	applyButton.disabled = true
-	let susLoadsPending = 6
+	let susLoadsPending = 7
 	let susLoadsDone = false
 	const markSusLoaded = () => { if (--susLoadsPending <= 0) { susLoadsDone = true; applyButton.disabled = false } }
 
@@ -989,6 +996,10 @@ if (resetDialog && resetButton) {
 	exec(`cat ${PERSISTENT_DIR}/custom_open_redirect.txt`).then((result) => {
 		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.redirect = true; out = cutToLastFullLines(out, MAX) }
 		loadOpenRedirectEntries(result.errno === 0 ? out : '')
+	}).finally(markSusLoaded)
+	exec(`cat ${PERSISTENT_DIR}/custom_sus_path_uid_filter.txt`).then((result) => {
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated.uidfilter = true; out = cutToLastFullLines(out, MAX) }
+		uidFilterField.value = result.errno === 0 ? `${out}\n` : ''
 	}).finally(markSusLoaded)
 	exec(`grep '^\\[custom_open_redirect\\]' ${PERSISTENT_DIR}/logs.txt`).then((result) => {
 		const openRedirectLog = document.getElementById('open_redirect_log_display')
@@ -1063,6 +1074,11 @@ if (resetDialog && resetButton) {
 				content = serializeOpenRedirectEntries()
 				if (content === null) return
 				break
+			case 6:
+				file = 'custom_sus_path_uid_filter.txt'
+				truncatedKey = 'uidfilter'
+				content = uidFilterField.value
+				break
 		}
 
 		if (file === '') { toast('Select a tab first'); return }
@@ -1075,6 +1091,21 @@ if (resetDialog && resetButton) {
 			if (bad !== null) { toast('Invalid path: '+String(bad).slice(0,80)); return }
 		}
 
+		if (index === 6) {
+			const pkgs = [...new Set(content.split(/[\s,]+/).map((p) => p.trim()).filter(Boolean))]
+			const bad = pkgs.find((p) => !/^[A-Za-z0-9_.]+$/.test(p))
+			if (bad) { toast('Invalid package name: ' + String(bad).slice(0, 80)); return }
+			const joined = pkgs.join(',')
+			const stored = pkgs.join('\n')
+			exec(`printf '%s\\n' "${stored}" > ${PERSISTENT_DIR}/custom_sus_path_uid_filter.txt`).then((result) => {
+				if (result.errno !== 0) { toast(String(result.stderr || 'write failed').replace(/[\x00-\x1F\x7F]/g, ' ').slice(0, 200)); return }
+				if (joined === '') { toast('Cleared'); return }
+				exec(`susfs set_sus_path_uid_filter "${joined}"`).then((applied) => {
+					toast(applied.errno === 0 ? 'Saved and applied' : String(applied.stderr || 'apply failed').replace(/[\x00-\x1F\x7F]/g, ' ').slice(0, 200))
+				})
+			})
+			return
+		}
 		if (file) {
 		        if (content === '') {
 		                exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {

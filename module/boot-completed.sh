@@ -73,6 +73,9 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_custom_rom_paths) config_hide_custom_rom_paths="$v" ;;
       config_hide_custom_rom_paths_2) config_hide_custom_rom_paths_2="$v" ;;
       config_hide_framework_res_apk) config_hide_framework_res_apk="$v" ;;
+      config_hide_oem_unlocking_toggle) config_hide_oem_unlocking_toggle="$v" ;;
+      config_hide_vector_injection) config_hide_vector_injection="$v" ;;
+      config_hide_all_apps_with_uid_10000_and_above) config_hide_all_apps_with_uid_10000_and_above="$v" ;;
       config_hide_injections) config_hide_injections="$v" ;;
       config_hide_ksu_directories) config_hide_ksu_directories="$v" ;;
       config_hide_third_party_apps) config_hide_third_party_apps="$v" ;;
@@ -305,7 +308,17 @@ fi
 # after reboot on some devices.
 if [[ "${config_shrink_buffer_size}" == "1" ]]; then
     command -v logcat >/dev/null 2>&1 && logcat -G 64K 2>/dev/null || true
-    resetprop -n persist.logd.size 65536 2>/dev/null || true
+fi
+
+# Hide OEM unlocking toggle
+if [[ "${config_hide_oem_unlocking_toggle}" == "1" ]]; then
+    if_prop_exits_resetprop_n "ro.oem_unlock_supported" "0"
+fi
+
+# Hide Vector Injection (Xposed Framework)
+if [[ "${config_hide_vector_injection}" == "1" ]]; then
+    ${SUSFS_BIN} add_sus_map "/data/adb/modules/zygisk_vector/zygisk/arm64-v8a.so" || true
+    ${SUSFS_BIN} add_sus_map "/data/adb/modules/zygisk_vector/zygisk/armeabi-v7a.so" || true
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
@@ -691,6 +704,19 @@ if [[ -e "${PERSISTENT_DIR}/custom_kernel_umount.txt" ]]; then
         done < "${PERSISTENT_DIR}/custom_kernel_umount.txt"
 fi
 
+# Load custom_sus_path_uid_filter.txt (one package name per line)
+if [[ -e "${PERSISTENT_DIR}/custom_sus_path_uid_filter.txt" ]]; then
+	_suflist=""
+	while IFS= read -r i || [[ -n "${i}" ]]; do
+		i=${i%$'\r'}
+		i=${i//[[:space:]]/}
+		[[ -z "${i}" || "${i}" == "#"* ]] && continue
+		[[ "${i}" =~ ^[A-Za-z0-9_.]+$ ]] || continue
+		_suflist="${_suflist}${_suflist:+,}${i}"
+	done < "${PERSISTENT_DIR}/custom_sus_path_uid_filter.txt"
+	[ -n "${_suflist}" ] && ${SUSFS_BIN} set_sus_path_uid_filter "${_suflist}" || true
+fi
+
 #### Hide the mmapped real file from various maps in /proc/self/, effective only for processes that are marked umounted with uid >= 10000 ####
 ## - *Please note that it is better to do it in boot-completed starge
 ##   Since some target path may be mounted by ksu, and make sure the
@@ -790,7 +816,7 @@ fi
 
 # Hide third party apps
 if [[ "${config_hide_third_party_apps}" == "1" ]]; then
-	[ -f "${MODDIR}/apply_uid_filter.sh" ] && config_brene_logs="${config_brene_logs}" sh "${MODDIR}/apply_uid_filter.sh"
+	[ -f "${MODDIR}/apply_uid_filter.sh" ] && config_brene_logs="${config_brene_logs}" config_hide_all_apps_with_uid_10000_and_above="${config_hide_all_apps_with_uid_10000_and_above}" sh "${MODDIR}/apply_uid_filter.sh"
 fi
 
 resetprop -c --force 2>/dev/null || true

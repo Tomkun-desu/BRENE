@@ -82,6 +82,9 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_hide_custom_rom_paths) config_hide_custom_rom_paths="$v" ;;
       config_hide_custom_rom_paths_2) config_hide_custom_rom_paths_2="$v" ;;
       config_hide_framework_res_apk) config_hide_framework_res_apk="$v" ;;
+      config_hide_oem_unlocking_toggle) config_hide_oem_unlocking_toggle="$v" ;;
+      config_hide_vector_injection) config_hide_vector_injection="$v" ;;
+      config_hide_all_apps_with_uid_10000_and_above) config_hide_all_apps_with_uid_10000_and_above="$v" ;;
       config_hide_injections) config_hide_injections="$v" ;;
       config_hide_ksu_directories) config_hide_ksu_directories="$v" ;;
       config_hide_third_party_apps) config_hide_third_party_apps="$v" ;;
