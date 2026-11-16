@@ -1,3 +1,23 @@
+## v0.0.76-custom.1 - 2026-11-16
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+- The local fork adds a new line to the CUSTOM_ROM_NAMES variable to include the 'clover' and 'yaap' custom ROMs.
+- The local fork changes how the utils.sh and config.sh files are loaded, making it POSIX compatible to run in BusyBox ash.
+- The local fork adds a new while loop to parse the config.sh file and strip any unwanted characters from the key-value pairs.
+- The local fork adds a new case statement to the while loop to allowlist only config_* keys.
+- The local fork adds a new case statement to the while loop to strip any surrounding single or double quotes from the values.
+- The local fork adds a new case statement to the while loop to strip any spaces around the key-value pairs.
+- The local fork adds a new line to the while loop to assign the key-value pairs without using eval, making it safe to run in BusyBox ash, dash, mksh, or bash.
+- The local fork removes the comments about loading the utils.sh and config.sh files.
+- The local fork removes the line that loads the utils.sh file.
+- The local fork removes the line that loads the config.sh file.
+- The local fork removes the lines that load the
+
 ## v0.0.75-custom.2 - 2026-11-02
 
 ### Synced from upstream BRENE
