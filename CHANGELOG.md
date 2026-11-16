@@ -1,21 +1,3 @@
-## v0.0.76-custom.3 - 2026-11-16
-
-### Synced from upstream BRENE
-- (manual rebuild, no new upstream commits)
-
-### Local customizations
-- The script now checks for the existence of the 'utils.sh' file before loading it.
-- The script now loads the 'config.sh' file in a safer way to prevent potential security risks.
-- The 'config.sh' file is now processed line by line to handle potential issues with CRLF-edited files.
-- The script now removes any trailing or leading spaces from the key-value pairs in the 'config.sh' file.
-- The script now removes any surrounding single or double quotes from the values in the 'config.sh' file.
-- The script now only allows keys that start with 'config_' and contain only letters, numbers, and underscores.
-- The script now skips any lines in the 'config.sh' file that do not match the specified format.
-- The script now assigns the values to variables without using 'eval' to prevent potential security risks.
-- The 'CUSTOM_ROM_NAMES' variable now contains more ROM names.
-- The 'DEST_BIN_DIR' variable now points to a different directory.
-- The code now uses POSIX shell compatible syntax to ensure compatibility with different shells.
-
 ## v0.0.75-custom.2 - 2026-11-02
 
 ### Synced from upstream BRENE
