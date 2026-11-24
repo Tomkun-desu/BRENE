@@ -1,3 +1,23 @@
+## v0.0.77-custom.3 - 2026-11-24
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here's a summary of the changes in plain, simple bullet points:
+
+* Added a line to strip carriage returns from configuration file lines.
+* Added a line to trim spaces around key-value pairs in the configuration file.
+* Added a line to strip single or double quotes from configuration values.
+* Added an allowlist to only allow configuration keys that start with "config_" and contain only letters, numbers, and underscores.
+* Changed the way the configuration file is sourced to make it POSIX shell compatible.
+* Changed the way the `utils.sh` file is sourced to make it POSIX shell compatible.
+* Removed the use of `[[ ]]` and `source` commands, replacing them with `test` and `.` commands.
+* Added a `while` loop to iterate over the key-value pairs in the configuration file.
+* Added a `case` statement to handle quoted values in the configuration file.
+* Added a comment to disable a shellcheck warning about assigning a value to a variable without using `eval`.
+* Added a comment to explain the purpose of the allowlist.
+
 ## v0.0.77-custom.2 - 2026-11-24
 
 ### Synced from upstream BRENE
