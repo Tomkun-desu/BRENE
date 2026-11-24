@@ -189,23 +189,6 @@ if [[ "${config_disable_child_process_restrictions}" == "1" ]]; then
         resetprop -n persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null || true
 fi
 
-# Remove Custom ROM Properties
-if [[ "${config_rom_props}" == "1" ]]; then
-	# Match on prop NAME only (value may legitimately contain e.g. "lineage" in fingerprint)
-	resetprop | awk -F'[][]' '{print $2}' | grep -iE "${CUSTOM_ROM_NAMES}" | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
-		resetprop -d "${prop}"
-	done
-
-	resetprop -d "ro.modversion"
-fi
-
-# Remove Play Integrity Fix Properties
-if [[ "${config_pif_props}" == "1" ]]; then
-	resetprop | grep -iE "pihook|pixelprops|spoof" | awk -F'[][]' '{print $2}' | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
-		resetprop -d -p "${prop}"
-	done
-fi
-
 # Spoof /system/lib64/libstagefright.so
 if [[ "${config_spoof_libstagefright}" == "1" ]]; then
         if [[ "${config_brene_logs}" == "1" ]]; then
@@ -372,6 +355,22 @@ brene_wait_for_nonempty_listing() {
 	return 1
 }
 
+# brene_is_excluded_from <file> <name>: rc=0 when <name> matches a pattern in <file>.
+# Blank lines and # comments are ignored; shell wildcards are allowed.
+brene_is_excluded_from() {
+	[ -f "$1" ] || return 1
+	local _ex_target="$2" _ex_line
+	while IFS= read -r _ex_line || [ -n "$_ex_line" ]; do
+		_ex_line=${_ex_line%$'\r'}
+		[[ -z "${_ex_line// /}" || "${_ex_line// /}" == "#"* ]] && continue
+		# shellcheck disable=SC2254 # intentional glob match
+		case "${_ex_target}" in
+			${_ex_line}) return 0 ;;
+		esac
+	done < "$1"
+	return 1
+}
+
 ## Remove the '..5.u.S' leftover ##
 ## THe reason why this sus file is created is because users have grant the MANAGE_EXTERNAL_STORAGE permission for the apps that detecting sus files in /sdcard, or in /sdcard/Android/data where the apps are exploiting the unicode bugs to create files arbitrary.
 ## susfs redirects the sus path to a supposed not-existing path named '..5.u.S', and this is the only way to settle the cross check of returned errno from various syscalls, but one disadvantage is that if the path itself can be written/created by the app (MANAGE_EXTERNAL_STORAGE granted), then it is futile to hide it, but at least here we automatically delete them on each boot.
@@ -398,6 +397,14 @@ if [[ "${config_hide_ksu_directories}" == "1" ]]; then
 	inotifyd "${MODDIR}/remove_ksu_directory.sh" /storage/emulated/0/Android/data:n &
 	inotifyd "${MODDIR}/remove_ksu_directory.sh" /storage/emulated/0/Android/media:n &
 	inotifyd "${MODDIR}/remove_ksu_directory.sh" /storage/emulated/0/Android/obb:n &
+fi
+
+# Remove suspicious directories in /sdcard/Android/[data | media | obb]
+if [[ -e "${PERSISTENT_DIR}/remove_sus_dir_sdcard_android_data_media_obb.txt" ]]; then
+	sh "${MODDIR}/remove_sus_dir.sh"
+	inotifyd "${MODDIR}/remove_sus_dir.sh" /storage/emulated/0/Android/data:n &
+	inotifyd "${MODDIR}/remove_sus_dir.sh" /storage/emulated/0/Android/media:n &
+	inotifyd "${MODDIR}/remove_sus_dir.sh" /storage/emulated/0/Android/obb:n &
 fi
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
@@ -435,6 +442,8 @@ __brene_hide_nonstandard_sdcard_once() {
 		done
 
 		[[ "${pass}" == "1" ]] && continue
+
+		brene_is_excluded_from "${PERSISTENT_DIR}/hide_non_standard_sdcard_paths_exceptions.txt" "$(basename "${i}")" && continue
 
 		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
@@ -571,6 +580,7 @@ if [[ "${config_paths_hiding__data_local_tmp}" == "1" ]]; then
 
 	for i in /data/local/tmp/*; do
 		[[ -e "${i}" ]] || continue
+		brene_is_excluded_from "${PERSISTENT_DIR}/hide_data_local_tmp_exceptions.txt" "$(basename "${i}")" && continue
 		brene_sus_path_loop "${i}"
 	done
 fi
@@ -804,7 +814,23 @@ if [[ "${config_hide_framework_res_apk}" == "1" ]]; then
 	done
 fi
 
+# Remove Custom ROM Properties
+if [[ "${config_rom_props}" == "1" ]]; then
+	# Late pass: needs /storage/emulated/0/Android accessible.
+	# Match on prop NAME only (value may legitimately contain e.g. "lineage" in fingerprint)
+	resetprop | awk -F'[][]' '{print $2}' | grep -iE "${CUSTOM_ROM_NAMES}" | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
+		resetprop -d "${prop}"
+	done
 
+	resetprop -d "ro.modversion"
+fi
+
+# Remove Play Integrity Fix Properties
+if [[ "${config_pif_props}" == "1" ]]; then
+	resetprop | grep -iE "pihook|pixelprops|spoof" | awk -F'[][]' '{print $2}' | grep -E '^[a-zA-Z0-9_.-]+$' | while IFS= read -r prop; do
+		resetprop -d -p "${prop}"
+	done
+fi
 
 # Android Verified Boot Hash Spoofing
 if [[ "${config_spoof_verified_boot_hash}" != '' ]]; then

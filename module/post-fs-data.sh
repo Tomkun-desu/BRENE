@@ -99,6 +99,7 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_paths_hiding__user_ca_certs) config_paths_hiding__user_ca_certs="$v" ;;
       config_pif_props) config_pif_props="$v" ;;
       config_rom_props) config_rom_props="$v" ;;
+      config_hide_gapps) config_hide_gapps="$v" ;;
       config_saturation) config_saturation="$v" ;;
       config_selinux_hide) config_selinux_hide="$v" ;;
       config_show_refresh_rate) config_show_refresh_rate="$v" ;;
@@ -357,6 +358,26 @@ if [[ "${config_hide_addon_d}" == "1" ]]; then
     brene_sus_path_loop "/system/addon.d" || true
 fi
 
+# Hide Gapps
+if [[ "${config_hide_gapps}" == "1" ]]; then
+	keyword="gapps"
+
+	brene_find /system /system_ext /vendor /product -iname "*${keyword}*" -print0 | while IFS= read -r -d '' path; do
+		brene_sus_map "${path}" || true
+		brene_sus_path_loop "${path}" || true
+	done
+
+	brene_find /data -maxdepth 1 -iname "*${keyword}*" -print0 | while IFS= read -r -d '' path; do
+		brene_sus_map "${path}" || true
+		brene_sus_path_loop "${path}" || true
+	done
+
+	brene_find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${keyword}*" -print0 | while IFS= read -r -d '' path; do
+		brene_sus_map "${path}" || true
+		brene_sus_path_loop "${path}" || true
+	done
+fi
+
 # Hide Custom ROM Paths
 if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	for i in ${CUSTOM_ROM_NAMES//|/ }; do
@@ -372,7 +393,7 @@ if [[ "${config_hide_custom_rom_paths}" == "1" ]]; then
 	done
 fi
 
-# Hide Custom ROM Paths (Extreme)
+# Hide Custom ROM Paths (Extended)
 if [[ "${config_hide_custom_rom_paths_2}" == "1" ]]; then
         for i in ${CUSTOM_ROM_NAMES//|/ }; do
                 brene_find /data/misc /data/dalvik-cache /data/resource-cache -iname "*${i}*" -print0 | while IFS= read -r -d '' path; do

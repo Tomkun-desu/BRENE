@@ -48,6 +48,7 @@ const configs = [
      },
 	{ id: 'pif_props' },
 	{ id: 'rom_props' },
+	{ id: 'hide_gapps' },
 	{ id: 'brene_logs' },
 	{ id: 'enable_log' },
 	{ id: 'hide_addon_d' },
@@ -542,6 +543,45 @@ ${eof}
 		}
 	}
 })()
+
+// Plain text list fields: exceptions + remove-sus-dir package list
+;([
+	['data_local_tmp_exceptions_text_field', 'data_local_tmp_exceptions_apply_button', 'hide_data_local_tmp_exceptions.txt'],
+	['hide_non_standard_sdcard_paths_exceptions_text_field', 'hide_non_standard_sdcard_paths_exceptions_apply_button', 'hide_non_standard_sdcard_paths_exceptions.txt'],
+	['remove_sus_dir_sdcard_android_data_media_obb_text_field', 'remove_sus_dir_sdcard_android_data_media_obb_apply_button', 'remove_sus_dir_sdcard_android_data_media_obb.txt'],
+]).forEach(([fieldId, buttonId, file]) => {
+	const field = document.getElementById(fieldId)
+	const button = document.getElementById(buttonId)
+	if (!field || !button) return
+	button.disabled = true
+	let truncated = false
+	exec(`cat ${PERSISTENT_DIR}/${file}`).then((result) => {
+		const MAX = 65536; let out = result.stdout || ''; if (out.length > MAX) { truncated = true; out = out.slice(-MAX) + '\n…(truncated)' }
+		field.value = result.errno === 0 ? out : ''
+	}).finally(() => { button.disabled = false })
+
+	button.onclick = () => {
+		if (truncated) { toast('File too large, not saved'); return }
+		const content = field.value
+		if (content.length > 65536) { toast('File too large, not saved'); return }
+		if (content === '') {
+			exec(`printf '' > ${PERSISTENT_DIR}/${file}`).then((result) => {
+				toast(result.errno === 0 ? 'Success' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
+			})
+			return
+		}
+		const eofRand = window.crypto && window.crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 4294967295)
+		const eof = 'EOF_' + Date.now().toString(36) + Math.floor(eofRand / 1000).toString(36)
+		if (content.split('\n').some((line) => line === eof)) { toast('Refusing to write: content contains delimiter'); return }
+		exec(`
+cat <<'${eof}' > ${PERSISTENT_DIR}/${file}
+${content}
+${eof}
+		`).then((result) => {
+			toast(result.errno === 0 ? 'Success, reboot to apply' : String(result.stderr||'').replace(/[\x00-\x1F\x7F]/g,' ').slice(0,200))
+		})
+	}
+})
 
 // Reset Settings
 const resetDialog = document.getElementById('reset_settings_dialog')

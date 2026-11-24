@@ -72,6 +72,7 @@ fi
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}" || abort "[❌] Failed to copy susfs binary!"
 chmod +x "${MODPATH}/inotify.sh"
 chmod +x "${MODPATH}/remove_ksu_directory.sh"
+chmod +x "${MODPATH}/remove_sus_dir.sh"
 chmod +x "${MODPATH}/post-fs-data.sh" "${MODPATH}/service.sh" "${MODPATH}/boot-completed.sh" "${MODPATH}/action.sh" 2>/dev/null || true
 chmod 755 "${DEST_BIN_DIR}/susfs" || abort "[❌] Failed to chmod susfs binary!"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
@@ -125,6 +126,9 @@ custom_sus_kstat.txt
 custom_kernel_umount.txt
 custom_open_redirect.txt
 custom_sus_path_uid_filter.txt
+remove_sus_dir_sdcard_android_data_media_obb.txt
+hide_data_local_tmp_exceptions.txt
+hide_non_standard_sdcard_paths_exceptions.txt
 "
 for file in ${files}; do
 	if [[ ! -f "${PERSISTENT_DIR}/${file}" ]]; then

@@ -26,6 +26,7 @@ config_spoof_vendor_security_patch_level_property=1
 
 config_pif_props=0
 config_rom_props=0
+config_hide_gapps=0
 config_saturation=0
 config_brene_logs=0
 config_enable_log=0
