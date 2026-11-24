@@ -1,3 +1,20 @@
+## v0.0.77-custom.1 - 2026-11-24
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+Here are the changes in simple bullet points:
+
+* The local version of the script loads the utils and config in a more POSIX-compatible way, allowing it to run on BusyBox ash.
+* The local version trims spaces and removes CR characters from the config file to prevent issues with hand-edited files.
+* The local version strips single or double quotes from the config values.
+* The local version allows only config_* keys with alphanumeric characters and underscores in the config file.
+* The local version assigns config values without using eval to ensure safety on different shells.
+* The DEST_BIN_DIR variable was not changed.
+* The CUSTOM_ROM_NAMES variable was not changed.
+* The script added 86 new lines to load and parse the config file.
+
 ## v0.0.76-custom.1 - 2026-11-16
 
 ### Synced from upstream BRENE
