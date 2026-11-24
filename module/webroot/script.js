@@ -8,6 +8,9 @@ const PERSISTENT_DIR = '/data/adb/brene'
 // Spoofed props live in RAM and are written at boot, so turning a spoof off cannot
 // un-spoof the running session; say when it actually stops instead of doing nothing.
 const offAtReboot = (enabled) => { if (!enabled) toast('Spoofing stops after the next reboot') }
+// susfs path hiding lives in the kernel and is cleared on reboot, so turning a hide
+// off cannot bring the files back now; say when they reappear.
+const unhideAtReboot = (enabled) => { if (!enabled) toast('Hidden paths come back after the next reboot') }
 
 const configs = [
 	{
@@ -87,8 +90,8 @@ const configs = [
 	{ id: 'spoof_os_security_patch_level_property', action: offAtReboot },
 	{ id: 'spoof_vendor_security_patch_level_property', action: offAtReboot },
 
-	{ id: 'paths_hiding__non_standard_sdcard' },
-	{ id: 'paths_hiding__non_standard_sdcard_android' },
+	{ id: 'paths_hiding__non_standard_sdcard', action: unhideAtReboot },
+	{ id: 'paths_hiding__non_standard_sdcard_android', action: unhideAtReboot },
 	{ id: 'hide_custom_recovery' },
 	{ id: 'hide_vector_injection' },
 	{

@@ -410,8 +410,8 @@ fi
 
 # Non-standard /sdcard
 __brene_hide_nonstandard_sdcard_once() {
-	local _hide_n=0 _seen=0
-	local pass i x
+	local _hide_n=0 _keep_n=0 _seen=0
+	local pass i x _name _lname
 	local standard_paths
 	if [[ -z "$(resetprop ro.miui.ui.version.name)" ]]; then
 		standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
@@ -441,10 +441,25 @@ __brene_hide_nonstandard_sdcard_once() {
 
 		brene_is_excluded_from "${PERSISTENT_DIR}/hide_non_standard_sdcard_paths_exceptions.txt" "$(basename "${i}")" && continue
 
+		# Hiding a whole top-level dir makes every file under it unreachable for apps,
+		# so only names that look like root leftovers are hidden. Anything else (user
+		# folders, backups, emulator data) stays visible; custom_sus_path_loop.txt is
+		# the explicit way to hide a path the patterns miss.
+		_name=$(basename "${i}")
+		_lname=$(printf '%s' "${_name}" | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz')
+		case "${_lname}" in
+			*magisk*|*kernelsu*|*ksu*|*susfs*|*apatch*|*twrp*|*orangefox*|*recovery*|\
+			*payload*|*zygisk*|*lsposed*|*xposed*|*shamiko*|*kernel*|*playintegrity*) ;;
+			*)
+				_keep_n=$((_keep_n + 1))
+				[ "${config_brene_logs}" = "1" ] && brene_log "[keep] not a root leftover: ${i}"
+				continue ;;
+		esac
+
 		brene_sus_path_loop "${i}" && _hide_n=$((_hide_n + 1))
 	done
-	if [ "${_hide_n}" -eq 0 ] && [ "${config_brene_logs}" = "1" ]; then
-		brene_log "[skip] /sdcard pass added 0 entries (empty listing or all standard), entries_seen=${_seen}"
+	if [ "${config_brene_logs}" = "1" ]; then
+		brene_log "[sdcard] hidden=${_hide_n} kept=${_keep_n} seen=${_seen}"
 	fi
 }
 if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then

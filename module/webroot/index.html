@@ -574,11 +574,9 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">Hide non-standard /sdcard paths</span>
-							<span class="card-row__sub">Standard paths:</span>
-							<span class="card-row__sub">
-								Alarms, Android, Audiobooks, DCIM, Documents, Download, Movies, Music, Notifications, Pictures, Podcasts, Recordings, Ringtones, (MIUI)
-							</span>
-							<span class="card-row__sub">Enter one item per line (shell wildcard pattern is compatible).</span>
+							<span class="card-row__sub">Only root leftovers are hidden: names containing magisk, kernelsu, ksu, susfs, apatch, twrp, orangefox, recovery, payload, zygisk, lsposed, xposed, shamiko, kernel, playintegrity.</span>
+							<span class="card-row__sub">Your own folders (camera, backups, emulator data) stay visible. To hide one anyway, add its path to SUS PATH LOOP in the Advanced tab.</span>
+							<span class="card-row__sub">EXCEPTIONS: one item per line, shell wildcard is compatible.</span>
 							<span class="card-row__tag--code">Example:</span>
 							<span class="card-row__tag--code">BreZygisk-*</span>
 						</div>
