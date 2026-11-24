@@ -106,7 +106,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       config_spoof_utc_properties) config_spoof_utc_properties="$v" ;;
       config_spoof_vendor_security_patch_level_property) config_spoof_vendor_security_patch_level_property="$v" ;;
       config_su_compat) config_su_compat="$v" ;;
-      config_sync_device_props) config_sync_device_props="$v" ;;
       config_umount_suspicious_mounts) config_umount_suspicious_mounts="$v" ;;
       config_spoof_uname) config_spoof_uname="$v" ;;
       config_usb_debugging) config_usb_debugging="$v" ;;
@@ -115,10 +114,6 @@ if [ -e "${PERSISTENT_DIR}/config.sh" ]; then
       *) continue ;; # unknown config_ key: ignore
     esac
   done < "${PERSISTENT_DIR}/config.sh"
-fi
-# Deprecated keys merged into config_spoof_system_properties (OR-migration, never disables).
-if [ "${config_sync_device_props}" = "1" ]; then
-  config_spoof_system_properties=1
 fi
 
 # Update Description

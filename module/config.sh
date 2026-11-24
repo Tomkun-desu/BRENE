@@ -31,7 +31,8 @@ config_saturation=0
 config_brene_logs=0
 config_enable_log=0
 config_hide_addon_d=0
-# Deprecated: merged into config_spoof_system_properties (old key still honored if present).
+# config_sync_device_props was retired: it pinned config_spoof_system_properties=1 on
+# every boot, so the toggle could not be turned off. customize.sh deletes the old key.
 config_usb_debugging=0
 config_developer_options=0
 config_wireless_debugging=0

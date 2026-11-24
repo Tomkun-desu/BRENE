@@ -225,6 +225,14 @@ else
 		fi
 	done
 	_brene_pair=""; _brene_old_key=""; _brene_new_key=""; _brene_old_val=""; _brene_def_val=""
+
+	# Retire config_sync_device_props. It used to OR-pin config_spoof_system_properties=1
+	# on every boot, so a user who turned "Spoof system properties" off saw it come back
+	# after reboot. The old value is NOT merged in: that would keep the toggle stuck on.
+	if tr -d '\r' < "${PERSISTENT_DIR}/config.sh" 2>/dev/null | grep -q '^config_sync_device_props='; then
+		sed -i '/^config_sync_device_props=/d' "${PERSISTENT_DIR}/config.sh"
+		echo '[🧹] Removed retired config_sync_device_props (Spoof system properties is the only switch now)'
+	fi
 fi
 
 # Reset fake_files folder (recreated so the boot scripts always find it)

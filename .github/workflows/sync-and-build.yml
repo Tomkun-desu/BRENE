@@ -135,12 +135,15 @@ jobs:
       - name: Re-apply customizations onto module/
         if: inputs.sync == true && steps.merge.outputs.conflict == 'false' && steps.diff.outputs.count != '0'
         run: |
-          # config_sync_device_props is merged into config_spoof_system_properties
-          # (OR-migration shims in post-fs-data.sh / boot-completed.sh). Verify
-          # the shims survived the merge instead of re-applying legacy code.
+          # config_sync_device_props is retired: customize.sh deletes it from the live
+          # config and the boot scripts must never pin config_spoof_system_properties
+          # again (that pin is what made the Spoof system properties toggle stuck on).
           for f in module/post-fs-data.sh module/boot-completed.sh; do
-            if ! grep -q 'config_sync_device_props' "$f" || ! grep -q 'config_spoof_system_properties=1' "$f"; then
-              echo "::error::OR-migration shim missing in $f" >&2; exit 1
+            if grep -q 'config_sync_device_props' "$f"; then
+              echo "::error::retired config_sync_device_props shim came back in $f" >&2; exit 1
+            fi
+            if ! grep -q 'config_spoof_system_properties' "$f"; then
+              echo "::error::config_spoof_system_properties dispatch missing in $f" >&2; exit 1
             fi
           done
           if ! grep -q '^config_spoof_system_properties=1' module/config.sh; then
