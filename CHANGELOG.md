@@ -1,3 +1,23 @@
+## v0.0.77-custom.2 - 2026-11-24
+
+### Synced from upstream BRENE
+- (manual rebuild, no new upstream commits)
+
+### Local customizations
+* Added a custom ROM names list.
+* Changed the way the utils script is loaded.
+* Changed the way the config script is loaded, adding checks and sanitizing the data.
+* Changed the way the config script is parsed, adding checks and sanitizing the data.
+* Removed the loading of utils script from a specific directory.
+* Removed the loading of config script from a specific directory.
+* Added a check to strip carriage returns from the data.
+* Added a check to strip leading and trailing spaces from the data.
+* Added a check to strip single or double quotes from the data.
+* Added an allowlist to restrict which config keys are loaded.
+* Changed the way config values are assigned, using a safer method.
+* Added a comment to disable a shellcheck warning.
+* Added a comment to explain the purpose of a specific line of code.
+
 ## v0.0.77-custom.1 - 2026-11-24
 
 ### Synced from upstream BRENE
